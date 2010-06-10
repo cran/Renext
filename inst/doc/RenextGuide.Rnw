@@ -1,0 +1,2753 @@
+%% -*- fill-column: 80; comment-column: 50; -*-
+\documentclass{report}
+
+% \VignetteIndexEntry{Introduction to Renext}
+% \VignetteDepends{Renext}
+% \VignetteKeyword{extreme values}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage[english]{babel}
+
+\usepackage{url}
+\usepackage{fullpage}
+\usepackage{boxedminipage}
+\usepackage{hyperref}
+\usepackage{makeidx}
+\usepackage{titlesec}
+\usepackage{color}
+\makeindex
+
+%% \parskip=1.5ex plus 1.5ex minus 1.25ex
+%% \titleformat{\section}[block]{\normalfont\large\bfseries}{\thesection}{1em}{}
+%% \titlespacing{\section}{0em}{2em plus 3em minus 0.5em}{0.15em plus 0.15em
+%%   minus 0.125em}
+%% \titleformat{\subsection}[block]{\normalfont\large\itshape}{\thesubsection}{1em}{}
+%% \titlespacing{\subsection}{0em}{1em plus 2em minus 0.5em}{-0.15em plus 0.15em
+%%   minus 0.125em}
+
+%%======================================================== 
+\newcommand{\Esp}{\textrm{E}}
+\newcommand{\Cov}{\textrm{Cov}}
+\newcommand{\Corr}{\textrm{Corr}}
+\newcommand{\Var}{\textrm{Var}}
+\newcommand{\m}{\mathbf}   
+\newcommand{\bs}{\boldsymbol}
+\newcommand{\pCond}[2]{\left( #1 \;\middle\vert\; #2 \right)}
+\newcommand{\bCond}[2]{\left[ #1 \;\middle\vert\; #2 \right]}
+\newcommand{\Cond}[2]{\left. #1 \;\middle\vert\; #2 \right.}
+%%========================================================= 
+\definecolor{InputColor}{rgb}{0.600,0.060,0.360} 
+\definecolor{OutputColor}{rgb}{0.133,0.543,0.133}
+\definecolor{Gray}{rgb}{0.5,0.5,0.5}
+%%=========================================================
+\newenvironment{Prov}
+   {\medskip \par \noindent%
+    \sf \color{blue} }%
+  {\medskip \par}
+
+\title{
+  \begin{tabular}{c}
+  %%\hline
+  \noalign{\hrule height 2pt}
+   The \textbf{Renext} package \rule{0pt}{20pt}\\
+   version 1.0-0 \\ \noalign{\hrule height 2pt}
+\end{tabular}
+}
+
+\author{Y. Deville\rule{0pt}{140pt}}
+
+
+\begin{document}
+\pagenumbering{roman}   % i, ii, iii, iv, ...
+
+\maketitle
+
+%% first page: copyright only
+\thispagestyle{empty}
+\rule{0pt}{\textheight}
+\begin{tabular}{l}
+  %%\hline
+  \noalign{\hrule height 2pt}
+  Copyright \copyright \: 2010 IRSN-Yves Deville\rule{0pt}{12pt}
+\end{tabular}
+
+\pagebreak
+\setcounter{page}{1}
+\tableofcontents
+
+%%\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=2em}
+%%\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=2em}
+%%\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=2em}
+
+%% Customisation as suggested by Ross Ihaka: indent, etc.
+
+\fvset{listparameters={\setlength{\topsep}{0pt}}}
+\renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
+
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{framesep=2pt, %
+  xleftmargin=2em, %
+  formatcom = {\color{InputColor}\small}%
+}%
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{framesep=2pt, %
+  %frame=lines,
+  xleftmargin=2em, %
+  formatcom = {\color{OutputColor}\small}%
+}%
+
+\SweaveOpts{prefix.string=images/fig, eps=FALSE, pdf=TRUE, keep.source=TRUE}
+\setkeys{Gin}{width=7cm}
+<<options, echo = FALSE>>=
+options(prompt = "> ", continue = " ", width = 80)
+L <- installed.packages()
+ind <- !is.na(match(L[, "Package"], "Renext"))
+Renext.Version <- L[ind, "Version"]
+@
+
+
+\begin{abstract}
+  
+  The \verb@Renext@ package has been specified by IRSN.  The main goal
+  is to implement the statistical framework "m\'ethode de
+  renouvellement".  This is similar to the Peak Over Threshold (POT)
+  method but the distribution of exceedances is not restricted to
+  GPD. Data Over Threshold can be completed by historical data.
+
+  Some utility functions of the package are devoted to event analysis
+  or graphical analysis.
+
+\end{abstract}
+
+\pagebreak
+\pagenumbering{arabic}  % 1, 2, 3, 4, ...
+\setcounter{page}{1}
+
+\chapter{Introduction}
+%%======================
+
+\begin{Prov}
+  This document is based on \textbf{Renext \Sexpr{Renext.Version}} and
+  is a DRAFT version. The functions calls may change in future
+  versions.
+\end{Prov}
+\section*{Acknowledgments}
+%%---------------------------
+%%The \textbf{Renext} package has been specified and implemented by the 
+%%french \textit{Institut de Radioprotection et de S\^uret\'e Nucl\'eaire} 
+%%(IRSN).
+ 
+We gratefully acknowledge the BEHRIG\footnote{IRSN \textit{Bureau
+    d'Expertise Hydrog\'eologique, Risques d'inondation et
+    g\'eotechnique}.} members for their major contribution to
+designing, documenting and testing programs or datasets: Claire-Marie
+Duluc, Lise Bardet, Laurent Guimier and Vincent Rebour. We also
+gratefully acknowledge Yann Richet who encouraged this project from
+its begining and provided assistance and many useful advices.
+
+\section{Goals}
+%%-------------
+The \textbf{Renext} package has been specified and implemented by the
+french \textit{Institut de Radioprotection et de S\^uret\'e
+  Nucl\'eaire} (IRSN).  The main goal is to implement the statistical
+framework known within the community of french-speaking hydrologists
+as \textit{M\'ethode de Renouvellement} and devoted to Extreme Values
+problems.  This methodology appeared during the years 1980 and was
+well-accepted both by practitioners and researchers. Although the lack
+of freely available software may have limited its applicability, this
+method is still in use or referred to.  The book in french by
+Miquel~\cite{MIQUELBOOK} still provides an useful and frequently cited
+reference, while~\cite{PARENTBOOK} gives a more recent presentation.
+
+Although some connexions exist with the theory of Renewal Processes,
+it must be said that the standard application of the "Renouvellement"
+relies on the much simpler Homogeneous Poisson Process (HPP) and is
+then similar to Peaks Over the Threshold (POT) method. POT methods are
+widespread and are described e.g. in the book of Coles~\cite{COLES} or
+that of Embrecht et al.~\cite{EKM}. There are several nice R~packages
+devoted to POT or extreme values: \verb@extRemes@~\cite{PACKextRemes},
+\verb@ismev@~\cite{PACKismev}, \verb@evd@~\cite{PACKevd},
+\verb@POT@~\cite{PACKPOT}, \verb@evdbayes@~\cite{PACKevdbayes}.  The
+package \verb@nsRFA@~\cite{PACKnsRFA} also contains useful functions
+for Extreme Values modeling.
+
+
+Yet Another POT package?
+\begin{list}{$\bullet$}{
+    \setlength{\itemsep}{2pt} 
+    \setlength{\topsep}{2pt} 
+  } 
+\item Contrary to most POT packages, the distribution of exceedances
+  is not restricted to be in the Generalized Pareto Distributions
+  (GPD) family and can be chosen within half a dozen of classical
+  distributions including Weibull or gamma. Though theory says that
+  GPD distributions will be adequate for large enough thresholds, this
+  is not a counter indication to the use of other distributions.
+  Fitting e.g. Weibull or gamma exceedances might seem preferable to
+  some practitioners and give good results for reasonably large return
+  levels letting asymptotic theory do its job for very large return
+  levels.
+  
+\item The package allows the use of \textit{historical data} as
+  explained in section~\ref{SECHISTORY}. Such data can have
+  considerable importance in practical contexts since fairly large
+  periods can be concerned.
+\end{list}
+
+Unlike most R~packages \textbf{Renext} was not designed to implement
+innovative techniques arising from recent research in statistics but
+rather well accepted ones, as used by practitioners. The present
+document is not intended to be a manual of extreme values modeling but
+a presentation of the implemented tools with a limited statistical
+description of these.
+
+The general framework for estimation is \textit{Maximum Likelihood}
+(ML) and a black-box maximization can be used with quite arbitrary
+distribution of exceedances. For the sake of generality the inference
+mainly relies on the approximate \textit{delta method}. \index{delta
+  method} The present version does not allow the use of explanatory
+variables.
+
+The package allows extrapolation to fairly large return periods
+(centuries). Needless to say, such extrapolations must be handled with
+great care.
+
+\section{Context and assumptions}
+%%=====================================
+\subsection{Assumptions}
+%%-----------------------
+\label{ASSUMPTIONS}
+The general context is the modeling of a \textit{marked point process}
+$(T_i,\,X_i)$.  \index{marked point process} Events (e.g. floods)
+occur at successive random times $T_i$ when a random variable
+"level"~$X_i$ is observed (e.g. flow).  We assume that only
+\textit{large} values of the level~$X$ are of interest. Thus even if
+the data are recorded on a regular basis (e.g. daily) the data can be
+soundly pruned to remove small or even moderately large values of~$X$.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=12cm]{images/POT.pdf}
+  \caption{\label{POT} \small Events and levels. The random variable.
+    $W_i=T_i-T_{i-1}$ can be called interevent.}
+\end{figure}
+
+
+Under some general assumptions the instants $T_i$ corresponding to
+large enough levels $X_i$ should be well described by an
+\textit{Homogeneous Poisson Process}.  Recall that for HPP events the
+number $N$ of events on a time interval of length~$w$ has a Poisson
+distribution with mean $\mu_N=\lambda \times w$. Moreover the numbers
+of $T_i$ corresponding to disjoint intervals are independent.  The
+parameter $\lambda>0$ is called the \textit{rate} \index{rate, Poisson
+  process} and has the physical dimension of an inverse time: it will
+generally be given in inverse years or events by year. Another
+important property of the HPP is that the interevent random
+variables~$W_i=T_i-T_{i-1}$ are independent with the same exponential
+distribution with mean $1/\lambda$.  \index{interevent}
+
+
+Unless explicitly stated otherwise we will make the following
+assumptions about the marked process
+\begin{enumerate}
+\item Events $T_i$ occur according to a Homogeneous Poisson Process
+  with rate $\lambda$.
+\item Levels $X_i$ form a sequence of independent identically
+  distributed random variables with continuous distribution~$F_X(x)$
+  and density $f_X(x)$.
+\item The levels sequence and events sequence are independent.
+\end{enumerate}
+The distribution $F_X(x)$ will be chosen within a parametric family
+and depend on a vector of parameter $\bs{\theta}_X$. This dependence
+can be enlightened using the notation~$F_X(x;\,\bs{\theta}_X)$ when
+needed.  The parameters of the whole model consist in $\lambda$ and a
+vector $\bs{\theta}_X$.
+
+
+\subsection{Return periods}
+%%-------------------------
+The \textit{return period} \index{return period} of a given level~$x$
+is the mean time between two events $T_i$ with levels exceeding~$x$,
+that is with $X_i > x$. Under the assumptions above, it is given by
+\begin{equation}
+  \label{eq:RETPER}
+  T(x) = \frac{1}{\lambda \left[1 - F_X(x) \right]}
+\end{equation}
+Indeed the probability of $\{X_i>x\}$ is $1 - F_X(x)$ and the events
+with level exceeding~$x$ also form an HPP\footnote{The is due to the
+  independence of the two sequences $X_i$ and $T_i$.}  (thinned HPP)
+with rate $\lambda \left[1 - F_X(x) \right]$.  \index{thinning
+  (Poisson Process)} The mean interevent is the inverse rate.
+
+Note that a complete knowledge of the distribution is not required since
+only large levels~$x$ are of interest.
+
+
+\subsection{Peaks Over Threshold  (POT)}
+%%-------------------------------------
+In the Peak Over Threshold (POT) approach, only the upper part of the
+distribution $F_X(x)$ is modeled. More precisely the interest is on
+the part $X > u$ where $u$ is a \textit{threshold}.  The steps are
+\index{threshold}
+\begin{list}{$\bullet$}{
+  \setlength{\itemsep}{0pt} 
+  \setlength{\topsep}{2pt}
+  }
+\item Fix a suitable threshold $u$,
+\item Consider only the observations with level $X_i$ greater than $u$
+  i.e. with $X_i>u$,
+\item Estimate the rate of the events $X_i>u$ and fit a distribution
+  exceedances $Y_i = X_i -u$.
+\end{list}
+The distribution of $X$ conditional to $X>u$ is deduced from that of
+the exceedance~$Y$ by translation.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=12cm]{images/POTu.pdf}
+  \caption{\label{POTu} \small In POT only levels $X_i$ with $X_i>u$
+    are modeled through exceedances $Y_i=X_i-u$. The lower part $x <u$
+    of the distribution $F_X(x)$ remains unknown.}
+\end{figure}
+
+The threshold will often be chosen above the mode of~$X$, leading to a
+decreasing density for the exceedance~$Y$ as suggested on
+figure~\ref{POTu}. The distribution of $Y$ typically has two
+parameters.
+
+The determination of the threshold is a recognized difficulty in
+classical POT where only GPD exceedances are used. The situation is
+much more complex when non-GPD exccedances are used. The family of GPD
+distributions with a given shape parameter $\xi$ can be said "stable
+for exceedances". With another threshold $v>u$ the estimation will use
+a smaller set of $X_i$ but the underlying distribution of $X$
+conditional to $X > v$ is the same in the two cases.  If non-GPD
+distribution is used for the exceedances this is non-longer true. For
+instance if the exceedances over $u$ are Weibull with shape $\alpha>0$
+and scale~$\beta = 1$ i.e.
+$$
+   \Pr\left\{\Cond{X>x}{X>u} \right\} =  \exp\left\{ - (x-u)^\alpha \right\} 
+   \qquad x > u
+$$
+then the conditional distribution over a higher threshold $v>u$ is
+given by
+$$
+   \Pr\left\{\Cond{X>x}{X>v} \right\} = 
+\exp\left\{ - \left[ (x-u)^\alpha -(v-u)^\alpha \right]\right\}   \qquad x > v > u
+$$
+Then distribution of the exceedance $\Cond{X-v}{X>v}$ \textit{is not}
+Weibull, but a shifted version of the \index{left truncated Weibull}
+\textit{Left Truncated Weibull} (LTW), see~\ref{SLTW}.
+
+
+\subsection{Link with other Extreme Values problems}
+%%----------------------------------------------
+Alternative approaches in Extreme Values modeling use time
+\textit{blocks} \index{blocks} of, say, one year and related by-block
+data. Popular examples are
+\begin{list}{$\bullet$}{
+    \setlength{\itemsep}{2pt} 
+    \setlength{\topsep}{2pt} 
+  }
+\item \textbf{block maxima} for each block, only the maximal value is
+  used in the analysis.
+\item \textbf{ $r$-largest} for each block the largest~$r$
+  observations (i.e. the $r$ largest order statistics) are recorded.
+  The number~$r$ may vary for different blocks.  \index{r largest
+    order statistics@{$r$ largest order statistics}}
+\end{list}
+Block maxima is obviously the special case $r=1$ of the $r$-largest
+analysis. Using $r>1$ largest observations when available leads to a
+better estimation. The $r$-largest analysis is described in chap.~3 of
+Coles's book~\cite{COLES}. Underlying the block data one would
+generally find a continuous time process (e.g. temperature, sea
+surge), possibly observed at fixed times (e.g. high tide). The
+time-length of the blocks is generally chosen in order to reach a
+limit behavior ignoring autocorrelation or seasonality in the
+continuous process.
+
+Although \textbf{Renext} primarily uses "OT data" as described above,
+it is possible to make use of supplementary \textit{historical data}
+\index{historical data} that is $r$-largest observations within
+block(s).  Indeed using the marked point process model above enables
+to derive properties of the block maxima or of the $r$-largest values.
+See section~\ref{SECHISTORY} for the likelihood of a $r$-largest block
+and appendix page~\pageref{COMPOUND} for a general study of the max.
+
+The notion of \emph{return period} for the block framework differs
+from the one given above see discussion~\ref{TWORL}
+page~\pageref{TWORL}.  However the difference between the two notions
+is confined to the small return periods context.
+
+\section{Data}
+%%==============
+\subsection{Remarks}
+%%-----------------
+Model fitting functions in~R usually have a formal argument specifying
+data with a \textit{data.frame} object, the model being typically
+given by a \textit{formula}. Due to the presence of heterogeneous
+types of data within a given "dataset", the arguments of
+\textbf{Renext} functions will take a slightly more complex form. For
+instance, it will generally be necessary to specify a duration or
+several block durations in complement to the vector of levels, missing
+periods, etc.
+
+Some of the package functions require the use of \verb@POSIX@ objects
+representing date and time. R~base package provides versatile
+functions to manage date/time or timestamps. See for instance the help
+of the \verb@strptime@ function.  \index{POSIX objects@{\texttt{POSIX}
+    objects}}
+
+As most R~packages do, \textbf{Renext} comes with a few datasets taken
+from relevant literature or from real data examples. These datasets
+are usually given as lists objects with hopefully understandable
+element names.
+
+\subsection{OT data}
+%%-----------------
+\index{OTdata@{\texttt{OTdata}}} The data used will mainly consist in
+recorded levels $X_i$ or levels exceeding a reasonably low known
+threshold~$u_0$. The POT modeling of such data will typically use a
+higher threshold $u>u_0$.
+
+For instance the data \verb@Brest@ contain sea surge heights at high
+tide for the Brest gauging station. Only values exceeding $u_0=30$\,cm
+are retained. More details about these data are provided in the
+package manual. The data are provided as a list with several parts.
+<<>>=
+library(Renext)
+data(Brest)
+names(Brest)
+@ 
+As their names may suggest the list
+elements contain Over Threshold (OT) data and information.
+<<>>=
+head(Brest$OTdata, n = 4)
+str(Brest$OTinfo)
+@ The \verb@OTdata@ element is a data.frame indicating $T_i$ (in time
+order) and the corresponding levels~$X_i$.  Note that the time part of
+the \verb@POSIX@ object may not be relevant. Here only the date part
+makes sense and the time part is by convention \verb@"00:00"@. However
+on a large period of time as here it is affected by leap seconds, and
+\verb@"00:00"@ might appear as \verb@"23:59"@ the day
+before. \index{leap seconds}
+
+The \verb@OTinfo@ list mentions an \textit{effective duration}. This
+is less than the time range which can be computed using the methods
+\verb@range@ and \verb@diff@ from the \textbf{base} package
+%% ## as.numeric(diff(range(Brest$OTdata$date), units= "days"))/365.25
+<<<>>=
+End <- Brest$OTinfo$end; Start <- Brest$OTinfo$start
+Dur <- as.numeric(difftime(End,  Start, units = "days"))/365.25
+Dur
+Dur-as.numeric(Brest$OTinfo$effDuration) 
+@
+The difference --~more than \Sexpr{floor(Dur-as.numeric(Brest$OTinfo$effDuration))} 
+years~-- is due to gaps or \textit{missing periods}. 
+\index{missing periods}%
+The missing periods are described in the element \verb@OTmissing@.
+%%The \verb@MAXdata@ and \verb@MAXinfo@ are here \verb@NULL@ but could 
+%%contain data as in \verb@Garonne@ example described below.
+
+The \verb@Brest@ dataset has class \verb@"Rendata"@, with 
+\verb@plot@ method 
+\index{Rendata class@{\texttt{Rendata} class}}
+<<label=RenplotBrest,  fig=TRUE, include=FALSE>>=
+class(Brest)
+plot(Brest)
+@ 
+which produces the plot on the left of figure~\ref{RENPLOTS}.  The
+\verb@"Rendata"@ class is an S3 class with objects containing
+\verb@OTdata@ and possibly some extra information on missing periods
+or historical data.
+
+\subsection{Missing periods or gaps}
+%%--------------------------------
+\index{missing periods} \index{gaps|see{missing periods}} A common
+problem in POT modeling is the existence of gaps within the
+observation period. These can result from many causes: damage or
+failure of the measurement system, human errors, strikes, wars, ...
+
+\textbf{Renext} uses a natural description of the gaps within a
+dataset. They are stored as rows of a data.frame with two \verb@POSIX@
+columns \verb@start@ and \verb@end@
+<<label=missing>>=
+head(Brest$OTmissing, n = 4)
+@ 
+Missing periods must be taken into account in the analysis. They
+should be materialized on timeplots showing events since it is
+important to make a distinction between periods with no events and
+gaps, see figure~\ref{RENPLOTS}. An important prerequisite to modeling
+is to ensure that the gaps occur independently from measured
+variables. For instance, storms can damage gauging systems for wind or
+sea level thus creating a non-independent gap.
+
+\subsection{Historical data}
+%%------------------------
+\index{historical data} \index{MAXdata@{\texttt{MAXdata}}} As a
+possible complement to \verb@OTdata@, we may have \verb@MAXdata@ that
+is: $r$-largest observations over one or several \textit{blocks}. Such
+data require a complementary information: the block duration(s) which
+must be given in a chosen time unit.
+
+The dataset \verb@Garonne@ is taken from Miquel's
+book~\cite{MIQUELBOOK} and is described therein.  The data concern the
+french river \textit{La Garonne} at the gauging station named
+\textit{Le Mas d'Agenais} where many floods occured during the past
+centuries.  The data consist in both OT data and historical data. The
+variable is the river flow in $\textrm{m}^3/\textrm{s}$ as estimated
+from the river level using a rating curve. The precision is limited
+and many ties are present among the flow values.  The OT data contain
+flows values over the threshold $u = 2500~\textrm{m}^3/\textrm{s}$.
+The historical data are simply the~$12$ largest flows for a period of
+about $143$~years and will be used later.
+
+<<labelgaronneMAX>>=
+data(Garonne)
+names(Garonne)
+Garonne$MAXinfo
+head(Garonne$MAXdata, n = 4)
+@ 
+The \verb@Garonne@ dataset has class \verb@"Rendata"@ and 
+<<label=RenplotGaronne, include=FALSE, fig=TRUE>>=
+plot(Garonne)
+@ 
+produces a graphic displaying the historical period as on the right
+panel of figure~\ref{RENPLOTS}. Note that the date of the historical
+events are not known exactly and thus are as \verb@NA@ \verb@POSIXct@
+objects.
+
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=7cm]{images/fig-RenplotBrest.pdf} &
+     \includegraphics[width=7cm]{images/fig-RenplotGaronne.pdf} 
+   \end{tabular}
+   \caption{\label{RENPLOTS} Graphics produced using the \texttt{plot}
+     method of the \texttt{"Rendata"} class. On the left, the
+     \texttt{Brest} object contains missing periods that are shown.
+     On the right, the \texttt{Garonne} dataset contains information
+     about an historical period materialized as a green rectangle.  }
+\end{figure}
+
+
+\subsection{Aggregated data, counts}
+%%----------------------------------
+In some cases, the original data have been aggregated: the $T_k$ are
+unknown and the $X_k$ only have a block indication.  For instance, we
+may know only the year for each event, or the year and the month. In a
+such scheme several events will fall in the same block. This situation
+is somewhat comparable to the $r$-largest context, but the data are
+here all the levels $X_k$ over a known threshold and not only the
+largest levels.  The difference is somewhat comparable to that between
+the two types of censoring (types~I and II).
+
+A problem with aggregated data is the treatment of missing information
+or missing data (gaps).  There is usually no reason that missing
+periods should correspond to years and ignoring all blocks with a gap
+leads to a severe loss of information.
+
+The use of aggregated data will be illustrated later in the discussion
+about \verb@barplotRenouv@.
+
+
+\chapter{Descriptive  tools}
+%%============================
+
+\section{Functional plots}
+%%---------------------------
+\subsection{ Principles}
+%%----------------------------
+\label{FUNCPLOTS}
+\index{Gumbel plot}\index{exponential plot} A widespread graphical
+tool in statistics is \textit{functional plots} such as exponential
+plot, Weibull or Gumbel plot. In all cases, the plot is designed so
+that the theoretical distribution curve (exponential/Weibull/Gumbel)
+shows as a straight line. For instance the relations for distribution
+functions
+\begin{align*}
+  -\log\left[1-F_X(x) \right] &= (x-\mu)/\sigma     \quad \textrm{(exponential)}\\
+  \qquad
+  -\log\left[-\log F_X(x) \right] &= (x-\mu)/\sigma \quad \textrm{(Gumbel)}
+\end{align*}
+both show a linear relation between $x$ and a transformed version
+$\phi(F)$ of~$F_X(x)$, e.g. $\phi(F)= -\log\left[1-F \right]$ for the
+exponential case.  The functional plots are obtained by plotting
+$[x,\,\phi(F)]$ still using the values of the probability $F$ to
+display the unevenly spaced graduations on the $y$-axis. The Weibull
+plot is similar but also uses a (log) transformation of~$x$.
+
+With a sample $X_i$ of size $n$ one uses non-parametric estimates
+$\widetilde{F}_{[i]}$ of the values $F_X(X_{[i]})$ of the distribution
+function at the order statistics $X_{[i]}$. The~$n$ resulting points
+with ordinates $\widetilde{F}_{[i]}$ can be plotted with the
+transformed scale on the $y$-axis.  Two classical options for the
+estimation and thus for the plotting positions are \index{plotting
+  position}
+$$
+    \widetilde{F}_{[i]} \approx i/(n+1) \qquad  \widetilde{F}_{[i]} \approx (i-0.3)/(n+0.4)
+$$
+The first choice is motivated by the fact that~$i/(n+1)$ is the
+expectation of $F_X(X_{[i]})$. The second option uses an approximation
+of the median.
+
+As many other packages do, \textbf{Renext} provides exponential and Weibull plotting functions,
+namely \verb@expplot@ and \verb@weibplot@
+<<label=exppBrest, fig=TRUE, include=FALSE>>=
+expplot(x = Brest$OTdata$Surge, main = "expplot for \"Brest\"")
+@ 
+\vspace{-13pt}
+<<label=weibpBrest, fig=TRUE, include=FALSE>>=
+weibplot(x = Brest$OTdata$Surge-30, main = "weibplot for \"Brest\" (surge - 30)")
+@ 
+producing the two plots on figure~\ref{FUNG}.
+
+Note that the transformation $\phi(F)$ must not depend on unknown
+parameters. Therefore the Weibull plot produces a theoretical line
+only for the version with two parameters (shape and scale), and not
+for the three parameter one (with location).
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=7cm]{images/fig-exppBrest.pdf} &
+     \includegraphics[width=7cm]{images/fig-weibpBrest.pdf} 
+   \end{tabular}
+   \caption{\label{FUNG} Exponential and Weibull plot for the Brest
+     data. The variable \texttt{Surge} is used for the exponential
+     plot. The trheshold $30$~cm is substracted to \texttt{Surge} for
+     the Weibull plot. The later uses a log-scale for \texttt{x}.  }
+\end{figure}
+
+\subsection{Exponential vs Gumbel}
+%%---------------------------------
+While hydrologists often favour Gumbel plots, the exponential may also
+be used. The exponential plot is better suited to the use of "OTdata"
+i.e. data where only values over a threshold~$u_0$ are kept. Even if
+the original observations $X_i$ are Gumbel, the conditional
+distribution $\Cond{X_i}{X_i>u_0}$ will be close to an exponential for
+$u_0$ large enough, see~\ref{GEVGPD}. This can be illustrated with a
+few simple R commands \label{GUMBEXP}
+
+<<label=ExpPlot, fig=TRUE, include=FALSE>>=
+library(evd); set.seed(136)
+X <- rgumbel(400); X <- X[X > 0.6]           ## X is truncated Gumbel
+n <- length(X); 
+Z <- sort(X); F <- (1:n)/(n+1)               ## distribution function
+y.exp <- -log(1-F); y.gum <- -log(-log(F))   
+plot(Z, y.exp, col = "red3", main = "exponential plot")
+@ 
+\vspace{-13pt}
+<<label=GumPlot, fig=TRUE, include=FALSE>>=
+plot(Z, y.gum, col = "SteelBlue3", main = "Gumbel plot")
+@ The two plots are shown on figure~\ref{EXPGUM}. As a general fact
+the difference between exponential and Gumbel plots is restricted to
+the small values since the exponential and Gumbel distribution
+functions are close for large values.
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=7cm]{images/fig-ExpPlot.pdf} &
+     \includegraphics[width=7cm]{images/fig-GumPlot.pdf} 
+   \end{tabular}
+   \caption{\label{EXPGUM} Truncaded or "thresholded" Gumbel random
+     sample.  Due to the truncation, the sample distribution is close
+     to an exponential.  The graduations for the $y$-axis are not in
+     probability-scale.}
+\end{figure}
+
+\section{Events and stationarity}
+%%===================================
+
+
+\subsubsection*{ Simple plots}
+%%---------------------------
+The simplest plot for checking stationarity has points $[T_i, \, X_i]$
+and can be obtained with R~functions of the \verb@graphics@
+package. The $T_i$ and $X_i$ will typically be available as two
+vectors of the same length or as two columns of a same data.frame
+object. For the example datasets of \textbf{Renext}, the $T_i$ and
+$X_i$ are given as two columns of the \verb@OTdata@ data frame
+<<label=spGaronne, fig=TRUE, include=FALSE, results=hide>>=
+data(Garonne)
+plot(Flow ~ date, data = Garonne$OTdata, type = "h", main = "Flows > 2500 m3/s")
+@ 
+The graphics shows that several successive years had no exceedance
+over $2500~\textrm{m}^3/\textrm{s}$ during the second half of the
+1940-1950 decade. This could lead to further investigations using the
+\verb@subset@ function
+<<>>=
+ subset(Garonne$OTdata, date >= as.POSIXct("1945-01-01") & date <= as.POSIXct("1950-01-01"))
+@ 
+The graphics can be enhanced using the \verb@text@ function in the
+\verb@graphics@ package to annotate special events or periods.
+
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=7cm]{images/fig-spGaronne.pdf} & 
+   \end{tabular}
+   \caption{\label{SpGar} Simple plot of events for the \texttt{Garonne} data.}
+\end{figure}
+
+\subsubsection*{ Uniformity}
+%-------------------------
+The \verb@gof.date@ function performs some tests to check the
+(conditional) uniformity of the events $T_i$ as implied by the HPP
+asumption. It is based on the fact that for a given interval of time
+$(s,\,t)$ the events $T_i$ falling in the interval are jointly
+distributed as are the order statistics of a sample of the uniform
+distribution on $(s,\,t)$. The sample size~$n$ is then
+random. Alternatively, the $n$ events falling in an interval
+$(T_k,\,T_{n+k+1})$ also have this joint conditional distribution. In
+both case a Kolmogorov-Smirnov (KS) test is well suited to check the
+uniformity.
+
+The \verb@gof.date@ function mainly works with a \verb@POSIX@ object
+containing the events~$T_i$ as in
+<<label=gdGaronne, fig=TRUE, include=FALSE, results=hide>>=
+gof.date(date = Garonne$OTdata$date)
+@ 
+which produces the plot on the left of figure~\ref{KSEVT}. The
+empirical cumulative distribution function (ECDF) is compared to the
+uniform and the KS distance $D_n$ is materialized as vertical segment.
+The displayed KS $p$-value tells that uniformity should be rejected at
+the signifiance level of $0.1\%$. Though less clearly than above, the
+plot points out that the years 1940-1950 had fewer events.
+
+The \verb@gof.date@ function has optional args \verb@start@ and
+\verb@end@ to specify (and possibly restrict) the period on which the 
+test is performed.
+By default these are taken as the first and last event in \verb@date@
+and therefore only inner events are used in the ECDF.
+
+
+\subsubsection*{ Interevents}
+%-------------------------
+\index{interevent} 
+An important property of the HPP concerns the interevents 
+$W_i = T_i-T_{i-1}$: the sequence $W_i$ is independent and have exponential 
+distribution 
+\index{exponential distribution}
+with rate~$\lambda$. Thus an exponentiality test might be performed
+to check the HPP assumption for observed data.
+
+The \verb@interevt@ function computes the interevents $W_i$ as numbers of days. The
+function returns a list with a \verb@interevt@ data.frame element containing
+the $W_i$ in the \verb@duration@ column which can be used to check exponentiality.
+This can be done either with a plot -~see figure~\ref{KSEVT} or 
+with the test of exponentiality  of the function \verb@gofExp.test@
+%%Since these are of class \verb@"difftime"@, they must be coerced 
+%%to numeric before using exponential plot or a test.
+<<label=ieGaronne, fig=TRUE, include=FALSE>>=
+ie <- interevt(date = Garonne$OTdata$date)
+names(ie)
+d <- ie$interevt$duration
+expplot(d, main = "Exponential plot for interevents")
+bt <- gofExp.test(d) 
+bt
+@ 
+It seems unlikely to obtain a good adequation with the exponential
+as far as events occurrence shows seasonality as is the case here.
+A seasonality can no longer result from another distribution of 
+interevents --~that is from a non-Poisson stationary renewal process.
+Increasing the threshold might improve the adequation to the 
+asumptions.
+
+\begin{figure}
+  \centering
+  \begin{tabular}{c c} 
+    \includegraphics[width=8cm]{images/fig-gdGaronne.pdf} &
+    \includegraphics[width=8cm]{images/fig-ieGaronne.pdf} 
+  \end{tabular}
+  \caption{\label{KSEVT} Analysis of the events for the
+    \texttt{Garonne} data set (OTdata).  Left panel: test for the
+    uniformity of events with the KS distance materialized with a
+    vertical segment.  Right panel : exponential plot for the
+    interevents.}
+\end{figure}
+
+\subsubsection*{Missing periods or gaps}
+%%---------------------------------
+\index{missing periods} In practice the situation is somewhat more
+complex due to the possible existence of missing (or skipped) periods
+where no events have been recorded.  Event rates should then be
+computed using \textit{effective duration} \index{effective duration}
+that is: the total duration of measurement \textit{ignoring missing
+  periods}.
+
+The functions \verb@gof.date@ and \verb@interevt@ can take this
+problem in consideration. The \verb@gof.date@ plot can display the
+missing periods or "gaps" provided that a suitable \verb@skip@ arg is
+given. For instance the following commands produce the plot on the
+left of figure \ref{gofBREST}
+<<label=gdBrest, fig=TRUE, include = FALSE>>=
+gof.Brest  <- gof.date(date = Brest$OTdata$date, skip = Brest$OTmissing,
+                       start = Brest$OTinfo$start, end = Brest$OTinfo$end)
+print(names(gof.Brest))
+@ 
+As their name may suggest, the returned list elements give the
+effective duration \index{effective duration}
+and the effective rate based on the true non-missing periods. The 
+\verb@noskip@ element contains detailed information about each non-skipped
+period
+<<label=gdBrest>>=
+head(gof.Brest$noskip, n = 2)
+@ 
+For each period the rate has been computed as well as a KS test of uniformity.
+The power of the test is obviously limited for periods with few events.
+
+The preceding call to \verb@gof.date@ corresponded to the default
+value of \verb@plot.type@ namely \verb@"skip"@ A drawback of the plot
+and KS test is that the comparison with the uniform is biased by the
+gaps.  The KS distance~$D_n$ between the empirical and theoretical
+distributions can be amplified by the gaps when there are too few
+events or on the contrary be reduced by gaps when there are too much
+events. These two phenomena can be seen by comparing the two plots of
+figure~\ref{gofBREST} although the two KS statistics and $p$-value are
+here nearly identical. The right panel plot was produced using the
+non-default choice for the \verb@plot.type@ arg i.e.  
+\verb@plot.type= "omit"@, missing periods can be omitted on the plot and in the KS
+test computation.
+<<label=gdBrest2, fig=TRUE, include = FALSE>>=
+gof.Brest2  <- gof.date(date = Brest$OTdata$date, 
+                        skip = Brest$OTmissing, plot.type = "omit",
+                        start = Brest$OTinfo$start, end = Brest$OTinfo$end)
+@ 
+The time axis now has \textit{unevenly} spaced ticks since it is
+obtained by concatenating the successive non-missing periods. More
+precisely, each retained time interval $k$ begins at the first event
+$T_{f_k}$ of a continuous observation period and ends at its last
+event $T_{\ell_k}$. Each of the vertical lines materializes an
+interval $(T_{\ell_k},\,T_{f_{k+1}})$, which covers a missing period
+and is cut out as shown on figure~\ref{KSomit}.  The displayed
+information on the right panel of figure~\ref{gofBREST} concerns
+\verb@effKS.pvalue@ and \verb@effKS.statistic@ of an "effective" KS
+test performed on non-missing periods.  Provided that observation gaps
+occur independently from the events $T_i$, the interevents for couples
+of successive events falling in the same non-missing period can be
+used in a modified KS test. In the HPP case these interevents should
+be independent and identically distributed with exponential
+distribution thus concatenating them should produce an HPP hence an
+uniform conditional distribution of events.
+
+For the \verb@Brest@ example, the test tells us that the uniformity of
+events should be rejected while the plot indicates that there were
+more events during the XIXth century than in during the XXth. Since
+large surges tend to occur more frequently in winter, further
+investigation of the gaps distribution would be useful.
+
+
+\begin{figure}
+  \centering
+  \begin{tabular}{c c} 
+    \includegraphics[width=8cm]{images/fig-gdBrest.pdf} &
+    \includegraphics[width=8cm]{images/fig-gdBrest2.pdf} 
+  \end{tabular}
+  \caption{\label{gofBREST} Using the \texttt{plot.type} arg of \texttt{gof.date} leads
+    to the left panel (default value or \texttt{"skip"}), or the right one (value \texttt{"omit"}). 
+    Each missing period appears as a gray rectangle on the left graph and
+    is flattened as a line on the right graph.}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=10cm]{images/KSomit.pdf}
+  \caption{\label{KSomit} \small With \texttt{plot.type = "omit"}, the
+    plot of \texttt{gof.date} only considers interevents for couples
+    falling in the same non-missing period and concatenates them. The
+    time interval $(T_{\ell_k},\,T_{f_{k+1}})$ between the last event
+    $T_{\ell_k}$ of the non-missing period $k$ and the first event
+    $T_{f_{k+1}}$ of the following non-missing period is "cut
+    out". The two events $T_{\ell_k}$ and $T_{f_{k+1}}$ collapse into
+    \textit{one} event of the new Point Process. Note that a
+    non-missing period with less than two events is cut out since it
+    contains no valid interevent.  }
+\end{figure}
+
+\subsection{Aggregated (counts) data}
+%%------------------------------------------
+The \verb@barplotRenouv@ function draws a barplot for counts data and
+performs a few tests adapted to this context where events or
+interevents can no longer be used.  The data used are $n$ counts $N_i$
+for $i=1$, $2$, $\dots$, $n$. These counts must be on \textit{disjoint
+  intervals} or "blocks" \index{blocks} with the \textit{same
+  duration}, e.g.  one year. If events occur according to an HPP the
+$N_i$ form a sample of a Poisson distribution. The barplot compares
+the empirical (or observed) frequencies to their theoretical
+counterparts i.e. the expectations. The theoretical distribution is
+estimated using the sample mean as Poisson parameter (Poisson mean).
+
+The \verb@Brest.years@ object contains aggregated data for one-year blocks. 
+Some blocks are incomplete and are listed in \verb@Brest.years.missing@
+which can be used in \verb@barplotRenvouv@
+<<label = bp40, fig=TRUE, results=hide, include=FALSE>>=
+data(Brest.years); data(Brest.years.missing)
+bp40 <- barplotRenouv(data = Brest.years, threshold = 40,
+           na.block = Brest.years.missing, main = "threshold = 40 cm")
+@ %
+produces the graphic at the left of figure~\ref{BPS}. Increasing the threshold
+<<label=bp50, fig=TRUE, include=FALSE, results=hide>>=
+bp50 <- barplotRenouv(data = Brest.years, threshold = 50,
+           na.block = Brest.years.missing, main = "threshold = 50 cm")
+@ 
+we get a barplot for the smaller sample at the right of
+figure~\ref{BPS}.  Note that the function guesses that the first
+column represents a block indication which may not be true with other
+data. Therefore the normal use would specify the \verb@blockname@ and
+\verb@varname@ formal arguments of~\verb@barplotRenouv@.
+
+\begin{figure}
+  \centering
+  \begin{tabular}{c c} 
+     \includegraphics[width=8cm]{images/fig-bp40.pdf} &
+     \includegraphics[width=8cm]{images/fig-bp50.pdf} 
+\end{tabular}
+\caption{\label{BPS}The two barplots produced with
+  \texttt{barplotRenouv}. A bar height represents a number of blocks
+  (here years) with the number of events given in abscissa.}
+\end{figure}
+
+Great care is needed when the data contain missing periods since the 
+number of events is then biased downward.
+
+\subsubsection*{Goodness-of -fit}
+%%-----------------------------
+\index{goodness-of-fit|(}
+A popular test for Poisson counts is called \textit{overdispersion test}.
+\index{overdispersion index, test}
+It is based on the fact that expectation and variance are equal in 
+a Poisson distribution. The test statistic is
+$$
+    I = (n-1)\,S^2/\bar{N}
+$$
+where $\bar{N}$ and $S^2$ are the sample mean and variance.  Under the
+null hypothesis $I$ is approximately distributed as $\chi^2(n-1)$. The
+statistic~$I$ tends to take large values when the observations~$N_i$
+come from an overdispersed distribution such as the negative
+binomial. A one-sided test can therefore be used for a negative
+binomial alternative.
+
+A Chi-square Goodness-of-fit \index{chi-square goodness-of-fit test}
+test is also available to check the adequation of the $N_k$ to a
+Poisson distribution. In this test, the counts values $N_k$ are
+summarized in a tabular format retaining $m$~distinct values or group
+of adjacent values, together with the corresponding frequencies. The
+test statistic is
+$$
+   D^2 = \sum_{k=1}^m \left({O_k-E_k}\right)^2/E_k 
+$$
+where $O_k$ and $E_k$ are the observed and expected frequencies for
+the class $k$. For instance, the first class $k=1$ can be~$N=0$
+meaning that $O_1$ and $E_1$ are the number of intervals with no
+events recorded. Asymptotically (for large $n$)
+$$
+   D^2 \sim \chi^2(m-p-1)
+$$
+where $p$ is the number of parameters estimated from data, here $p=1$
+(for the mean of~$N$).  A one-sided test will reject the Poisson
+hypothesis when $D^2$ is too large\footnote{That is:
+  $D^2>\chi^2_\alpha$}.
+
+A classical drawback
+of this test is that classes with a small expected count~$E_i$ 
+should be grouped, in order to reach a minimal total of (say) $5$.
+<<>>=
+bp40$tests
+bp50$tests
+@ 
+For the dataset \verb@Brest.years@, using a threshold of $50$~cm leads to
+acceptable tests (at the $10\%$ level), while $40$~cm seems too small. 
+For the chi-square test, more details (e.g. grouping) are available. 
+<<>>=
+bp50$freq
+@ 
+The values of $N$ have been grouped in odrer to reach a minimal expected
+number of~$5$ for each group.
+
+Note that for a fairly high threshold, the statistic~$N$ will
+generally take only the two values $0$ and $1$. Then the chi-square
+test which requires at least three classes will not be available.
+\index{goodness-of-fit|)}
+
+\chapter{The \texttt{fRenouv} function}
+%%=================================
+
+%%\section{First example: high tide surge heights at Brest}
+%%================================================================
+  
+\section{Fitting POT for La Garonne}
+%%========================================
+For the dataset \verb@Garonne@, the OT data contain flow values over
+the threshold $u = 2500~\textrm{m}^3/\textrm{s}$. We can fit a POT
+model with any threshold $u \geqslant 2500$. As in~\cite{MIQUELBOOK}
+we fit an exponential and a two parameters Weibull distribution using
+OT data only.  The \verb@fRenouv@ needs on input the \textit{levels}
+given in \verb@x.OT@, the \textit{effective duration} \verb@sumw.BOT@
+--~normally in years~-- and the \textit{threshold}
+<<label=feGaronne, fig=TRUE, include=FALSE>>=
+fit.exp <- fRenouv(x.OT = Garonne$OTdata$Flow,
+                   sumw.BOT = 65,
+                   threshold = 2500,
+                   distname.y = "exponential",
+                   main = "exponential")
+fit.exp$estimate
+@ 
+The result is a list with an \verb@estimate@ element giving the
+maximum likelihood estimates. The first element named \verb@"lambda"@
+is the event rate in events by year. The other elements are the ML
+estimates of the distribution for exceedances, with names
+corresponding to the probability functions --~here one name
+\verb@"rate"@ for the exponential distribution parameter. Many other
+results are returned
+<<label=namefitexp>>=
+names(fit.exp)
+@
+The \verb@distname.y@ formal is used to change the distribution for exceedances~$Y_i=X_i-u$.
+<<label=fwGaronne, fig=TRUE, include=FALSE>>=
+fit.weibull <- fRenouv(x.OT = Garonne$OTdata$Flow,
+                        sumw.BOT = 65,
+                        threshold = 2500,
+                        distname.y = "weibull",
+                        main = "Weibull")
+fit.weibull$estimate
+fit.weibull$sigma
+@ 
+The estimated parameters of the Weibull distribution and their 
+standard deviation show that the shape is close to~$1.0$, which
+corresponds to the exponential distribution. The two fits produced
+return level plots shown on figure~\ref{RLP1}. 
+
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=8cm]{images/fig-feGaronne.pdf} &
+     \includegraphics[width=8cm]{images/fig-fwGaronne.pdf} 
+   \end{tabular}
+   \caption{\label{RLP1}Return level plots for the example \texttt{Garonne} with two distributions
+     for exceedances.}
+\end{figure}
+
+
+\section{Return level plot}
+%%============================
+\index{return level plot|(} \index{Gumbel plot} \textbf{Renext} uses a
+return level plot which may be qualified as \textit{exponential}, and
+differs from the usual one which uses \textit{Gumbel} scales.  The
+main difference is that the exponential plot uses a log scale for
+return periods while the Gumbel plot uses a log-log scale.  In both
+cases, the theoretical return level curve (exponential/Gumbel) shows
+as a straight line.
+
+The difference between the two plots is restricted to the small
+levels/return periods, since the exponential and Gumbel distribution
+functions are close for large values.  As it was advocated in the
+discussion about functional plots page~\pageref{FUNCPLOTS}, the
+exponential return level plot is better suited to the use of "OTdata"
+i.e. data where only values over a threshold~$u_0$ are kept, even if
+the the original observations $X_i$ are Gumbel see~\ref{GEVGPD}.
+
+Note that the return level plot is similar to the classical
+exponential plot, \index{exponential plot} \textit{but with the two
+  axes $x$, $y$ exchanged}. A concave (downward) RL plot indicates a
+distribution with a tail "lighter than the exponential" or even with
+finite end-point such as GPD with $\xi<0$.  \index{return level
+  plot|)}
+
+The displayed confidence limits are in all case pointwise and
+bilateral, and correspond to the confidence percents displayed which
+can be changed in the call. In most cases the confidence limits are
+approximate and obtained using the delta method. \index{delta method}
+For some special cases with exponential distribution an exact
+inference is possible and used. The \verb@infer.method@ element in the
+list returned by \verb@fRenouv@ provides information about this.
+
+\section{Computational details}
+%%=======================
+\subsection{Maximum Likelihood theory}
+%%--------------------------------
+\index{maximum likelihood|(} Estimation and inference in \textbf{Renext} mainly
+rely on the Maximum Likelihood (ML) theory. A relevant presentation can be found
+chapter~2 of Coles's book~\cite{COLES} or in the \textit{Further reading}
+references therein.
+
+The standard application context of ML is when an ordinary sample i.e. 
+$n$ independent random variable $X_i$ with the same distribution depending 
+of an unknown vector $\bs{\theta}_X$ with density $f_X(x;\bs{\theta}_X)$. 
+The likelihood function~$L$ is the joint density of the sample i.e.
+$$
+   L = \prod_{i=1}^n f_X(X_i;\,\bs{\theta}_X)
+$$
+and the estimator $\widehat{\bs{\theta}}_X$ is the value of~$\bs{\theta}_X$ 
+maximizing~$L$.
+In some special cases the maximization of~$L$ can have an explicit solution,
+but a numerical optimization will generally be required. The ML theory
+warrants\footnote{Under suitable regularity conditions.} the
+\textit{asymptotic unbiasedness} and \textit{asymptotic normality}: 
+when $n$ is large $\widehat{\bs{\theta}}_X$ has its expectation approximatively 
+equal to the true unknown $\bs{\theta}_X$, and it is approximatively normally distributed.    
+
+The ML theory applies to more general situations where observations are
+no longer independent or can have different marginal distributions. This 
+occurs when order statistics are used in the estimation as 
+\textit{historical data}.
+\index{historical data}
+
+The general principle of the \verb@fRenouv@ function is to allow a large choice
+of distributions, yet trying to take advantage of the specific distribution/independence 
+when possible. In most cases the maximization of the likelihood is obtained using 
+\verb@optim@ function of the \verb@stats@ package. When historical data are used
+they are considered as a complement to the ordinary data (exceedances) 
+and two optimizations might be used. 
+\index{optim function@{\texttt{optim} function}}
+\index{maximum likelihood|)}
+
+\subsection{Estimation and inference}
+%%--------------------------------
+The model uses a parameter vector $\bs{\theta} = \left[\lambda,\,\bs{\theta}_X'\right]'$ 
+of length~$p$ formed with the HPP rate~$\lambda$ and the  parameter vector $\bs{\theta}_X$
+for the levels distribution.
+
+\textit{When no historical data are used} the observed data consist in $N$ events 
+$[T_i,\,X_i]$ on a given period. Since events $T_i$
+and levels~$X_i$ are independent the likelihood is
+$$
+   L = \underset{\mathrm{events}}{\underbrace{\frac{(\lambda w)^N}{N!} e^{-\lambda w}}}
+   \times 
+   \underset{\mathrm{levels}}{\underbrace{\prod_{i=1}^N f_X(X_i;\,\bs{\theta}_X)}}
+$$
+where $w$ is the time-length (i.e. the effective duration), and the log-likelihood is
+$$
+  \log L  = N\log(\lambda w) - \lambda w 
+    - \log(N!)+ \sum_{i=1}^N \log f_X(X_i;\,\bs{\theta}_X) 
+$$
+The ML estimation resumes to two simpler ML estimations: one for the events 
+(rate estimation) and the other for levels. The ML estimate of the unknown rate $\lambda$ is
+$$
+     \widehat{\lambda} = \frac{N}{w}= \frac{\textrm{number of events}}{\textrm{duration}}
+$$
+Its variance is $\Var[\widehat{\lambda}]= \lambda/w \approx
+\widehat{\lambda}/w$.  Note that the number of events $N$ is a
+\textit{sufficient statistic} for $\lambda$: the events $T_i$ are not used and
+the whole information they provide about~$\lambda$ is contained in~$N$.  The
+"$X$-part" of ML concerns an ordinary sample. The ML estimate
+$\widehat{\bs{\theta}}_X$ may be available in closed form in some cases
+(e.g. exponential).
+
+\textit{When no historical data are used} it can be said that $\lambda$ and
+$\bs{\theta}_X$ are orthogonal parameters.  This is no longer true when
+historical data are used the likelihood takes a less favorable form (see below).
+
+In a few cases with no historical data and favorable distribution 
+(e.g. Weibull) it is possible to use
+the \textit{expected} information matrix. But the general treatment in \textbf{Renext}
+is based on the \textit{observed} information and the numerical
+derivatives. More precisely, the information matrix is obtained as the 
+\index{hessian}
+numerical hessian at convergence. The hessian can either be the element \verb@hessian@ 
+returned by the \verb@optim@ function, or result form the use of the \verb@hessian@ function
+from \verb@numDeriv@ package: see the manual for more details.
+
+
+\subsection{Delta method}
+%%--------------------------
+The \textit{delta method}\index{delta method} can be used to infer about a 
+function\footnote{Smooth enough.}
+$\psi = \psi(\bs{\theta})$ of the parameter $\bs{\theta}$. For instance 
+$\psi(\bs{\theta})$ can be the return period of a given level~$x$
+%%, which depends on $\lambda$ and $\bs{\theta}_X$
+(see~\ref{eq:RETPER}).
+%%$$
+%%  \psi(\bs{\theta}) = \left\{ \lambda  \times \left[1 - F_X(x,\,\bs{\theta}_X) \right] \right\}^{-1}
+%%$$
+The transformed parameter estimate is $\widehat{\psi} = \psi(\widehat{\bs{\theta}})$.
+As a general result in the ML framework the transformed parameter estimate is 
+asymptotically unbiased 
+$ 
+    \Esp[\widehat{\psi}] \approx \psi(\bs{\theta})
+$
+and asymptotically normal with variance 
+$$
+     \Var[\widehat{\psi}] \approx 
+     \bs{\delta}'\,\Var[\widehat{\bs{\theta}}]\,\bs{\delta}     
+$$
+where $\bs{\delta}$ is the gradient vector 
+$$
+  \bs{\delta} = \frac{\partial \psi}{\partial \bs{\theta}} =  
+  \left[\frac{\partial \psi}{\partial \theta_1}, \,
+        \frac{\partial \psi}{\partial \theta_2}, \, \dots, \, 
+      \frac{\partial \psi}{\partial \theta_p}\right]'
+$$
+evaluated at $\widehat{\bs{\theta}}$, see chap.~2 of Coles's book~\cite{COLES}. 
+
+\textbf{Renext} uses this approach with $\psi$ taken as the level (or quantile)~$x(T)$ 
+corresponding  to a given return period~$T$. However the return level
+is related to a chosen probability of non-exceedance~$p$ (e.g. $p=0.95$) which can be 
+converted into a return period. Thus the relation is 
+$$
+   T = \frac{1}{\lambda \times (1-p)} \qquad F_X(x) = p 
+$$
+Since $\lambda$ is unknown it is replaced by its ML 
+estimation~$\widehat{\lambda}$ and $T$ is regarded as known. Thus
+the uncertainty about $\lambda$ (usually small) is ignored in the 
+relation between $p$ and $T$. 
+%%
+%% As a general rule the width of a confidence band becomes larger
+%% as the return level~$x$ or the probability~$p$ increase.
+%% However the impact of the rate $\lambda$ would become
+%% smaller since $\partial T/ \partial \lamdda$ 
+%% 
+%%
+The gradient of the quantile function 
+is computed numerically using a finite 
+difference approximation.
+
+
+
+\subsection{Goodness-of-fit}
+%%------------------------
+\index{goodness-of-fit|(}
+As a general tool to assess the fit, the Kolmogorov-Smirnov (KS) test
+is computed in all case. 
+
+The KS test normally requires a \textit{completely specified} distribution 
+for the null hypothesis while the fitted distribution is used 
+--~thus generating a bias. In some special cases (normal, exponential) the bias 
+could be corrected using an adaptation depending on the distribution as in
+Lilliefors test for the normal. However since the number of estimated parameters 
+is small (usually $1$ or $2$ for the "exceedances part") the bias will be small 
+provided that the number of exceedances is large enough, say $50$ or more. 
+
+For some distributions such as exponential a specific test may be available.
+In the current version distribution-specific tests are limited to
+the Bartlett test of exponentiality.
+
+Another problem is that rounded measurements lead to ties in the sample, 
+\index{ties}
+generating a warning. This could be avoided by "jitterizing" i.e. adding a small random noise
+to the observed values.
+
+The  graphical analysis of the fit using the return level plot is generally 
+instructive. For  exponential of Weibull exceedances, classical exponential or
+Weibull plot can also be drawn using the~\verb@expplot@ and~\verb@weibplot@ functions. 
+\index{Weibull plot}
+\index{exponential plot}
+
+Note that when historical data are given, they are
+used during the estimation but not included in the empirical 
+distribution in the KS test. In this case the interpretation of the test 
+needs further investigations.
+\index{goodness-of-fit|)}
+
+% On an exponential plot
+% $$
+%    - \log \left[1 - F(y) \right] 
+% $$
+
+
+\section{Using historical data}
+%%---------------------------------
+\label{SECHISTORY}
+\index{historical data|(}
+\subsection{Types of historical data}
+%%-----------------------------------------
+\textbf{Renext}  can use two kinds of historical data: \textit{classical 
+historical data} structured in blocks, and \textit{unobserved level(s)}.
+
+The first kind offers the possibility to complement OT
+data by $r$-largest blocks. Each block is a time interval during 
+which the $r$ largest values are available. Blocks are assumed to be 
+mutually disjoint and disjoint from the OT period. The duration
+of blocks is not assumed to be constant and each block~$b$ can be 
+have a specified duration $w_b$.
+
+%%so the  
+%%observations random vectors for blocks and over the OT period
+%%are mutually independent.
+
+Unobserved levels occur in some contexts where it is granted
+(or at least believed) that a given level say $x_{\texttt{U}}$ was 
+never exceeded during a period
+of time. For instance it can be granted  that a river never flood over a given
+benchmark level during the last five centuries, or that the arch of a bridge 
+was never reached since the construction. Such information has obviously 
+a great potential  impact on the estimation since it typically 
+concerns very long periods, much longer than the observation period.
+If such an information exists, it can be used with the \verb@fRenouv@
+function. Note that the unobserved level can concern missing periods
+for OT data: although no data are available we may still know that
+no very high level occured, see figure~\ref{UNOBSERVED}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=14cm]{images/unobserved.pdf}
+  \caption{\label{UNOBSERVED} \small Unobserved level can provide information 
+  on an historical period (left) or on missing periods (right).}
+\end{figure}
+
+
+\subsection{Likelihood}
+%%--------------------
+Consider an historical block of length $w_{\texttt{H}}$. 
+Let $Z_1 \geqslant Z_2 \geqslant \dots \geqslant Z_r$ 
+be the~$r$ largest observations. Their log-likelihood can be proved to be 
+\index{r largest order statistics@{$r$ largest order statistics}}
+\begin{equation}
+  \label{eq:LLH1}
+  \log L  = r  \log(\lambda w_{\texttt{H}}) + \sum_{i=1}^{r} \log f_X(Z_{i};\,\bs{\theta})  
+  -\lambda w_{\texttt{H}} \left[1 - F_X(Z_{r};\,\bs{\theta})\right]
+\end{equation}
+When several blocks exist, they provide independent random vectors 
+of observations with possibly different~$r$ and the log-likelihood
+is obtained by summing over blocks.
+
+The likelihood for an unobserved-level period is obtained by 
+remarking that the levels greater than $x_{\texttt{U}}$ occur
+according to an HPP \textit{thinning} the 
+original HPP%
+\index{thinning (Poisson Process)}. This thinned process has 
+rate $\left[1-F_X(x_{\texttt{U}})\right] \times \lambda$
+since at each OT event the level~$x_{\texttt{U}}$ can be exceeded with 
+probability$~1-F_X(x_{\texttt{U}})$. 
+On a period of length $w_{\texttt{U}}$, the number of levels $>x_{\texttt{U}}$
+is Poisson with mean $\mu = \left[1-F_X(x_{\texttt{U}})\right] \times \lambda  \times w_{\texttt{U}}$. Hence
+the probability to observe no level~$>x_{\texttt{U}}$
+is:
+$ e^{-\mu} 
+  \mu^0/0!
+= e^{-\mu}
+$ and
+the log-likelihood for the block is $-\mu$ i.e.
+\begin{equation}
+  \label{eq:LLH2}
+     \log L =  - \lambda w_{\texttt{U}} 
+     \left[1-F_X(x_{\texttt{U}};\,\bs{\theta})\right] 
+\end{equation}
+Obviously when $x_{\texttt{U}}$ is equal to the threshold we have $F_X(x_{\texttt{U}})=1$ and
+the change in the likelihood is $-\lambda w_{\texttt{U}}$, equivalent to that which would 
+result from  adding~$\lambda w_{\texttt{U}}$ to the effective duration.
+
+
+\subsection{Remark}
+%%------------------
+When a historical block only contains the maximum $Z_1$ i.e. when $r=1$,
+its contribution  to the log-likelihood~(\ref{eq:LLH1}) is
+$$
+  \log L  = \log(\lambda w_{\texttt{H}}) + \log f_X(Z_{1};\,\bs{\theta})  
+  -\lambda w_{\texttt{H}} \left[1 - F_X(Z_{1};\,\bs{\theta})\right]
+$$
+At the right hand side, the third term is identical to~(\ref{eq:LLH2})
+with an unobserved level $x_{\texttt{U}}=Z_1$ and period
+length $w_{\texttt{U}}=w_{\texttt{H}}$. The sum of the 
+two first terms is the extra contribution that would be added to the 
+log-likelihood of the 
+OT data if a new OT observation with level~$Z_1$ had been done without changing
+the OT period. Therefore the same likelihood/results are obtained in the two following approaches 
+\begin{list}{$\bullet$}{
+    \setlength{\itemsep}{2pt} 
+    \setlength{\topsep}{2pt} 
+  }
+  \item Specify an historical block of length $w_{\texttt{H}}$
+       with $r=1$ and level $Z_1$
+ \item Join the observed maximum~$Z_1$ to the OT levels $X_i$ and 
+       specify that the level $x_{\texttt{U}}=Z_1$ was never reached during a
+       period of length $w_{\texttt{H}}$.
+\end{list}
+The second approach might seem natural to practitioners. 
+ 
+\subsection{Historical data for Garonne }
+%%-------------------------------------------------
+As we said before, the \verb@Garonne@ dataset contains historical 
+data which can be used in estimation.
+
+<<label=feGaronneH, fig=TRUE, include=FALSE>>=
+fit.exp.H <- fRenouv(x.OT = Garonne$OTdata$Flow,
+                      sumw.BOT = 65,
+                      z.H = Garonne$MAXdata$Flow,
+                      block.H = Garonne$MAXdata$block,
+                      w.BH = Garonne$MAXinfo$duration,
+                      distname.y = "exponential",
+                      threshold = 2500,
+                      conf.pct = c(70, 95),
+                      prob.max = 0.99995,
+                      pred.period = c(10,100,1000),
+                      main = "Garonne data, \"exponential\" with MAXdata")
+@ 
+
+<<label=fwGaronneH, fig = TRUE, include=FALSE>>=
+fit.weib.H <- fRenouv(x.OT = Garonne$OTdata$Flow,
+                      sumw.BOT = 65,
+                      z.H = Garonne$MAXdata$Flow,
+                      block.H = Garonne$MAXdata$block,
+                      w.BH = Garonne$MAXinfo$duration,
+                      distname.y = "weibull",
+                      threshold = 2500,
+                      conf.pct = c(70, 95),
+                      prob.max = 0.99995,
+                      pred.period = c(10,100,1000),
+                      main = "Garonne data, \"Weibull\" with MAXdata")
+@ 
+
+The exponential fit is only slightly modified by the use of historical data. 
+As said before, the parameter $\lambda$ and $\bs{\theta}_X$ are no longer
+orthogonal when historical data are used
+<<label=nonorth>>=
+fit.exp.H$corr
+@ 
+
+
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=8cm]{images/fig-feGaronneH.pdf} &
+     \includegraphics[width=8cm]{images/fig-fwGaronneH.pdf} 
+   \end{tabular}
+   \caption{Return level plots for the example \texttt{Garonne} with two distributions
+     for exceedances and historical data.}
+\end{figure}
+
+\subsubsection*{Plotting positions}
+%%-----------------------------
+\index{plotting position}
+The historical data are materialized on the return level plot as follows. Consider
+a block with $r$ largest observations $Z_k$ in decreasing order and whith
+duration~$w_{\texttt{H}}$.
+Using the "non historical" data, we can give a prediction $\widetilde{N}_{\texttt{H}}$ for
+the unknown number $N_{\texttt{H}}$ of events 
+on the historical period. A natural choice is 
+$\widetilde{N}_{\texttt{H}}=\widetilde{\lambda}\,w_{\texttt{H}}$ where 
+$\widetilde{\lambda}$ is the events rate on the OT period. Then the point 
+$Z_k$ will be associated to the probability of exceedance~
+$1-\widetilde{F} = k/(\widetilde{N}_{\texttt{H}}+1)$.
+For the largest value $Z_1$ we thus have $1-\widetilde{F} = 1/(\widetilde{N}_{\texttt{H}}+1)$.
+When several historical blocks are available, the same principle
+can be used block by block.
+\index{historical data|)}
+
+
+\section{Fixing parameter values}
+%%======================================
+\index{fixed parameter values|(}
+\subsection{Problem}
+%%---------------
+In some situations one may want to fix one or several parameters in the
+distribution of exceedances and still perform a ML estimation for
+the remaining parameters. For instance, the \verb@shape@ of a Weibull 
+distribution can be fixed while the \verb@scale@ is to be estimated.
+This can be viewed as a radical bayesian scheme with the fixed parameters
+receiving an 'ultra-informative' Dirac prior.  
+
+\textbf{Renext} supports fixed parameters, with some limitations. 
+In the current version, the HPP rate parameter \textbf{$\lambda$ can not
+be fixed}, and \textbf{at least one parameter must be estimated
+in the exccedance part}. Thus the full model must have at least two
+non-fixed parameters.
+
+The specification of the fixed parameter is done using the 
+\verb@fixed.par.y@ formal argument in \verb@fRenouv@. Its value
+must be a named list with names in the distribution parnames.
+As a general rule\footnote{In some special cases, this is unnecessary
+but harmless.}, 
+the non-fixed (estimated) parameters must
+be given using the \verb@start.par.y@ arg with a similar
+list value.
+
+\subsection{Example}
+%%--------------------
+The fixed parameter option can work with or without 
+historical data in the same manner.
+
+<<label=fixweibGaronneH, fig=TRUE, include=FALSE>>=
+fit.weib.fixed.H <- 
+  fRenouv(x.OT = Garonne$OTdata$Flow,
+          sumw.BOT = 65,
+          z.H = Garonne$MAXdata$Flow,
+          block.H = Garonne$MAXdata$block,
+          w.BH = Garonne$MAXinfo$duration,
+          distname.y = "weibull",
+          threshold = 2500,
+          fixed.par.y = list(shape = 1.2),
+          start.par.y = list(scale = 2000),
+          trace = 0,
+          main = "Garonne data, \"Weibull\" with MAXdata and fixed shape")
+@ 
+<<label=nonorth>>=
+fit.weib.fixed.H$estimate
+@
+With some distributions such as the SLTW some parameters \textit{must}
+be fixed.  Here the shift parameter \verb@delta@ is fixed 
+to~$\delta =2000~\textrm{m}^3/\textrm{s}$ meaning that we 
+believe that excedances over~$u-\delta=500$ are Weibull, 
+even if we only know exceedances over the 
+threshold~$u=2500~\textrm{m}^3/\textrm{s}$.
+\index{SLTW distribution}
+<<label=fixSLTWGaronneH, fig = TRUE, include=FALSE>>=
+fit.SLTW.H <- 
+  fRenouv(x.OT = Garonne$OTdata$Flow,
+          sumw.BOT = 65,
+          z.H = Garonne$MAXdata$Flow,
+          block.H = Garonne$MAXdata$block,
+          w.BH = Garonne$MAXinfo$duration,
+          distname.y = "SLTW",
+          threshold = 2500,
+          fixed.par.y = list(delta = 2000, shape = 1.2),
+          start.par.y = list(scale = 2000),
+          main = "Garonne data, \"SLTW\" with MAXdata, delta and shape fixed")
+@ 
+When some parameters are fixed the covariance contains structural
+zeros, and consequently the correlation matrix contains non-finite coefficients.
+<<label=nonorth>>=
+fit.SLTW.H$cov
+@ 
+
+
+\begin{figure}
+   \centering
+   \begin{tabular}{c c} 
+     \includegraphics[width=8cm]{images/fig-fixweibGaronneH.pdf} &
+     \includegraphics[width=8cm]{images/fig-fixSLTWGaronneH.pdf} 
+   \end{tabular}
+   \caption{Return level plots for the example \texttt{Garonne} with two distributions 
+     with \textbf{fixed parameters} (and historical data).}
+\end{figure}
+
+\index{fixed parameter values|)}
+%%\nocite*
+%%\bibliography{Renext}
+%%\bibliographystyle{plain}
+
+%%****************************************************************************
+%%
+\appendix
+%%
+%%****************************************************************************
+
+\chapter{The ``renouvellement'' context}
+%%***************************************************
+\section{Marked point process}
+%%=================================
+
+The \textit{m\'ethode de renouvellement} uses a
+quite general marked process $[T_i,\,X_i]$ for events
+and levels. As in~\ref{ASSUMPTIONS} the two sequences
+"events" and "levels" are assumed to be independent, and
+the $X_i$ are assumed to be independent and identically 
+distributed with continuous
+distribution $F_X(x)$.
+
+An alternative equivalent description of the events 
+occurence is through the associated \textit{counting process}~$N(t)$. This 
+describes the joint distribution for the the numbers
+of events~$N(t_k)-N(s_{k})$ on an arbitrary collection of disjoint 
+intervals~$(s_k,\,t_k)$.
+Although the most important and clearest context is the HPP,  
+the theory can be extended to
+cover non-poissonian L\'evy counting processes~$N(t)$ e.g.
+Negative Binomial. However, the Negative Binomial L\'evy Process
+\index{negative binomial}
+implies the presence of multiple (simultaneous) events.
+
+\section{Some results}
+%%=================================
+\label{COMPOUND}
+\subsection{Compound maximum}
+%%------------------------
+\index{compound maximum}
+Consider an infinite sequence of independent and identically distributed
+random variables $X_k$ with continuous
+distribution $F_X(x)$. The maximum
+$$
+    M_n = \max(X_1, X_2, \,\dots,\, X_n)
+$$
+has a distribution function given by $F_{M_n}(x) = F_X(x)^n$.
+Now let $N$ be a random variable independent of the $X_k$ sequence and taking 
+non-negative integer values. The "compound maximum" 
+$$
+     M = \max(X_1, X_2, \,\dots,\, X_N)
+$$
+is a random variable with a mixed type distribution:
+it is continuous with a probability mass corresponding to 
+the $N=0$ case which can be considered as leading to the certain value 
+$M=-\infty$.
+The distribution of $M$ can be derived from that of $X_k$ and $N$. Using
+$\Pr\pCond{M \leqslant  x}{N=n} = F_X(x)^n$ and the total probability formula
+we get
+\begin{equation}
+   F_M(x) =  \sum_{n=0}^\infty \,F_X(x)^n \Pr\left\{N = n\right\} 
+          = h_N[F_X(x)]
+\end{equation}
+where $h_N(z) = \Esp\left(z^N\right)$ is the generating function
+of~$N$. 
+
+When $N$ has a Poisson distribution with mean $\mu_N=\lambda w$
+the generating function is given by
+$h_N(z) = \exp\{-\mu_N\,[1-z]\}$ and 
+\begin{equation}
+  \label{eq:FX2FM}
+   F_M(x) = \exp\{- \lambda w  \left[1-F_X(x)\right]\}
+\end{equation}
+When $F_X(x)$ is GPD it can be shown that~$M$ is\footnote{Up to its probability mass} 
+GEV see later.
+
+For large return levels $x$, we have $F_X(x) \approx 1$. The generating 
+function $h_N(z)$ for $z=1$ has a value $h_N(z)=1$ and a first derivative 
+$h_N'(z) = \Esp(N)$, leading to
+\begin{equation}
+  \label{eq:FAPP1}
+   1- F_M(x) \approx \Esp(N)\left[1 - F_X(x)\right]
+\end{equation}
+Equivalently 
+\begin{equation}
+  \label{eq:FAPP2}
+   F_M(x) \approx F_X(x)^{\Esp(N)} 
+\end{equation}
+which  tells that for large return levels, the distribution
+of $M$ is approximatively that of the maximum of $\Esp(N)$ independent~$X_k$.
+Both formula~(\ref{eq:FAPP1}) and (\ref{eq:FAPP2}) tell that  
+the distribution of~$N$  only influences large return periods through
+its expectation. Consequently there is little point in choosing a non-Poisson 
+distribution for~$N$ as far as the interest is focused on large return periods.
+
+From formula~(\ref{eq:FAPP2}) and the asymptotic behavior of the 
+maximum of~$n$ independent and identically distributed random variables, 
+it appears that when $\Esp(N)$ is large the 
+distribution of $M$ will be close to a suitably scaled GEV distribution.
+
+\subsection{Special cases}
+%%------------------------
+\label{SPECIALCASES}
+A case with special interest is when $N$ is Poisson with mean $\mu_N=\lambda w$ 
+and $X$ has a Generalized Pareto Distribution (GPD). Then~$M$ 
+follows\footnote{Up to its probability mass
+in $-\infty$} a Generalized Extreme Values (GEV) distribution.
+
+Consider first the exponential case $F_X(x) = 1 - e^{-(x - \mu)/\sigma}$ for  
+$x \geqslant \mu$. Then~(\ref{eq:FX2FM}) writes
+$$
+   F_M(x) = \exp\left\{ -\lambda w \,e^{-(x - \mu)/\sigma} \right\}
+$$
+which  using simple algebra can be recognized as the Gumbel 
+distribution function with parameters
+$\mu^\star = \mu + \sigma \log (\lambda w)$ and $\sigma^\star = \sigma$.
+\index{Gumbel distribution}
+
+In the general case where $F_X(x)$ corresponds to the~GPD,
+$ F_X(x) = 1 - \left[1 + \xi (x-\mu)/\sigma \right]_{+}^{-1/\xi}$ we have for $x \geqslant \mu$
+$$
+   F_M(x) = \exp\left\{ -\lambda w 
+     \left[1 + \xi (x-\mu)/\sigma \right]_{+}^{-1/\xi} \right\}
+$$
+which can be identified as $\texttt{GEV}(\mu^\star,\,\sigma^\star, \,\xi)$ 
+with parameters $\mu^\star$ and $\sigma^\star$ depending on $\mu$ and  $\sigma$.
+\index{GEV distribution}
+
+% \begin{equation}
+%   \label{eq:GEVPARMS}
+%   \mu^\star = \mu  + \frac{(\lambda w)^\xi -1}{\xi} \,\sigma \qquad 
+%   \sigma^\star =  (\lambda w)^\xi\, \sigma \qquad 
+%   \xi^\star = \xi
+% \end{equation}
+% The second formula for $\xi=0$ is to be replaced by its limit for $\xi \rightarrow 0$,
+% that is $\mu^\star$ of the exponential case..
+
+
+Using this formalism we can derive the distribution of the
+maximum of the $X_k$ on an arbitrary period of length $w$. 
+
+
+\section{Return periods}
+%%=========================
+\label{TWORL}
+\index{return period|(}
+In the general marked process context described above, the return period of a given level~$x$ 
+can be defined using the thinned process $[T_i,\,X_i]$ of events with level exceeding~$x$ 
+i.e. with $X_i>x$. The return period will be the expectation $T_X(x)$ of the 
+interevent in the thinned process.
+In the rest of this section, we assume that events occur according to a HPP with rate 
+$\lambda>0$. Due to the independence of events and levels, the thinned event 
+process also is an HPP with rate $\lambda(x) = \lambda [1-F_X(x)]$. The return period is then given by
+$$
+    T_X(x) = \frac{1}{\lambda\left[1 - F_X(x)\right]}
+$$
+Actually the interevent distribution is exponential with expectation $1/\lambda(x)$.
+
+Still using the same probabilistic framework, we may consider the sequence of annual
+maxima or more generally the sequence $M_n$ of maxima for successive non-overlapping 
+time blocks  with the same duration $w>0$. The random variables~$M_n$ are independent
+with a common  distribution $F_M(x)$ that can be determined as it was done in the last section.
+In this "block" context, the return period of a level $x$ naturally expresses
+as a (non-necessarily integer) multiple of the block duration. Thus if
+$F_M(x) = 0.70$ i.e. if the level~$x$ if exceeded with $30\%$ chance within a block, the 
+return period is $1/0.3 \approx 0.33$ expressed in block duration unit. More
+generally the \textit{block} return period of the level~$x$ will be computed as 
+\begin{equation}
+  \label{eq:TM}
+  T_M(x) = \frac{w}{1-F_M(x)} 
+   = \frac{\textrm{block duration}}{\textrm{prob. that }M\textrm{ exceeds }x}
+\end{equation}
+A major difference between the two return periods $T_X(x)$ and $T_M(x)$
+is that the level $x$ can be exceeded 
+several times within the same block, especially for small~$x$. This difference
+may make ambiguous some statements about yearly return periods or yearly risks.
+Similarly, the level $x$ with a $100$~years return period $T_X(x)$ is very 
+likely to be exceeded twice or more within a given century\footnote{Within a given century,
+the number $N(x)$ of events with levels $X_i>x$ is then Poisson with mean~$1$. Thus
+$\Pr\{N(x) = 0\} \approx 0.37$ and $\Pr\{N(x) > 1\} \approx 0.26$.}.
+
+Using the relation~(\ref{eq:FX2FM}) between the distributions $F_X(x)$
+and~$F_M(x)$, the relation (\ref{eq:TM}) becomes
+\begin{equation}
+   \label{eq:TAUM2}
+    T_M(x) = \frac{w}{1-\exp\left\{-\lambda w \left[1-F_X(x)\right]\right\}} 
+\end{equation}
+In practice, the interest will be focused on  large levels~$x$. 
+In the expression at the denominator we may then use the approximation  
+$1-e^{-z} \approx z$ for small $z$, leading
+to $T_M(x) \approx T_X(x)$. 
+Moreover the inequality~$1-e^{-z} \leqslant z$ for 
+$z \geqslant 0$ shows that 
+$T_M(x) \geqslant T_X(x) $
+for all~$x$. Using
+$1-e^{-z} \approx z -z^2/2$, we even find a better approximation for moderately
+large levels~$x$
+$$
+    T_M(x) \approx T_X(x) + \frac{w}{2}
+$$
+The presence of the half-block length $w/2$ can be viewed as a 
+rounding effect.
+\index{return period|)}
+
+
+\chapter{Distributions}
+%%=====================
+
+
+
+\section{Asymptotic theory and the GEV distribution}
+%%===========================================================
+\subsection{An important result}
+\index{Fisher-Tippett-Gnedenko theorem|(}
+A central result of Extreme Values theory is the 
+Fisher-Tippett-Gnedenko theorem below. The following 
+conventions or definitions are used.
+\begin{list}{$\bullet$}{ 
+     \setlength{\itemsep}{2pt} 
+    \setlength{\topsep}{2pt} 
+  } 
+ \item Two probability distributions $F(x)$
+and $G(x)$  are of same type when $G(x) = F(ax + b)$ for some
+constants $a>0$ and $b$. All distributions of a given type are
+often written as $F_0([x-\mu]/\sigma)$ where $F_0(z)$ is
+a chosen representant of the type, $\mu$ (location) and $\sigma>0$ 
+(shape) are parameters. The parameters $\mu$ and $\sigma$ 
+are not necessarily the mean nor the standard
+deviation.
+ \item  The notation $z_+$ is for the positive part of a number~$z$, that is
+$z_+ =\max(z,\,0)$. 
+\end{list}
+
+\newtheorem*{theo}{Theorem (Fisher-Tippett-Gnedenko)}
+\begin{theo}
+Let $X_n$ be a sequence of independent and identically distributed random variables,
+and let $M_n=\max(X_1,\,X_2,\,\dots,\,X_n)$. If 
+there exists two sequences $b_n$ and $a_n>0$ such that $(M_n-b_n)/a_n$ has a
+limiting distribution $G(z)$ then that limiting distribution must be one of the
+following three types
+\begin{center}
+\begin{tabular}{l l}
+$G(z) = \exp\{-e^{-z}\}$       &Gumbel or type I\\
+$G(z) = \exp\{-z_+^{-\alpha}\}$ &Fr\'echet or type II\\
+$G(z) = \exp\{-(-z)_+^\alpha\}$ &Weibull (reversed) or type III
+\end{tabular}
+\end{center}
+where $\alpha >0$ is a parameter for types II or III.
+\end{theo}
+For each type the distribution depends on $\mu$ and $\sigma>0$ and
+possibly of $\alpha>0$. E.g. the general Gumbel distribution is
+$$
+  G(x) = \exp\left\{-\exp\left[-(x-\mu)/\sigma\right] \right\}
+$$ 
+The third distribution corresponds to values $z \leqslant 0$ and
+is often called Weibull. This
+may create a confusion with the ordinary Weibull described later. 
+A preferable appellation is
+\textit{reversed Weibull}.
+
+Each of the three possible limiting distributions is \textit{max-stable}
+\index{max-stable distribution}
+i.e. is closed for the maximum of independent and identically distributed
+random variables. For example if $X_i$ are independent with the same
+Gumbel distribution, then their maximum $M_n$ is also
+of Gumbel type.
+
+\index{Frechet distribution@{Fr\'echet distribution}}
+\index{Gumbel distribution}
+\index{reversed Weibull distribution}
+The three possible limit distributions are fairly different. Some 
+mathematical criteria allow to 
+say whether a given distribution of $X_k$
+is in the \textit{domain of attraction}\index{domain of attraction}
+of Gumbel, Fr\'echet or (reversed) Weibull. Some usual examples are found 
+in the book of Kotz and Nadarajah~\cite{KOTZ} (appendix to chap.~1) and
+table~\ref{ATTRACT} gives the domains of attraction for the main 
+distributions used in \textbf{Renext}. Broadly
+speaking, distributions with exponentially decaying upper tail (such
+as normal, exponential, gamma) fall in the domain of attraction of
+Gumbel. The Fr\'echet domain attracts heavy-tailed distributions (Pareto,
+Cauchy).
+
+
+  \begin{table} 
+  \centering 
+  \begin{tabular}{|l|l|}
+    \hline
+     \multicolumn{1}{|c|}{\rule{0pt}{11pt} \textbf{distribution of $X_i$}} & 
+    \multicolumn{1}{|c|}{\textbf{limit of} $M_n$ }\\  \hline \hline 
+    exponential   & Gumbel\\ \hline
+    Weibull       & Gumbel\\ \hline
+    gamma         & Gumbel\\ \hline
+    GPD $\xi =0$  & Gumbel\\
+    GPD $\xi >0$  & Fr\'echet\\
+    GPD $\xi <0$  & returned Weibull\\ \hline
+    log-normal    & Gumbel\\ \hline
+    mixture of exponentials    &  Gumbel\\ \hline 
+    Pareto        &  Fr\'echet\\ \hline 
+    Cauchy        &  Fr\'echet\\ \hline 
+  \end{tabular}
+  \caption{\label{ATTRACT}Limit distribution for the maximum of 
+    a large number of independent levels $X_i$.}
+\end{table}
+
+\index{Fisher-Tippett-Gnedenko theorem|)}
+
+\subsection{Generalized Extreme Values}
+%%--------------------------------------
+The three types of the theorem above can be considered as special cases of the 
+\textit{Generalized Extreme Value}  distribution
+\index{GEV distribution} 
+\index{Generalized Extreme Value|see{GEV distribution}} 
+depending of a shape parameter $\xi$
+$$
+   G(z) = \exp\left\{ - \left[1 + \xi \, z \right]^{-1/\xi}_+ \right\}
+$$
+The sign of the shape parameter $\xi$ is essential.
+When $\xi>0$ we retrieve the Fr\'echet above up to a translation of $z$. 
+For  $\xi<0$ we get the reversed Weibull  up to a translation of $z$.
+When $\xi=0$ the power $\left[1 + \xi \, z \right]^{-1/\xi}$ is to be replaced 
+by its limit for $\xi \rightarrow 0$ which is
+$e^{-z}$ and $G(z)$ is the Gumbel distribution function above.
+
+Using a linear transform $z=(x-\mu)/\sigma$ with arbitrary $\mu$ and  
+$\sigma>0$ all distributions of the GEV type are obtained as
+\begin{equation}
+   \label{eq:GEVDIST}
+   F(x) = 
+    \exp\left\{ - \left[1 + \xi \, \frac{x-\mu}{\sigma} \right]^{-1/\xi}_+ \right\}
+\end{equation}
+This distribution is named GEV with scale parameter $\mu$ and shape parameter 
+$\sigma>0$, and it will be denoted as $\texttt{GEV}(\mu,\,\sigma,\,\xi)$. It
+is defined on the set of values $x$ for which the bracketed expression within $[\,]$ 
+in~(\ref{eq:GEVDIST}) is non-negative that is
+% $$
+%  %%1 + \xi \, \frac{x-\mu}{\sigma} \geqslant 0 \qquad
+%  \begin{array}{c c}
+%      -\infty < x \leqslant  \mu- \frac{\sigma}{\xi}   & \xi < 0\\
+%      -\infty < x < +\infty                            & \xi = 0\\
+%      \mu- \frac{\sigma}{\xi} \leqslant  x  < +\infty  & \xi > 0
+%  \end{array}
+% $$
+\begin{center}
+  \small
+  \begin{tabular}{c | c | c}
+    $\xi < 0$ & $\xi = 0$ & $\xi >0$ \\ \hline
+   \rule{0pt}{11pt} $-\infty \leqslant  x \leqslant  \mu- \sigma/\xi$ &
+    $-\infty \leqslant  x < +\infty$ &
+    $\mu- \sigma/\xi \leqslant  x  < +\infty$ 
+  \end{tabular}
+\end{center}
+
+Grouping the three distributions may be thought of as a purely formal trick. 
+However, since the GEV distribution is regular at $\xi =0$ we have a 
+parametric family in the usual sense, with a parameter $\xi$. Thus it makes sense
+to estimate the parameter~$\xi$ without specifying its sign, or to give a confidence 
+interval including the 
+value~$\xi=0$. Note that the support of the distribution depends on the 
+parameters and thus that Maximum Likelihood (ML) theory must be invoked
+with care.
+
+\subsection{Implication in POT}
+%%--------------------------------------
+\label{GEVGPD}
+%% \begin{Prov}
+%%  why and how GEV are used through GPD for exceedances
+%%\end{Prov}
+The Fisher-Tippett-Gnedenko theorem suggests that the GEV distribution should be 
+systematically used to describe block maxima. 
+
+The implication in POT and the marked process context is less clear. 
+When a large enough threshold~$u$ is chosen, the observations $X_i$ 
+exceeding $u$ might be thought of as maxima of unobserved independent
+variables, suggesting the use of a three parameter GEV distribution with 
+censoring $X_i>u$. Fortunately, the  conditional GEV is approximatively a 
+Generalized Pareto Distribution (GPD) with only two parameters, thus 
+the standard POT can be used, see~\ref{GPDPROP}.
+
+This justification is corroborated by the compound maximum results
+given in \ref{COMPOUND} and the special cases~\ref{SPECIALCASES}.
+
+
+%%*******************************************************************************
+
+
+
+\section{Probability distributions in POT}
+%%=============================================
+
+\subsection{Levels vs exceedances} 
+%%---------------------------------
+POT methods fit a distribution to the exceedances 
+$Y_i=X_i-u$ over a fixed threshold~$u$. The exceedances are positive by construction 
+and  might contain small values since the threshold will generally be
+taken greater than the mode of~$X$.
+
+In the rest of this section the letter $X$ will be used for a level while $Y$ 
+is used for a positive exceedance random variable. The densities and 
+distribution functions of $X$ will be denoted as $f_X(x)$ and $F_X(x)$ while 
+the $Y$ subscript is used for $Y$. Thus 
+$$
+    f_X(x) = f_Y(x-u) \qquad f_Y(y) = f_X(y+u)
+$$
+
+%%This translation relationship applies for all distribtions described below 
+%%\textit{except for the transformed exponential} distribution~\ref{TRANSEXP}
+%%where the trnaslation operates on transformed variables.
+
+
+For the distribution fitted in POT the threshold~$u$
+\textit{is not a parameter} to be estimated.  Yet the probability
+functions for level~$X$ can have a location  parameter. 
+R~functions used for~$Y$ can also have a location parameter with  
+suitable default value for it. 
+
+
+\subsection{Some indicators}
+%%---------------------------
+The \textit{coefficient of variation} 
+\index{coefficient of variation} 
+CV of a positive random variable $Y$ is the ratio of the 
+standard deviation  to the mean
+$$
+    \textrm{CV} = \sqrt{\Var(Y)}/\Esp(Y)
+$$
+Comparing this theoretical~CV to its empirical equivalent is often  
+instructive. For an exponential distribution
+we have $\textrm{CV}=1$; a mixture of several exponentials
+corresponds to $\textrm{CV}>1$.
+
+\subsection{Some useful probability functions}
+%%------------------------------------------
+Several probability functions provide useful insights about the upper tail
+of a given distribution. Their name is related to 
+\textit{survival analysis} where the random variable 
+of interest is the lifetime~$Y$ of a subject or item. 
+The relation with POT is: increasing the POT threshold~$u$ is equivalent to 
+selecting subjects still alive 
+at "time"~$u$.
+
+The \textit{survival function} value $S(y)$ is the probability $\Pr\{Y >y \} = 1-F(y)$. 
+\index{survival function}
+The \textit{hazard function}~$h(v)$ is defined by   
+$$
+   h(v)\,\textrm{d}v = \Pr\bCond{v < Y \leqslant v + \textrm{d}v }{Y > v }  \qquad v \geqslant 0
+$$
+corresponding to the notion of instantaneous death rate. An usual equivalent definition 
+is $h(v)=f(v)/S(v)$.
+\index{hazard function}
+In survival analysis hazards are usually non-decreasing since a decreasing hazard
+would mean a "rejuvenation" effect. Yet in POT modeling distributions often have
+decreasing hazards. A decreasing hazard implies the presence of
+a thick upper tail since rejuvenating subjects tend then to have a very long life.
+
+The \textit{mean residual life} MRL (or mean excess life) is defined as
+\index{mean residual life}
+\index{MRL|see{mean residual life}}
+$$
+  \textrm{MRL}(v) = \Esp\pCond{Y - v}{Y > v} \qquad v \geqslant 0
+$$
+While a decreasing~$\textrm{MRL}(v)$ may seem natural, a distribution with long tail such as 
+GPD can have an increasing mean residual life.
+
+Another meaningful function is the \textit{cumulative hazard}~$H(y)$ 
+\index{cumulative hazard}
+$$
+   H(y) = - \log S(y) = \int_{0}^y h(z)\,\textrm{d}z   \qquad y \geqslant 0
+$$
+Increasing and decreasing hazards $h(y)$ are respectively equivalent to convex and concave
+cumulated hazards $H(y)$. When the distribution function~$F(y)$ is plotted on an 
+exponential plot, \index{exponential plot}
+the ordinate used is in fact $H(x)$, see page~\pageref{FUNCPLOTS}. 
+The concavity of the resulting curve is 
+that of~$H(y)$, and hence is related to the variation of $h(y)$. Distributions with 
+increasing hazard $h(y)$ will give  a convex (upward concave) curve on the
+exponential plot while a decreasing $h(y)$ leads to a concave (downward) one.
+The same effect is observed for the exponential 
+return level plot but with axes exchanged hence with opposite concavity.
+
+An alternative to the quantile function $q_X(p)$~of~$X$ is the following
+\textit{return level function}. \index{return level}
+Consider an independent and identically distributed sequence~$X_i$ with 
+distribution $F_X(x)$; for a given $m>1$ the value $x_m$ that is exceeded on average once 
+every $m$~observations is given by the equation
+\begin{equation}
+  \label{eq:MRETURN}
+    F_X(x_m) = 1 -1/m  \qquad m > 1
+\end{equation}
+and it can be called the return level with period $m$ (or $m$-return level).
+This is an increasing function of~$m$ with limit for large~$m$ the upper end-point
+of the distribution of~$X$. For many distributions~$F_X(x)$ the solution exist in
+closed form. In the POT context with where levels $X_i$ are observed on a rate 
+of $\lambda$ events by years, the value $x_m$  must be divided  by the rate: 
+$x_m/\lambda$ is the $m$-years return level. 
+
+Since $1/m = 1 - F_X(x_m) = S_X(x_m)$,
+we have $\log m = H_X(x_m)$. Thus plotting points $[\log m,\,x_m]$ i.e. points $[m,\,x_m]$ 
+with a log scale 
+for the abscissae will produce the same graphics as plotting points $[x,\,H_X(x)]$,
+but with reversed axes.
+
+%% \begin{Prov}
+%%  Graphics showing the exponential plot and the corresponding return level plot
+%%\end{Prov}
+
+%%*****************************************************************************
+\section{Distributions in Renext}
+%%========================
+
+\subsection{Exponential}
+%%-----------------------
+\subsubsection*{Definition}
+%%---------------------
+The exponential distribution has density $f(y)$ and distribution function $F(y)$ given by
+$$
+  f(y) = \nu\, e^{-\nu \,y} \qquad F(y) = 1 -e^{-\nu y} \qquad y \geqslant 0
+$$
+where $\nu>0$ is a parameter called \textit{rate}. 
+
+\subsubsection*{Properties}
+%%---------------------
+The equation  $F(y)=1-1/m$ giving the "$m$ years return level" has the explicit 
+solution $y_m = \log(m)/\nu$.
+
+The exponential distribution has constant hazard rate and mean residual life. 
+This is the "memorylessness property".
+
+The exponential is a special case of several families: Weibull
+(shape $\alpha=1$), GPD (shape $\xi = 0$) and gamma (shape $\alpha=1$).
+
+The exponential distribution is closely related to Gumbel distribution. 
+If $Y$ is exponential then $V=-\log Y$ is Gumbel.
+
+
+\subsubsection*{Estimation and inference}
+%%---------------------
+The exponential distribution has a well known ML inference from an
+ordinary sample~$Y_i$ of size~$n$.
+
+The  ML estimator for $\nu$ is the inverse of the sample mean
+$\widehat{\nu}=1/\bar{Y}$. Up to a scaling factor the exponential distribution 
+is nothing but the $\chi^2(2)$ with two degrees of freedom. More precisely
+$2 \nu\, Y_i \sim \chi^2(2)$. Multiplying the sum $\sum_iY_i= n\,\bar{Y}$ by $2 \nu$ 
+gives a "pivotal" quantity $V = 2 \nu \times n\,\bar{Y}$ 
+having a $\chi^2(2n)$ distribution. Since $V = 2n\,\nu/\bar{\nu}$  an exact confidence interval 
+at the level $1-\alpha$ for
+$\nu$ is obtained as 
+$$
+     \frac{\chi^2_{1-\alpha/2}}{2n}  \times 
+       \widehat{\nu} \leqslant \nu \leqslant 
+     \frac{\chi^2_{\alpha/2}}{2n} \times  \widehat{\nu}
+$$
+where $\chi^2_\alpha$ is the upper quantile for the $\chi^2(2n)$ 
+distribution\footnote{$\Pr\left\{\chi^2(2n)> \chi^2_\alpha \right\} =\alpha$}. 
+Exact confidence intervals are similarly derived for the distribution~$F(y)$ with
+given $y$ or for a $m$ return level $y_m$ with $m$ given.
+
+\subsubsection*{Goodness-of-fit}
+%%----------------------------
+A specific goodness-of-fit test for the exponential distribution is sometimes 
+called Bartlett (or Moran) test of exponentiality.
+\index{Bartlett test of exponentiality}
+\index{Moran test of exponentiality}
+%%~\cite{EAU2} p.~347 
+The  test statistic $B_n$ involves the sample mean $\overline{Y}$ as well as 
+the sample mean $\overline{\log Y}$ of the logged $Y_i$
+$$
+     B_n = b_n \times \left\{\log \bar{Y} - \overline{\log Y} \right\}
+     \qquad b_n = 2n \times  \left\{1+ (n+1)/(6n) \right\}^{-1}
+$$
+Under the null hypothesis we have approximately  $B_n \sim \chi^2(n-1)$ and 
+a two-sided test is in order.
+
+Remind that the goodness-of-fit can also be evaluated using a graphical 
+analysis with an exponential plot. \index{exponential plot}
+
+
+\subsection{Generalized Pareto GPD}
+%%---------------------------------
+\index{GPD (distribution)|(}
+\index{Generalized Pareto Distribution|see{GPD (distribution)}}
+\subsubsection*{Definition}
+%%-----------------------
+The Generalized Pareto Distribution (GPD) depends on three parameters $\mu$ (location),
+$\sigma>0$ (scale) and $\xi$ (shape). When $\xi \neq 0$, it has density and distribution
+function
+$$
+  f(x) = \frac{1}{\sigma} \left[ 1 + \xi \,\frac{(x-\mu)}{\sigma} \right]_{+}^{-1/\xi -1}
+  \qquad
+  F(x) = 1 - \left[ 1 + \xi \,\frac{(x-\mu)}{\sigma} \right]_{+}^{-1/\xi}  
+  \qquad x \geqslant \mu
+$$
+while the limit for $\xi \rightarrow 0$ is to be used for $\xi=0$
+$$
+  f(x) = \frac{1}{\sigma} \,e^{-(x-\mu)/\sigma}
+  \qquad 
+  F(x) = 1 - e^{-(x-\mu)/\sigma} 
+  \qquad x \geqslant \mu
+$$ 
+which is a shifted exponential distribution with rate $1/\sigma$.
+     
+The distribution  is defined for the values $x$ with $x \geqslant \mu$
+and $1 + \xi \,(x-\mu)/\sigma \geqslant 0$ that is
+\begin{center}
+   \small
+  \begin{tabular}{c | c | c}
+    $\xi < 0$ & $\xi = 0$ & $\xi >0$ \\ \hline
+   \rule{0pt}{11pt} $\mu \leqslant  x \leqslant  \mu- \sigma/\xi$ &
+    $\mu \leqslant  x < +\infty$ &
+    $\mu \leqslant  x  < +\infty$ 
+  \end{tabular}
+\end{center}
+
+
+The value of the shape parameter $\xi$ has a very strong influence.
+
+\begin{itemize}
+   \item When $\xi < 0$ the distribution has a finite upper end-point. 
+     As a special case, the uniform \index{uniform distribution}
+     distribution is obtained with $\xi = -1$. The density function
+     is decreasing for $ -1 < \xi <0$.
+   
+   \item When $\xi >0$ the density is decreasing.
+     The distribution tail thickens as $\xi$ increases.
+   \end{itemize}
+     
+     
+\subsubsection*{Properties}
+%%---------------------
+\label{GPDPROP}
+The GPD has a finite expectation when $\xi < 1$ and a finite variance 
+when $\xi < 1/2$ then given~by
+$$ 
+    \Esp(X) = \mu + \frac{\sigma}{1-\xi} \qquad \Var(X) = \frac{\sigma^2}{(1-\xi)^2(1-2\xi)}
+$$
+The shape parameter $\xi$ can be related to the coefficient of variation of
+$Y= X-\mu$ by $\textrm{CV}(Y)=1/\sqrt{1-2\xi}$. Note that $\xi>0$ gives
+$\textrm{CV}(Y)>1$.
+
+For $m>1$ the return level with period $m$~(\ref{eq:MRETURN}) is
+$$ 
+    x_m = \mu + \sigma \,\left[m^\xi - 1\right]/\xi  
+$$
+It can be remarked that for any fixed $m$ the value $x_m$ is increasing
+with respect to each of the three parameters $\mu$, $\sigma$ and $\xi$
+and the same is true for the expectation. Thus increasing any of the three 
+parameters leads to a distribution with greater values.
+
+The GPD can be said to be "stable for exceedance" in the following sense. 
+If $X \sim\texttt{GPD}(\mu,\,\sigma,\,\xi)$ then for $u \geqslant \mu$
+$$
+    \Cond{X}{X > u} \sim \texttt{GPD}(u,\,\sigma^\star,\,\xi)
+$$
+with $\sigma^\star = \sigma + \xi (u-\mu)$. In other words, the upper tail of a GPD density
+is a (unnormalized) GPD density see figure~\ref{STABEX}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=10cm]{images/StableGPD.pdf}
+  \caption{\label{STABEX} \small ``Stability for exceedances'' of the GPD family.}
+\end{figure}
+
+
+When $\xi < 1$ the GPD corresponds to a linear mean residual life
+$$
+    \Esp\pCond{X - v}{X > v}  = \frac{ \sigma + \xi \,v }{1 -\xi }
+$$ 
+This may be used for threshold determination in POT:
+replacing the expectation by a sample mean we can check that the 
+mean excess life is linear: see Coles's book \cite{COLES}, chap.~4.
+
+If~$X$ is a random variable with a distribution in the domain of 
+attraction of a GEV distribution --~as in the Fisher-Tippett-Gnedenko theorem, 
+the GPD can be shown to be the limiting distribution of $Y=X-u$ conditional
+to $X >u$ when $u$ is large.  Moreover the parameter $\xi$ of the GPD
+coincides with that of the attracting GEV, see theorem~4.1 in Coles~\cite{COLES}. 
+This property provides a justification for the traditional exclusive use of the GPD
+for exceedances of POT models. An illustration for the Gumbel case
+$\xi = 0$ is given page~\pageref{GUMBEXP}.
+
+The GPD distribution has an infinite variance when $\xi \geqslant 1/2$. 
+In practice, the values used are generally in the range 
+$-0.3 \leqslant \xi \leqslant 0.3$.
+
+\subsubsection*{Estimation and inference}
+%%------------------------------------
+In the POT context the parameter $\mu$ is known. Moments estimator 
+for $\sigma$ and $\xi$ are readily available.
+
+For the ordinary sample (no historical data) case, \textbf{Renext}
+relies on the \verb@evd@ package~\cite{PACKevd} and its \verb@fpot@ 
+estimation function. 
+
+Note that ML estimators may fail to exist for the GPD in some
+situations.
+\index{GPD (distribution)|)}
+
+\subsection{Weibull}
+%%------------------
+\index{Weibull distribution}
+\subsubsection*{Definition}
+%%-----------------------
+The Weibull distribution has density and distribution functions
+$$
+  f(y) = \frac{\alpha}{\beta} \left[\frac{y}{\beta}\right]^{\alpha-1} e^{-\left(y/\beta\right)^\alpha} \qquad
+  F(y) =  1-e^{-\left(y/\beta\right)^\alpha} \qquad y \geqslant 0
+$$
+where $\alpha>0$ is the shape parameter and $\beta>0$ the scale 
+parameter. 
+
+\subsubsection*{Properties}
+%%-----------------------
+The properties of the Weibull depend on the shape parameter $\alpha>0$. 
+\begin{list}{$\bullet$}{ 
+    \setlength{\itemsep}{2pt} 
+    \setlength{\topsep}{2pt} 
+    }
+\item when $0 < \alpha < 1$ with decreasing hazard rate and 
+  increasing mean residual life MRL,
+\item when $\alpha = 1$ the distribution is exponential
+  with constant hazard rate and constant MRL.
+\item when $\alpha > 1$ with increasing hazard rate and 
+  decreasing MRL.
+\end{list}
+see reference~\cite{BAGNOLIBERGSTROM}.
+
+The return level of period $m>1$ is given by  
+$$
+    y_m = \beta \,\left[\log m\right]^{1/\alpha} 
+$$
+confirming that the exponential return level curve $[\log m,\, y_m]$
+is convex (concave upwards) for $0 < \alpha < 1$ and (downwards) concave 
+for $\alpha > 1$.
+
+The Weibull distribution is closely related to the exponential.
+When $Y$ is Weibull with shape $\alpha$ the random variable $Z=Y^{1/\alpha}$ has an 
+exponential distribution.
+Thus when $Y$ follows a Weibull distribution $V=-\log Y$ has
+a Gumbel distribution.
+
+\subsubsection*{Estimation and inference}
+%%------------------------------------
+The ML estimation is carried out by concentrating the scale parameter
+out of the likelihood. It can be shown that with a suitable reparametrization
+the concentrated likelihood  is a log-concave function having an unique maximum
+easily obtained through a one-parameter maximization.
+Moreover the expected information matrix can be given in closed form. 
+These tips are used in \textbf{Renext}.
+
+
+\subsubsection*{Goodness-of-fit}
+%%----------------------------
+Specific tests exist for Weibull distributions but are not yet
+in \textbf{Renext}. The fit can be controlled graphically
+with a\textit{ Weibull plot} \index{Weibull plot} 
+such as produced by the \verb@weibplot@ function.
+
+
+
+\subsection{Gamma}
+%%-------------------
+\index{gamma distribution|(}
+\subsubsection{Definition}
+%%-----------------------
+The gamma distribution  has density
+$$
+    f(y) = \frac{1}{\Gamma(\alpha) \,\beta^\alpha} \,y^{\alpha-1} e^{-y/\beta} \qquad y \geqslant 0
+$$
+where $\Gamma(\alpha)$ denotes the Euler's gamma function,
+$\beta>0$ is the scale parameter and $\alpha>0$ is the shape parameter.
+The distribution function does not have a simple expression.
+
+\subsubsection{Properties}
+%%-----------------------
+Expectation and variance  are given by
+$$
+   \Esp(Y)= \alpha \beta \qquad \Var(Y) = \alpha \beta^2
+$$
+Note that $\alpha$ is related to the coefficient of variation by
+$\textrm{CV}=1/\sqrt{\alpha}$.
+
+The properties of the distribution depend on the shape parameter 
+$\alpha>0$.
+
+\begin{list}{$\bullet$}{ 
+    \setlength{\itemsep}{2pt} 
+    \setlength{\topsep}{2pt} 
+    }
+\item for $0 < \alpha < 1$ the hazard rate is decreasing and the 
+  mean residual life MRL is increasing,
+\item for $\alpha=1$ the distribution is the exponential 
+   with constant hazard and constant MRL,
+\item for $\alpha>1$ the hazard rate is increasing and the MRL is 
+  decreasing.
+\end{list}
+see reference~\cite{BAGNOLIBERGSTROM}.
+
+The gamma distribution is not frequently  used to describe extremes. However
+in the decreasing hazard case  $0 < \alpha < 1$, it can be considered as a 
+continuous mixture  of exponentials.
+
+It can be shown that the gamma distribution falls in the domain 
+of attraction of the Gumbel distribution.
+
+\subsubsection{Estimation}
+%%-----------------------
+The ML estimation using an ordinary sample~$Y_i$ can be 
+done using a numerical optimization with moment estimators
+as initial values. These are readily available.
+
+As in the Weibull case, it is possible to concentrate
+the likelihood and thus to solve a one-parameter maximization
+problem. Moreover the maximization can be reduced to that of a concave 
+function, and the \textit{expected} information matrix can be computed. 
+However these improvements are not implemented yet in \textbf{Renext}.
+\index{gamma distribution|)}
+
+\subsection{Log -normal}
+%%---------------------
+\index{log-normal distribution|(}
+
+\subsubsection{Definition}
+%%-----------------------
+The log-normal distribution is the distribution of~$e^V$ where $V$ is normal. It
+has density
+$$
+    f(y) = \frac{1}{\sigma \sqrt{2\pi y}}\, 
+    \exp\left\{-\frac{1}{2\sigma^2} \,\left[ \log y - \mu \right]^2 \right\} \qquad y > 0
+$$
+where $\mu$ and $\sigma>0$ are the parameter of the normal distribution of $\log Y$.
+Note that these parameters are not the location nor the scale parameter since they
+are in the logged scale.
+
+\subsubsection{Properties}
+%%-----------------------
+The expectation and variance of the log-concave distribution are
+$$
+  \Esp(Y) = e^{\mu + \sigma^2/2} \qquad \Var(Y) = (e^{\sigma^2} - 1) \,e^{2\mu + \sigma^2}
+$$
+and the coefficient of variation is $\sqrt{e^{\sigma^2} - 1}$.
+
+For the log-normal distribution neither the hazard $h(y)$ nor the mean residual
+life $\textrm{MRL}(y)$ are monotonous functions. The mean residual life~$\textrm{MRL}(y)$ is 
+reputed\footnote{No proof of this assertion was found.} to be decreasing for large values of~$y$. 
+
+\subsubsection{Estimation and inference}
+%%-------------------------------------
+The ML estimation from an ordinary sample is straightforward using 
+the log transformation which resumes to the normal case. 
+Exact inference is also available for the parameters. 
+
+However, exact inference for the return levels
+or return periods is more complicated. Hence the standard numerical
+"delta method" is used in \textbf{Renext}.
+
+\subsubsection{Goodness-of-fit}
+%%----------------------------
+The fit of the log-normal distribution can be assessed using the 
+logged values and a normality test (e.g. Shapiro-Wilk). 
+Since the log-normal is not frequently used in POT, such a test is
+not in computed in \textbf{Renext}.
+\index{log-normal distribution|)}
+
+
+\subsection{Mixture of exponentials}
+%%--------------------------------
+\index{mixture of exponentials}
+\subsubsection*{Definition}
+%%-----------------------
+The mixture of exponentials is a distribution with density
+(or survival) function obtained as a weighed mean of exponential 
+densities (or survivals) with  different rates. 
+For a  mixture of two exponentials, the survival function $S(y) = 1-F(y)$  
+and density $f(y)$ are given by
+$$ 
+   S(y) = \alpha_1\,e^{-\lambda_1 y} + (1-\alpha_1)\,e^{-\lambda_2 y} \qquad
+   f(y) = \alpha_1\lambda_1\,e^{-\lambda_1 y} + (1-\alpha_1)\lambda_2\,e^{-\lambda_2 y}
+   \qquad y \geqslant 0
+$$
+and the parameters are $\alpha_1$, $\lambda_1$ and $\lambda_2$ must verify
+\begin{equation}
+   \label{eq:MIXEXPCONTR}
+   0 < \alpha_1 < 1 \qquad 0 < \lambda_1 < \lambda_2
+\end{equation}
+The usual interpretation of a mixture applies: the distribution
+is that of a random variable that would be randomly chosen from the exponential with 
+rate $\lambda_1$ or from the exponential with rate $\lambda_2$ the respective probabilities
+being $\alpha_1$ and $1-\alpha_1$.
+In survival analysis the mixture components correspond to two death 
+rates that may result from two causes of mortality or from the existence of
+two  sub-populations.
+
+
+\subsubsection*{Properties}
+%%-----------------------
+The expectation and uncentered moments have a simple form
+$$
+   \Esp(Y^\gamma) = \alpha_1/\lambda_1^\gamma + (1-\alpha_1)/\lambda_2^\gamma
+$$
+for any $\gamma>0$. The coefficient of variation is always greater than~$1$.
+
+For large values of $y$, the distribution function $F(y)$ no longer
+depends on the greatest rate~$\lambda_2$ since
+\begin{equation}
+    \label{eq:MIXEXPAPP}
+    1-F(y) \underset{y \rightarrow +\infty}{\sim} \alpha_1 \,e^{-\lambda_1 y}
+\end{equation}
+The survival analysis context provides a simple interpretation: after a
+large time~$y$ the sub-population with smaller death rate $\lambda_1$
+dominates, and the mean residual life therefore increases.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=8cm]{images/MixExp2.pdf}
+  \caption{\label{MIXEXP}\small Exponential plot for the distribution
+    function of a mixture of two exponentials. The curve shows the
+    cumulative hazard $H(y) = -\log[1-F(y)]$.
+    The slope of the tangent to the curve
+    at the origin is the weighed mean rate~$\lambda = \alpha_1 \lambda_1 + (1-\alpha_1) \lambda_2$. 
+    The slope of the asymptote is $\lambda_1$.  Note that $\lambda_1 < \lambda < \lambda_2$.
+   }
+\end{figure}
+
+It can be shown that the hazard rate function $h(y)$ is decreasing with
+a limit $\lambda_1$, and that the mean excess life is increasing with 
+a finite limit $1/\lambda_1$. This "rejuvenation effect" results from 
+the progressive extinction of the population having the highest death
+rate $\lambda_2$. The cumulative hazard $H(y)$ is concave see 
+figure~\ref{MIXEXP}.
+
+The quantile function is not available in closed form and must be 
+computed numerically.
+
+\subsubsection*{Estimation and inference}
+%%------------------------------------
+Note that the model would be unidentifiable if the second
+constraint of~(\ref{eq:MIXEXPCONTR}) was omitted since the
+distribution is invariant under the transformation
+$$
+   [\alpha_1,\,\lambda_1,\,\lambda_2] \rightarrow [1-\alpha_1,\,\lambda_2,\,\lambda_1]
+$$
+For an ordinary sample $Y_i$ the ML estimation can be done using 
+Expectation-Maximization (EM) \index{Expectation-Maximization}
+algorithm.  In this approach, each data $Y_i$ is associated to a latent variable $Z_i$
+with value $z=1$ or $z=2$ indicating the group (or sub-population) for observation~$i$ and
+consequently
+the rate $\lambda_z$.
+%%When the $Z_i$
+%are known, ML estimation of parameters is easy (the rates are weighted mean).
+%%An iterative procedure computes the expecation of the $Z_i$ and 
+
+In \textbf{Renext} the standard log-likelihood maximization is used. 
+Initial values are computed using the moments when possible, or
+using~(\ref{eq:MIXEXPAPP}): regressing
+$\log \left[1-F(y)\right]$ against $y$ for large values of $y$ give 
+$-\log \alpha_1$ (intercept) and $\lambda_1$ (slope), see figure~\ref{MIXEXP}. 
+Then $\lambda_2$ can be deduced from the sample mean. However
+care is needed since these estimates may not fulfill the constraint requirements. 
+
+\subsubsection*{Generalization}
+%%------------------------
+A  mixture of $m$ exponentials ($m \geqslant 2$) can be defined with
+$$ 
+   S(y) = \sum_{i=1}^m \alpha_i\,e^{-\lambda_i y} \qquad 
+   f(y) = \sum_{i=1}^m \alpha_i\lambda_i\,e^{-\lambda_i y} \qquad 
+   y \geqslant 0
+$$
+with constraints $0 < \alpha_i < 1$, $\sum_i \alpha_i =1$ and 
+$0 < \lambda_1 < \lambda_2 < \dots < \lambda_m$
+Since the parameter $\alpha_m$ can be dropped as in the $m=2$ case,
+the distribution depends on $2m-1$ free parameters.
+
+The behavior for large~$y$ results from~(\ref{eq:MIXEXPAPP}) which still applies.
+
+
+
+\subsection{Transformed Exponential distributions}
+%%============================================
+\label{TRANSEXP}
+\subsubsection*{Definition}
+%%----------------------
+This rather unformal family of distributions is sometimes used in hydrology.
+Although we will only consider in practice the two functions 
+$\phi(x) = x^2$ and $\phi(x) = \log x$ both for $x>0$,
+a slightly more general framework can be proposed as follows. 
+Let $\phi(x)$ be a regular and strictly increasing function
+defined for $x > x_0$ and let $u$ be a known value $u > x_0$. When a random
+variable
+$X$ is such that
+$$ 
+   \phi(X) - \phi(u) \sim \texttt{Exp}
+$$
+we may say that $X$ has a \textit{transformed exponential} distribution. 
+The values of this distribution are the $x$ with $x>u$.
+
+Note that the transformation needs to be one-to-one because the distribution 
+of $X$ must be determinable from that of $Z=\phi(X) - \phi(u)$. Then
+$$ 
+    X = \phi^{-1}(Z + \phi(u))
+$$
+where $\phi^{-1}(z)$ is the reciprocal function of $\phi(x)$.
+Thus  the square transformation can be applied only for~$x>0$.
+
+The distribution function is given by 
+$$ 
+   F_X(x) = 1- \exp\left\{-\nu \left[ \phi(x) - \phi(u) \right]\right\}
+   \qquad x > u
+$$
+where $\nu>0$ is the rate of the exponential distribution. The density comes 
+by derivation.
+
+\subsubsection*{Properties}
+%%-----------------------
+The properties of the distribution obviously depend on the choice of the 
+transformation. 
+\begin{list}{$\bullet$}{ }
+  \item For the square transformation $\phi(x) = x^2$ we get a 
+    shifted and truncated Weibull distribution as described below. It
+    may be called \textit{square-exponential} or (in french) \textit{loi en carr\'es}. 
+    \index{square-exponential distribution} 
+    \index{loi en carres@{\textit{loi en carr\'es}}}
+  \item With  the logarithmic  transformation $\phi(x) = \log x$ we get a shifted version 
+    of the Pareto (heavy tailed) distribution described below. It
+    may  be called \textit{log-exponential}. \index{log-exponential distribution} 
+  \end{list}
+The quantile function is available in closed form provided that the
+reciprocal function $\phi^{-1}(z)$ is such.  This is actually the 
+case for the two transformations considered.
+
+
+\subsubsection*{Estimation and inference}
+%%-------------------------------------
+As far as an ordinary sample $X_i$ is used, the ML  estimator~$\widehat{\nu}$ of 
+the rate~$\nu$ is available  using the mean  of the transformed 
+random variables~$Z_i = \phi(X_i)-\phi(u)$
+$$ 
+    1/\widehat{\nu} = \overline{Z} = \overline{\phi(X})-\phi(u)
+$$ 
+Exact inference on $\nu$ is deduced from the exponential case.
+
+
+\subsection{Shifted Left Truncated  Weibull (SLTW) distribution}
+%%============================================
+\label{SLTW}
+\subsubsection*{Definition}
+%%--------------------- 
+We call (shifted) \textit{left truncated Weibull} (SLTW) the following 
+distribution for a random variable~$Y > 0$. 
+\index{SLTW distribution}
+\index{shifted left truncated Weibull|see{SLTW}}
+It depends  on three parameters  $\delta>0$ (shift or location), $\beta>0$ (scale) 
+and $\alpha >0$ (shape) and has distribution function 
+$$
+    F(y) = 1 - 
+     \exp\left\{- \left[ \left(\frac{y+\delta}{\beta} \right)^\alpha 
+         -\left(\frac{\delta}{\beta}\right)^\alpha \right] \right\} 
+     \qquad y > 0 
+$$
+The density comes by derivation.  This is the conditional distribution 
+$\Cond{X-\delta}{X>\delta}$ where $X$ has Weibull distribution with shape $\alpha$ and scale 
+$\beta$.
+
+For $\alpha=2$ we can rewrite the distribution as
+$$
+   F(y) = 1 - \exp\left\{-\nu \left[(y+\delta)^2 - {\delta}^2 \right]\right\} 
+   \qquad y > 0
+$$
+thus the distribution is identical to the square-exponential described previously.
+\index{square-exponential distribution}
+\index{loi en carres@{\textit{loi en carr\'es}}}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=10cm]{images/SqExp.pdf}
+  \caption{\label{SQEXP}\small "Square exponential" densities, i.e. SLTW densities with shape 
+    $\alpha=2$. 
+    Only the part $y \geqslant 0$ of the Weibull densities is used and the normalization
+  is on the interval $y \geqslant 0$.}
+\end{figure}
+
+
+This three parameter family can be used for exceedances in POT, but 
+in a general framework there is no natural choice for $\delta>0$ in relation
+with a physical threshold~$u$, though the two quantities have the
+same physical dimension. For some applications of POT where the random 
+variable is 
+positive $\delta$ is sometimes chosen as the threshold $\delta = u$.
+
+\subsubsection*{Properties}
+%%-----------------------
+The three parameter family is (by construction) stable
+by exceedance over a threshold $>0$. 
+The moments or even the expectation are not easily computed in the general 
+case.  
+
+For $\alpha \leqslant 1$ the mode of $Y$ is always $y=0$. For $\alpha>1$  the mode of
+$Y$ is the positive part $y_+^\star$ of the shifted mode $y^\star$ of the Weibull i.e.
+$y^\star = \left(\alpha - 1\right)^{1/\alpha}\beta - \delta$. 
+Thus for a fixed $\alpha$ and $\delta$ we can
+have a mode varying with~$\beta$.
+
+The quantile function is available in closed form. 
+The hazard and the MRL for this distribution are merely truncations
+of their equivalent for the Weibull distribution, e.g. the hazard is 
+decreasing for $0 \leqslant \alpha <1$ and 
+increasing for $\alpha>1$.
+
+For $\alpha>0$ and large~$\delta$, the 
+distribution is close to the exponential since the Weibull distribution
+is in the domain of attraction of the Gumbel distribution for which the 
+exceedances over a large threshold tend to be exponentially distributed.
+
+Using the notation $\rho = \alpha/\beta^\alpha$ we can
+rewrite the distribution as
+\begin{equation}
+    \label{eq:BOXCOXED}
+    F(y) = 1 - 
+    \exp \left\{ - \rho\, \left[ 
+        \phi_\alpha(y + \delta)
+          -\phi_\alpha (\delta)  
+        \right] \right\} \qquad y > 0 
+\end{equation}
+where $\phi_\alpha(z)$ is the Box-Cox transformation defined for $z>0$ by
+$$
+   \phi_\alpha(z) = 
+   \begin{cases} 
+     (z^\alpha - 1)/\alpha & \alpha > 0\\
+     \log z                & \alpha = 0 
+   \end{cases}
+$$
+The function $\phi_\alpha(z)$ is strictly increasing with limit $+\infty$ when 
+$z \rightarrow +\infty$ and it is regular with respect 
+to~$\alpha$ for $\alpha=0$.
+Thus if $\alpha$ and $\beta$ both
+tend to zero in such way that $\rho$ tends to a limit $\rho^\star>0$ the
+distribution tends to a shifted Pareto distribution described below. The
+limit distribution is~(\ref{eq:BOXCOXED}) with $\alpha=0$ and 
+$\rho=\rho^\star$.
+
+
+\subsubsection*{Estimation}
+%%------------------------
+The $\delta$ parameter should be known and given. 
+
+Note that when  both $\alpha$ and $\delta$ are known and
+when the estimation is from an ordinary sample $Y_i$ of size~$n$,
+the ML estimator~$\widehat{\rho} = \alpha/\beta^\alpha$ of~$\rho$ is available 
+using the mean of the transformed $Y_i$
+$$ 
+    1/\widehat{\rho} = \overline{\phi_\alpha(Y+\delta)}-\phi_\alpha(\delta)
+$$ 
+Exact inference on $\rho$ could easily deduced from the exponential case.
+However this option is not yet implemented in \textbf{Renext} and is only 
+accessible when $\alpha=2$ using \verb@fRenouv@ with the transformation 
+argument~\verb@trans.y = "square"@ in conjunction with the exponential 
+distribution~\verb@distname.y = "exponential"@.
+
+
+
+\subsection{Shifted Pareto}
+%%========================
+\label{SPARETO}
+\subsubsection*{Definition}
+%%-----------------------
+\index{shifted Pareto distribution}
+We call \textit{shifted Pareto} the distribution depending 
+on two parameter $\delta$ (location or shift) 
+and $\rho>0$ (shape)  with distribution function
+$$
+    F(y) = 1 - \left[\frac{\delta}{y + \delta} \right]^\rho \qquad y > 0
+$$
+When $Y$ is a random variable following this distribution, 
+$X= Y +\delta$ is Pareto with minimum~$x_0 =\delta$
+and shape~$\rho$ that is 
+$$
+   F_X(x) = 1 -  \left[\frac{x_0}{x} \right]^\rho \qquad x > x_0
+$$
+\index{Pareto distribution} 
+The Pareto distribution with minimum $x_0$ and
+shape $\rho$ is a special case of $\texttt{GPD}(\mu,\,\sigma,\,\xi)$ with 
+location $\mu = x_0$, shape $\xi=1/\rho$ (positive) and the 
+extra constraint $\sigma/\xi = x_0$.
+
+We can rewrite the distribution function of~$Y$ in the form~(\ref{eq:BOXCOXED})
+above with a parameter $\alpha=0$ for the Box-Cox transformation then resuming to a log
+transformation. 
+Therefore
+the distribution can be considered as a limit case of the shifted Left Truncated 
+Weibull. We may speak of  \textit{log-exponential distribution} although the 
+expression is ambiguous.
+\index{log-exponential distribution}
+
+
+\subsubsection*{Properties}
+%%-----------------------
+The quantile function is available in closed form.
+
+The expectation is finite only for $\rho > 1$ and the variance is finite only for $\rho>2$.
+In this case
+$$
+   \Esp(Y) = \frac{1}{\rho-1} \,\delta  \qquad 
+   \Var(Y) = \frac{\rho}{(\rho-1)^2(\rho-2)} \,\delta^2 
+$$
+and $\textrm{CV}(Y) = \sqrt{\rho/(\rho-2)} >1$. Only cases with $\rho>2$ seem practicable. 
+
+\subsubsection*{Estimation}
+%%-----------------------
+When $\delta>0$ is known the estimation reduces to that of the 
+exponential distribution. Exact inference is available, 
+but is not implement as such in \textbf{Renext} with the \verb@spareto@
+distribution. 
+
+Yet exact inference is possible in the case where the shift $\delta$ is taken as the 
+threshold i.e; $\delta = u$. The exponential distribution should then be used with a
+logarithmic transformation. The two formal arguments and values to use in
+the \verb@fRenouv@ call are \verb@distname.y = "exponential"@ and
+\verb@trans.y = "log"@.
+
+
+
+\subsection{Other distributions}
+%%---------------------------
+It is possible to use a quite arbitrary distribution within the \verb@fRenouv@
+function provided the probability functions\footnote{Density, distribution and quantile
+functions are required.}
+are available in~R and satisfy the conditions stated in the help of the \verb@fRenouv@ 
+function.
+
+
+%%\nocite*
+\bibliography{Renext}
+\bibliographystyle{plain}
+
+
+
+
+
+
+\printindex
+\end{document}
+
