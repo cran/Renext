@@ -1,5 +1,6 @@
 \name{gofExp.test}
 \alias{gofExp.test}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Goodness-of-fit test for exponential distribution}
 \description{
@@ -19,11 +20,11 @@
   \item{p.value}{Critical value}
 }
 \references{See
-  Yagouti A., Abi-Zeid I., Ouarda, T.B.M.J. and B. Bobee (2001),
-  Revue de processus ponctuels et synthese de tests statistiques pour le
+  Yagouti A., Abi-Zeid I., Ouarda, T.B.M.J. and B. \enc{Bobée}{Bobee} (2001),
+  Revue de processus ponctuels et \enc{synthèse}{synthese} de tests statistiques pour le
   choix d'un type de processus \emph{Revue des Sciences de l'Eau}, \bold{1}, pp. 323-361.
 }
-\author{Y. Deville}
+\author{Yves Deville}
 %%\note{ }
 \seealso{Among other goodness-of-fit tests \code{\link{ks.test}} in the
  \code{stats} package. See \code{\link{expplot}} for a graphical diagnostic.

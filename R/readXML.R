@@ -617,7 +617,7 @@ readXML <- function(name,
                         end = OTinfo$end)
     
     checkDuration <-
-      sum(as.numeric(difftime(noskip$end, noskip$start, unit = "day") / 365.25))
+      sum(as.numeric(difftime(noskip$end, noskip$start, units = "day") / 365.25))
 
     if (abs(checkDuration - OTinfo$effDuration) > 0.1)
       warning("'effDuration' attributes does not agrre with computation")
@@ -626,7 +626,7 @@ readXML <- function(name,
     
   } else {
     checkDuration <-
-       sum(as.numeric(difftime(OTinfo$end, OTinfo$start, unit = "day") / 365.25))
+       sum(as.numeric(difftime(OTinfo$end, OTinfo$start, units = "day") / 365.25))
 
     if (abs(checkDuration - OTinfo$effDuration) > 0.1)
       warning("'effDuration' attributes does not agrre with computation")
@@ -795,7 +795,7 @@ readXML <- function(name,
     
     OTSinfo <- data.frame(start = as.POSIXct(OTSinfo$start),
                           end = as.POSIXct(OTSinfo$end),
-                          duration = round(as.numeric(difftime(OTSinfo$end, OTSinfo$start, units= "day") /365),
+                          duration = round(as.numeric(difftime(OTSinfo$end, OTSinfo$start, units = "day") /365),
                             digits = 2),
                           threshold = as.numeric(OTSinfo$threshold),
                           r = as.integer(OTSinfo$r))
@@ -815,186 +815,4 @@ readXML <- function(name,
   MyList
   
 }
-
-##============================================================
-## plot composite datasets as those read by readXML function
-## from an XML/csv source.
-##
-##
-##============================================================
-
-plot.Rendata <- function(x,
-                         textOver = quantile(x$OTdata[, x$info$varName], probs = 0.99),
-                         ...) {
-
-  periodsLeg <- c("OTdata", "OTSdata", "MAXdata")
-  periodsBg <-  c("lightcyan", "lightyellow", "DarkOliveGreen1")
-  names(periodsBg) <- periodsLeg
-  periodsFg <- c("cyan", "gold", "DarkOliveGreen2")
-  names(periodsFg) <- periodsLeg
-  periodsFlag <- c(TRUE, FALSE, FALSE)
-  names(periodsFlag) <- periodsLeg
-  
-  y <- x$OTdata[ , x$info$varName]
-  start <- as.POSIXct(x$OTinfo$start)
-  end <- as.POSIXct(x$OTinfo$end)
-  ymin <-  x$OTinfo$threshold ## min(y)
-  ymax <- max(y)
-  
-  if (!is.null(x$OTSinfo)) {
-    OTSstart <- as.POSIXct(x$OTSinfo$start)
-    OTSend <- as.POSIXct(x$OTSinfo$start)
-    start <- min(start, OTSstart)
-    end <- max(end, OTSend)
-    if (!is.null(x$OTSdata)) {
-      ymin <- min(ymin, min(x$OTSdata[ , x$info$varName]))
-      ymax <- max(ymax, max(x$OTSdata[ , x$info$varName]))
-    }
-  }
-  
-  if (!is.null(x$MAXinfo)) {
-    MAXstart <- as.POSIXct(x$MAXinfo$start)
-    MAXend <- as.POSIXct(x$MAXinfo$start)
-    start <- min(start, MAXstart)
-    end <- max(end, MAXend)
-    ymin <- min(ymin, min(x$MAXdata[ , x$info$varName]))
-    ymax <- max(ymax, max(x$MAXdata[ , x$info$varName]))
-  }
-
-  yLab <- x$info$varName
-  if (!is.null(x$info$varUnit))
-    yLab <- paste(yLab, " (", x$info$varUnit, ")", sep = "")
-  
-  plot(x = x$OTdata[ , "date"],
-       y = x$OTdata[ , x$info$varName],
-       type ="n",
-       xlim = c(start, end),
-       ylim = c(ymin, ymax),
-       xlab = " ",
-       ylab = yLab,
-       main = x$info$longLab,
-       ...)
-
-  rg <- par()$usr[3:4]
-  drg <- rg[2]-rg[1]
-  rg <- rg + c(drg, -drg)/100
-  ## cat("rg = \n"); print(rg)
-  
-  rect(xleft = x$OTinfo$start,
-       xright = x$OTinfo$end,
-       ybottom = rg[1],
-       ytop = rg[2],
-       col = periodsBg["OTdata"], border = periodsFg["OTdata"])
-  
-  ## show the missing periods
-  if (!is.null(x$OTmissing)) {
-    for (i in 1:nrow(x$OTmissing)) {
-      polygon(x = c(x$OTmissing$start[i], x$OTmissing$end[i],
-                x$OTmissing$end[i],  x$OTmissing$start[i]),
-              y = rep(rg, each = 2),
-              border = periodsBg["OTdata"], col = "white")
-    }
-  }
-  
-  lines(x = x$OTdata[ , "date"],
-        y = x$OTdata[ , x$info$varName],
-        type ="h",
-        col = "SteelBlue3")
-  
-  ## show the threshold for OTdata
-  lines(x = as.POSIXct(c(x$OTinfo$start, x$OTinfo$end)),
-        y = rep(as.numeric(x$OTinfo$threshold), times = 2),
-        col = "orange", lwd = 2)
-
-  if (!is.na(textOver)){
-    ind <- (x$OTdata[, x$info$varName] > textOver)
-    if (any(ind)) {
-      points(x = x$OTdata[ind, "date"],
-             y = x$OTdata[ind, x$info$varName],
-             pch = 21, cex = 0.7,
-             col = "SteelBlue4")
-      text(x = x$OTdata[ind, "date"],
-           y = x$OTdata[ind, x$info$varName],
-           labels = format(x$OTdata[ind, "date"], "%Y-%m-%d"),
-           col = "SteelBlue4",
-           pos = 4, cex = 0.7)
-    }
-  }
-  
-  if (!is.null(x$OTSinfo)) {
-    periodsFlag["OTSdata"] <- TRUE
-    for (i in 1:nrow(x$OTSinfo)) {
-      rect(xleft = x$OTSinfo$start[i],
-           xright = x$OTSinfo$end[i],
-           ybottom = rg[1],
-           ytop = rg[2],
-           col = periodsBg["OTSdata"], border = periodsFg["OTSdata"])
-      
-      lines(x = as.POSIXct(c(x$OTSinfo$start[i], x$OTSinfo$end[i])),
-            y = rep(x$OTSinfo$threshold[i], times = 2),
-            col = "orange", lwd = 2)
-    }
-    if (!is.null(x$OTSdata)) {
-      lines(x = x$OTSdata[ , "date"],
-            y = x$OTSdata[ , x$info$varName],
-            type ="h",
-            col = "red3")
-
-      if (!is.na(textOver)){
-        ind <- (x$OTSdata[, x$info$varName] > textOver)
-        if (any(ind)) {
-          points(x = x$OTSdata[ind, "date"],
-             y = x$OTSdata[ind, x$info$varName],
-                 pch = 21, cex = 0.7,
-                 col = "red3")
-          text(x = x$OTSdata[ind, "date"],
-               y = x$OTSdata[ind, x$info$varName],
-               labels = format(x$OTSdata[ind, "date"], "%Y-%m-%d"),
-               col = "red3",
-               pos = 4, cex = 0.7)
-        }
-      }
-    }
-  }
-  
-  if (!is.null(x$MAXinfo)) {
-    periodsFlag["MAXdata"] <- TRUE
-    if (!is.null(x$MAXdata)) {
-      for (i in 1:nrow(x$MAXinfo)) {
-        rect(xleft = x$MAXinfo$start[i],
-             xright = x$MAXinfo$end[i],
-             ybottom = rg[1],
-             ytop = rg[2],
-             col = periodsBg["MAXdata"], border = periodsFg["MAXdata"])  
-      }
-      lines(x = x$MAXdata[ , "date"],
-            y = x$MAXdata[ , x$info$varName],
-            type ="h",
-            col = "SpringGreen4")
-      if (!is.na(textOver)){
-        ind <- (x$MAXdata[, x$info$varName] > textOver)
-        if (any(ind)) {
-          points(x = x$MAXdata[ind, "date"],
-                 y = x$MAXdata[ind, x$info$varName],
-                 pch = 21, cex = 0.7,
-                 col = "SpringGreen4")
-          text(x = x$MAXdata[ind, "date"],
-               y = x$MAXdata[ind, x$info$varName],
-               labels = format(x$MAXdata[ind, "date"], "%Y-%m-%d"),
-               col = "SpringGreen4",
-               pos = 4, cex = 0.7)
-        }
-      }
-    }
-  }
-  
-
-  legend("topleft",
-         fill = periodsBg[periodsFlag],
-         col = periodsFg[periodsFlag],
-         legend = periodsLeg[periodsFlag])
-  
-}
-
-
 

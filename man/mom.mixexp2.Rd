@@ -2,8 +2,8 @@
 \alias{mom.mixexp2}
 \title{Moment estimation for the mixture of two exponential distributions}
 \description{
-  Compute the moment estimation for the tree parameters of the mxture of
-  two exponentials
+  Compute the moment estimation for the tree parameters of the mixture of
+  two exponential distributions
 }
 \usage{
    mom.mixexp2(x)
@@ -14,7 +14,7 @@
 }
 \details{
   The three parameters (probability and the two rates) are computed from
-  the first three moments (theroretical and sample). It can be shown
+  the first three moments (theoretical and sample). It can be shown
   that the inverse rates are obtained solving a quadratic
   equation. However the roots can be negative or complex and the
   estimates are not valid ones.
@@ -37,8 +37,8 @@
 }
 \author{Yves Deville}
 \note{
-The theroretical coefficient of variation (CV) of a mixture of two
-exponentials always exceed 100\%. When the sample CV is over 100\%, no
+The theoretical coefficient of variation (CV) of a mixture of two
+exponential distributions always exceed 100\%. When the sample CV is over 100\%, no
 valid estimates exist since the two first moments can not be matched.
 }
 \seealso{See \code{\link{ini.mixexp2}} for a more versatile initial

@@ -11,15 +11,15 @@
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{date}{a POSIXct vector containing the date(time) of the events}
-  \item{skip}{a data.frame containing two POSIXct columns \code{start} and
+  \item{date}{A POSIXct vector containing the date(time) of the events.}
+  \item{skip}{A data.frame containing two POSIXct columns \code{start} and
     \code{end} describing the periods to skip over. }
-  \item{noskip}{a data.frame like \code{skip} but where the periods
+  \item{noskip}{A data.frame like \code{skip} but where the periods
     define the NON skipped part of the events.}
 }
 \details{
    Interevents are the time differences between successive
-   dates. When the \code{date} argument contains occurence times
+   dates. When the \code{date} argument contains occurrence times
    \eqn{T_i}{T[i]} for successive events of an homogeneous Poisson
    process, interevents \eqn{T_i -T_{i-1}}{T[i]-T[i-1]} are mutually
    independent with the same exponential distribution.
@@ -30,7 +30,7 @@
    such that the time interval
    \eqn{(T_{i-1},\,T_i)}{(T[i-1], T[i])} does not contains any
    skipped interval. 
-   These interevents still are mututally independent
+   These interevents still are mutually independent
    with the same exponential distribution. 
    When \code{skip} or \code{noskip} is not \code{NULL} the computation therefore only retains
    couples of two successive datetimes

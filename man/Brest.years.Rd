@@ -1,9 +1,9 @@
 \name{Brest.years}
 \alias{Brest.years}
 \docType{data}
-\title{Surge heigths at Brest partial data}
+\title{Surge heights at Brest partial data}
 \description{
-  Surge heigths at Brest (France) 
+  Surge heights at Brest (France) 
 }
 \usage{data(Brest.years)}
 \format{

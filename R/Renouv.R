@@ -1,52 +1,496 @@
+##===================================================================
+## Retrieves colnames for confidence or prediction bands
+## from a dataframe given in 'x'. The levels are given in
+## the colnames
+##
+## NEW IN VERSION  1.3-5
+##===================================================================
+
+predNames <- function(x, prefix = c("L", "U")) {
+
+  cn <- names(x)
+  mn <- character(0)
+  pct <- character(0)
+  type <- character(0)
+  
+  ## find the narrowest confint
+  if ("L" %in% prefix) {
+    ##pct.L <- grep("L.[0-9]*$", cn, value = TRUE)
+    pct.L <-  grep("^L.[0-9]*\\.?[0-9]*$", cn, value = TRUE)
+    if (ln <- length(pct.L)) {
+      mn <- c(mn, pct.L)
+      type <- c(type, rep("L", ln))
+      pct <- c(pct, gsub("L.", "", pct.L))
+    }
+  }
+  if ("U" %in% prefix) {
+    pct.U <- grep("^U.[[:digit:]]*\\.?[[:digit:]]*$", cn, value = TRUE)
+    if (ln <- length(pct.U)) {
+      mn <- c(mn, pct.U)
+      type <- c(type, rep("U", ln))
+      pct <- c(pct, gsub("U.", "", pct.U))
+    }
+  }
+    
+  list(names = mn,
+       type = type,
+       pct = as.numeric(pct))
+  
+}
+
+##===================================================================
+## Compute limits for levels using confidence or prediction bands
+## as well as historical data.
+##
+## NEW IN VERSION 1.4-0
+##
+##===================================================================
+
+rangeLev.Renouv <- function(x,
+                            show.MAX = TRUE,
+                            show.OTS = TRUE,
+                            Tlim = NULL) {
+
+  pn <- predNames(x$ret.lev, prefix = c("L", "U"))
+  pnn <- c("quant", pn$names)
+
+  ## cat("pn = ", pnn, "\n")
+  Tlim <- range(x$pred$period, Tlim)
+  ## cat("x$pred = \n"); print(x$pred)
+  ## cat("Tlim = \n"); print(Tlim)
+  
+  if (!is.null(Tlim)) {
+    period <- x$ret.lev$period
+    ind <- (period >= Tlim[1]) & (period <= Tlim[2])
+    r <- range(x$ret.lev[ind, pnn], x$x.OT)
+  } else {
+    r <- range(x$ret.lev[ , pnn], x$x.OT)
+  }
+    
+  if (x$history.MAX$flag && show.MAX) {
+    x1 <- unlist(x$history.MAX$data)
+    if (length(x1)) r <- range(r, range(x1))
+  } 
+  
+  if (x$history.OTS$flag && show.OTS) {
+    x1 <- unlist(x$history.OTS$threshold)
+    if (length(x1)) r <- range(r, range(x1))
+    x1 <- unlist(x$history.OTS$data)
+    if (length(x1)) r <- range(r, range(x1))
+  }
+  
+  r 
+   
+}
+
+##=====================================================================
+## round quantiles and confidence limits using a 
+## suitable number of digits
+##=====================================================================
+
+roundPred <- function(pred, dig.quant = NA) {
+
+  cn <- colnames(pred)
+  ## find the narrowest confint
+  pct.L <- grep("L.[0-9]", cn, value = TRUE)
+  pct.U <- grep("U.[0-9]", cn, value = TRUE)
+  
+  if (is.na(dig.quant) || length(dig.quant) == 0) {
+    
+    disp <- FALSE
+    if (length(pct.L)) {
+      i <- which.min(substring(pct.L, first = 3))
+      vn1 <- pct.L[i]
+      disp <- TRUE
+    } else vn1 <- "quant"
+    if (length(pct.U)) {
+      i <- which.min(substring(pct.U, first = 3))
+      vn2 <- pct.U[i]
+      disp <- TRUE
+    } else vn2 <- "quant"
+    
+    prec <-  mean(pred[ ,"quant"])/100
+    if (disp)  prec <- pmin(prec, min(pred[ ,vn2] - pred[, vn1]))
+    dig.quant <- -floor(log(prec, base = 10))
+    if (dig.quant < 0) dig.quant <-  0 
+  } 
+
+  ## roudn all selected variables
+  pred.mod <- pred
+  ind <- c("quant", pct.L, pct.U)
+  pred.mod[ , ind] <- round(pred.mod[ , ind], digits = dig.quant) 
+  pred.mod
+  
+}
+
+##===================================================================
+## add a small amount of noise to x
+##
+##===================================================================
+
+OTjitter <- function(x, threshold = NULL) {
+  d <- diff(sort(x))
+  signoise <- pmin(min(d[d>0]) / 5, mean(abs(x))/500)
+  mynoise  <- rnorm(length(x), mean = 0, sd = signoise)
+  x.noised <- x + mynoise
+  if (length(threshold) > 0) {
+    if (any(x < threshold)) stop("'threshold' must be a numeric <= min(x)")
+    ind <- x.noised < threshold
+    x.noised[ind] <- x[ind] + abs(mynoise[ind])
+  }
+  x.noised  
+}
+
+##======================================================================
+## summary method for 'Renouv'
+##======================================================================
+
+summary.Renouv <- function(object,
+                           correlation = FALSE,
+                           symbolic.cor = FALSE,
+                           ...) {
+
+  ## distribution
+  ans <- object
+
+  ## improve info on degree of freedom
+  ans$df <- as.integer(c(object$p, object$df))
+  names(ans$df) <- c("par", "obs")
+  ## coefficients: take care for fixed ones!
+  
+  est <- object$estimate
+  se <- sqrt(diag(object$cov))
+  tval <- est/se
+    
+  ## correction odf df due to historical data
+  rdf <- object$df - object$p
+  
+  ans$coefficients <-
+    cbind(est, se, tval, 2*pt(abs(tval), rdf, lower.tail = FALSE))
+  
+  dimnames(ans$coefficients) <-
+    list(names(est), c("Estimate", "Std. Error", "t value", "Pr(>|t|)"))
+  
+  ans$pred <- roundPred(object$pred)
+
+  if (correlation) {
+    ans$correlation <- object$corr
+    ans$symbolic.cor <- symbolic.cor  
+  }
+ 
+  class(ans) <- "summary.Renouv"
+  ans
+
+}
+
+print.summary.Renouv <-
+  function(x,
+           coef = TRUE,
+           pred = TRUE,
+           probT = FALSE,
+           digits = max(3, getOption("digits") - 3),
+           symbolic.cor = x$symbolic.cor,
+           signif.stars = getOption("show.signif.stars"),
+           ...) {
+  
+  ## cat(sprintf("o Number of OT observations : %d\n", length(x$y.OT)))
+  cat(sprintf(paste("o Main sample 'Over Threshold'\n",
+                    "   . Threshold        %8.2f\n",
+                    "   . Effect. duration %8.2f years\n",
+                    "   . Nb. of exceed.   %5d\n\n",
+                    collapse = ""),
+              x$threshold, x$effDuration, length(x$y.OT)))
+ 
+  cat(sprintf("o Estimated rate 'lambda' for Poisson process (events): %5.2f evt/year.\n\n",
+              x$estimate["lambda"]))
+ 
+  cat(sprintf("o Distribution for exceedances y: \"%s\", with %d par. ",
+              x$distname.y, x$p.y))
+  cat(paste(sprintf("\"%s\"", x$parnames.y), collapse = ", "), "\n\n")
+
+  if (x$transFlag){
+    cat(sprintf("o Transformation applied: \"%s\"\n\n",
+                x$trans.y))
+  } else {
+    cat("o No transformation applied\n\n")
+  }
+    
+  if (coef) {
+    cat("o Coefficients\n\n")
+
+    if (!probT) {
+      print(x$coefficients[ , 1:3])
+
+    } else {
+      printCoefmat(x$coefficients,
+                   digits = digits,
+                   signif.stars = signif.stars,
+                   na.print = "NA", ...)
+    }
+    cat("\n")
+    cat(sprintf("Degrees of freedom: %d (param.) and %d (obs)\n", x$df["par"], x$df["obs"]))
+    cat("\n")
+  }
+  
+  if (any(x$fixed)) {
+    cat("The following coef. were fixed\n")
+    print(names(x$fixed)[x$fixed])
+    cat("\n")
+  }
+  
+  cat(sprintf("o Inference method used for return levels\n\"%s\"\n\n",
+              x$infer.method))
+  
+  if (pred) {
+    cat("o Return levels\n\n")
+    print(x$pred)
+    cat("\n\n")
+  }
+  
+  if (x$history.MAX$flag) {
+    cat(sprintf("o 'MAX' historical info: %d  blocks, %d obs., total duration = %5.2f years\n\n",
+                nlevels(x$history.MAX$block),
+                length(unlist(x$history.MAX$data)),
+                sum(x$history.MAX$effDuration)))
+    
+    for ( i in 1L:nlevels(x$history.MAX$block) ) {
+
+      Zi <- x$history.MAX$data[[i]]
+      ri <- length(Zi)
+      
+      if ( ri <= 12L ) {
+        obs.str <- paste(format(Zi),  collapse = ", ")
+      } else {
+        obs.str <- paste(paste(format(Zi[1L:3L]), collapse = ", "),
+                         "...",
+                         paste(format(Zi[(ri-2L):ri]), collapse = ", "),
+                         sep = ", ")
+      }
+      cat(sprintf("  * block %d, %5.2f years, %d obs.\n\n     %s\n\n",
+                  i, x$history.MAX$effDuration[[i]], ri, obs.str))
+      
+    }
+    
+  } else {
+    cat("o no 'MAX' historical data\n\n")
+  }
+  
+  if (x$history.OTS$flag) {
+    cat(sprintf("o 'OTS' historical info: %d  blocks, %d obs., total duration = %5.2f years\n\n",
+                nlevels(x$history.OTS$block),
+                length(unlist(x$history.OTS$data)),
+                sum(x$history.OTS$effDuration)))
+    
+    for ( i in 1L:nlevels(x$history.OTS$block) ) {
+      
+      Zi <- x$history.OTS$data[[i]]
+      ri <- length(Zi)
+      
+      if ( (ri > 1L) && (ri <= 12L) ) {
+        obs.str <- paste(format(Zi),  collapse = ", ")
+      } else {
+        obs.str <- paste(paste(format(Zi[1L:3L]), collapse = ", "),
+                         "...",
+                         paste(format(Zi[(ri-2L):ri]), collapse = ", "),
+                         sep = ", ")
+      }
+      cat(sprintf("  * block %d, %5.2f years, thresh. %8.2f, %d obs.\n\n    %s\n\n",
+                  i, x$history.OTS$effDuration[[i]],
+                  x$history.OTS$threshold[[i]],
+                  ri, obs.str))
+      
+    }
+
+  } else {
+    cat("o no 'OTS' historical data\n\n")
+  }
+
+  ## 2012-12-22 PREVIOUS CODE
+  if (FALSE) {
+    
+    if (x$history.MAX$flag) {
+      cat(sprintf("o 'MAX' historical info: %d blocks, %d obs., total duration = %5.2f years\n\n",
+                  nlevels(x$history.MAX$block),
+                  length(unlist(x$history.MAX$data)),
+                  sum(x$history.MAX$effDuration)))
+      
+    } else  cat("o no 'MAX' historical data\n\n")
+    
+  
+    if (x$history.OTS$flag) {
+      cat(sprintf("o 'OTS' historical info: %d blocks, %d obs., total duration = %5.2f years\n\n",
+                  nlevels(x$history.OTS$block),
+                  length(unlist(x$history.OTS$data)),
+                sum(x$history.OTS$effDuration)))
+    } else  cat("o no 'OTS' historical data\n\n")
+
+  } 
+  
+  
+  cat("o Kolmogorov-Smirnov test\n")
+  print(x$KS.test)
+  cat("\n")
+
+  ## copied from 'print.summary.lm' in the 'stats' package
+  correl <- x$correlation
+  if (!is.null(correl)) {
+    p <- NCOL(correl)
+    if (p > 1L) {
+      cat("o Correlation of Coefficients:\n")
+      if(is.logical(symbolic.cor) && symbolic.cor) {# NULL < 1.7.0 objects
+        print(symnum(correl, abbr.colnames = NULL))
+        cat("\n")
+      } else {
+        correl <- format(round(correl, 2), nsmall = 2, digits = digits)
+        correl[!lower.tri(correl)] <- ""
+        print(correl[-1, -p, drop = FALSE], quote = FALSE)
+        cat("\n")
+      }
+    }
+  }
+  
+  
+}
+
+##===========================================================================
+##
+##===========================================================================
+
+format.summary.Renouv <-
+  function(x,
+           ...) {
+  
+  ## cat(sprintf("o Number of OT observations : %d\n", length(x$y.OT)))
+  text <- sprintf(paste("o Main sample 'Over Threshold'\n",
+                    "   . Threshold        %8.2f\n",
+                    "   . Effect. duration %8.2f years\n",
+                    "   . Nb. of exceed.   %5d\n\n",
+                    collapse = ""),
+              x$threshold, x$effDuration, length(x$y.OT))
+ 
+  text <- paste(text,
+                sprintf("o Estimated rate 'lambda' for Poisson process (events): %5.2f evt/year.\n\n",
+                        x$estimate["lambda"]))
+ 
+  text <- paste(text, sprintf("o Distribution for exceedances y: \"%s\", with %d par. ",
+                              x$distname.y, x$p.y))
+
+  text <- paste(text, paste(sprintf("\"%s\"", x$parnames.y), collapse = ", "), "\n\n")
+
+  if (any(x$fixed)) {
+    cat("The following coef. were fixed\n", names(x$fixed)[x$fixed], "\n")
+  }
+
+  if (x$history.MAX$flag) {
+    text <- paste(text,
+                  sprintf("o 'MAX' historical info: %d blocks, %d obs., total duration = %5.2f years\n\n",
+                          nlevels(x$history.MAX$block), length(unlist(x$history.MAX$data)),
+                          sum(x$history.MAX$effDuration)))
+    
+  } else  text <- paste(text, "o no 'MAX' historical data\n\n")
+  
+  
+  if (x$history.OTS$flag) {
+    text <- paste(text, sprintf("o 'OTS' historical info: %d blocks, %d obs., total duration = %5.2f years\n\n",
+                                nlevels(x$history.OTS$block), length(unlist(x$history.OTS$data)),
+                                sum(x$history.OTS$effDuration)))
+  } else  text <- paste(text, "o no 'OTS' historical data\n\n")
+  
+  text <- paste(text, sprintf("o Kolmogorov-Smirnov test\n   D = %6.4f, p-value = %6.4f\n",
+                              x$KS.test$statistic, x$KS.test$p.value))
+  
+  text
+  
+}
 
 ##====================================================================
-## Prefer corr and sd to covariance?
+## coefficients method
+##
 ##====================================================================
 
-"cov2corr" <- function(cov) {
-  s <- sqrt(diag(cov))
-  res <- cov / outer(X = s, Y = s, FUN = "*")
-  res
+coef.Renouv <- function(object, ...) {
+  object$estimate
 }
 
 ##====================================================================
 ## Author: Y. Deville
 ##
 ## The black-box maximization of the log-likelhood is inspired
-## fitdistr of B. Ripley or 
+## 'fitdistr' of Brian Ripley (package MASS)
 ##
 ##====================================================================
 
-"fRenouv" <- function(x.OT,
-                      sumw.BOT = 1.0,
-                      z.H = NULL,
-                      block.H = NULL,
-                      w.BH = NULL,
-                      x.U = NULL,
-                      w.U = NULL,
-                      distname.y = "exponential",
-                      fixed.par.y = NULL,
-                      start.par.y = NULL,
-                      force.start.H = FALSE,
-                      numDeriv = TRUE,
-                      threshold,
-                      trans.y = NULL,
-                      conf.pct = c(95, 70),
-                      prob = NULL,
-                      prob.max = 0.9995,
-                      pred.period = NULL,
-                      suspend.warnings = TRUE,
-                      control = list(maxit = 300, fnscale = -1),
-                      control.H = list(maxit = 300, fnscale = -1),
-                      trace = 0,
-                      plot = TRUE,
-                      main = "",
-                      ylim = NULL,
-                      ...) {
-
-  ## for numerical differentiation
-  eps <- sqrt(.Machine$double.eps)
+Renouv <- function(x,
+                   threshold = NULL,
+                   effDuration = NULL,
+                   distname.y = "exponential",
+                   MAX.data = NULL,
+                   MAX.effDuration = NULL,
+                   OTS.data = NULL,
+                   OTS.effDuration = NULL,
+                   OTS.threshold = NULL,
+                   fixed.par.y = NULL,
+                   start.par.y = NULL,
+                   force.start.H = FALSE,
+                   numDeriv = TRUE,
+                   trans.y = NULL,
+                   jitter.KS = TRUE,
+                   pct.conf = c(95, 70),
+                   rl.prob = NULL,
+                   prob.max = 1.0-1e-4,
+                   pred.period = NULL,
+                   suspend.warnings = TRUE,
+                   control = list(maxit = 300, fnscale = -1),
+                   control.H = list(maxit = 300, fnscale = -1),
+                   trace = 0,
+                   plot = TRUE,
+                   ## main = "",
+                   ## ylim = NULL,
+                   ...) {    
+  
+  ## for numerical differentiation  
+  eps <- sqrt(.Machine$double.eps) ## seems too small (for 2nd order diff)
   eps <- 1e-6
+
+  mc <- match.call()
+  
+  if (is(x, "Rendata")) {
+    if(trace) cat("processing the 'Rendata' object 'x'\n\n")
+    vn <- x$info$varName
+    x.OT <- x$OTdata[ , vn]
+    if (is.null(effDuration)) effDuration <- x$OTinfo$effDuration
+    if (is.null(threshold)) threshold <- x$OTinfo$threshold
+  } else{
+    x.OT <- x
+    if (length(effDuration) == 0 || is.na(effDuration) || (effDuration < 0))
+      stop("a valid 'effDuration' must be given")
+    if (length(threshold) == 0 || is.na(threshold) )
+      stop("a valid 'threshold' must be given")
+  }
+  
+  ## check and make MAXdata info
+  if (!missing(MAX.data)) {
+    MAX <- makeMAXdata(x = x,
+                       data = MAX.data,
+                       effDuration = MAX.effDuration)
+  } else {
+    MAX <- makeMAXdata(x = x, effDuration = MAX.effDuration)
+  }
+  
+  ## check and make OTSdata info
+  if (!missing(OTS.data)) {
+    OTS <- makeOTSdata(x = x,
+                       data = OTS.data,
+                       threshold = OTS.threshold,
+                       effDuration = OTS.effDuration)
+  } else {
+    OTS <- makeOTSdata(x = x,
+                       threshold = OTS.threshold,
+                       effDuration = OTS.effDuration)
+  }
+  
+  if ( OTS$flag && (any(OTS$threshold < threshold)) )
+    stop("OTS thresholds must be >= threshold")
   
   ##=================================================================
   ## prepare transforms if wanted/possible
@@ -56,7 +500,7 @@
     if( !is.character(trans.y) || !(trans.y %in% c("square", "log")) ) 
       stop("trans.y must be NULL or be character in c( \"square\', \"log\")")
     else if (distname.y != "exponential") {
-      stop("non null value for 'trans.y' is only allowed when distname.y == \"exponential\"") 
+      stop("non-null value for 'trans.y' is only allowed when distname.y == \"exponential\"") 
     } else {
       transFlag <- TRUE
       if (trans.y == "square") {
@@ -70,39 +514,41 @@
     }
   } else {
     transFlag <- FALSE
-    ## transfun <- function(x) x 
-    ## invtransfun <- function(x) x 
+    transfun <- NULL
+    invtransfun <- NULL
   }
 
-
   ##=================================================================
-  ## default prob for quantile and confidence lims 
+  ## default rl.prob for quantile and confidence lims 
   ## should densify near 0 and 1
   ##=================================================================
   
-  if (is.null(prob)) {
-    prob <- c(0.0001,
-              seq(from = 0.01, to = 0.09, by = 0.01),
-              seq(from = 0.10, to = 0.80, by = 0.10),
-              seq(from = 0.85, to = 0.99, by = 0.01),
-              0.995, 0.996, 0.997, 0.998, 0.999,
-              0.9995, 0.9996, 0.9997, 0.9998, 0.9999,
-              0.99999, 0.999999)
-    prob <- prob[prob <= prob.max]
-  } else {
-    if (any(is.na(prob))) stop("'prob' values can not be NA") 
-    if ( any(prob <= 0) || any(prob >= 1) ) stop("'prob' values must be >0 and <1") 
-    prob <- sort(prob)
-  }
+  if (is.null(rl.prob)) {
 
+    rl.prob <- c(0.0001,
+                 seq(from = 0.01, to = 0.09, by = 0.01),
+                 seq(from = 0.10, to = 0.80, by = 0.10),
+                 seq(from = 0.85, to = 0.99, by = 0.01),
+                 0.995, 0.996, 0.997, 0.998, 0.999,
+                 0.9995, 0.9996, 0.9997, 0.9998, 0.9999,
+                 0.99999, 0.999999)
+    
+    rl.prob <- rl.prob[rl.prob <= prob.max]
+    
+  } else {
+    if (any(is.na(rl.prob))) stop("'rl.prob' values can not be NA") 
+    if ( any(rl.prob <= 0.0) || any(rl.prob >= 1.0) ) stop("'rl.prob' values must be >0 and <1") 
+    rl.prob <- sort(rl.prob)
+  }
+  
   if (is.null(pred.period)) {
-    rr <- round(log(sumw.BOT)/log(10))
+    rr <- round(log(effDuration)/log(10))
     pred.period <- (10^rr)*c(0.1, 0.2, 0.5, 1:10)
   } else {
     if (any(is.na(pred.period))) stop("'pred.period' values can not be NA") 
     pred.period <- sort(pred.period)
   }
-
+ 
   ##===============================================================
   ## CODING RULES
   ## .OT    an object related to OT data
@@ -125,33 +571,38 @@
   nb.OT <- length(y.OT)
   if(!nb.OT) stop("no data above threshold")
 
-  if(trace) cat("Number of obs > threshod", nb.OT, "\n")
-
-  history <- length(z.H)>0
+  if(trace) cat("Number of obs > threshold", nb.OT, "\n")
   
-  if ( history && any(z.H <= threshold) ) stop("all historical data must exceed the threshold")
-
-  if (history) {
-    block.H <- as.factor(block.H)
-    if (nlevels(block.H) != length(w.BH)) stop("w.BH must be of length nlevels(block.H)")
-    r.BH <- table(block.H)
-    if (trace) {
-      cat("Historical data\n")
-      cat("   number of blocks", nlevels(block.H), "\n")
-      tapply(z.H, block.H, print)
-    }   
-  }
+  hist.MAX <- MAX$flag
   
-  Udata <- length(x.U)>0
-
-  if (Udata) {
-    if ( any(is.na(x.U)) || any(!is.finite(x.U)) ) {
-      stop("x.U must contain only non NA finite values")
-    }
-    if ( (length(x.U) != length(w.U)) || any(w.U <= 0) ) {
-      stop("w.U must have the same length as x.U  and contain only positive values")
-    }
+  if (hist.MAX) {
+    z.MAX <- unlist(MAX$data)
+    if ( any(z.MAX <= threshold) ) stop("all historical 'MAX' data must exceed the threshold")
+    w.MAX <- MAX$effDuration
+    block.MAX <- MAX$block
+    r.MAX <- MAX$r
+    nblock.MAX <- length(r.MAX)
+  } else {
+    z.MAX <- numeric(0)
+    threshold.max <- numeric(0)
   }
+    
+  hist.OTS <- OTS$flag
+  
+  if (hist.OTS) {
+    z.OTS <- unlist(OTS$data)
+    if ( any(z.OTS <= threshold) ) stop("all historical 'OTS' data must exceed the threshold")
+    w.OTS <- OTS$effDuration
+    threshold.OTS <- OTS$threshold
+    if ( any(threshold.OTS <= threshold) ) stop("all 'OTS' thresholds must exceed the threshold")
+    block.OTS <- OTS$block
+    r.OTS <- OTS$r
+    nblock.OTS <- length(r.OTS)
+  } else {
+    z.OTS <- numeric(0)
+    threshold.OTS <- numeric(0)
+  }
+
   
   ##=================================================================
   ## scale.OT is a rounded quantity used to scale the parameters
@@ -303,8 +754,7 @@
   names(fixed.y) <- parnames.y
   fixed.y[m] <- TRUE
   
-  ## cat("XXX parnames.y", parnames.y, "\n")
-  ## print(fixed.y)
+  ## cat("XXX parnames.y", parnames.y, "\n"); print(fixed.y)
   
   p.y <- length(parnames.y[!fixed.y])
   if(p.y == 0) stop("No parameter to estimate for y!")
@@ -324,16 +774,28 @@
 
   fixed.all <- c(FALSE, fixed.y)
   names(fixed.all) <- parnames.all
+
+  ##=================================================================
+  ## compute the degree of freedom
+  ## For historical blocks, each observation is considered as a
+  ## df, and each empty OTS block must be so.
+  ##=================================================================
+  
+  df <- length(y.OT)
+  if (MAX$flag) 
+    df <- df + length(z.MAX) 
+  if (OTS$flag)  
+    df <- df + length(z.OTS) + sum(r.OTS == 0)  
   
   ##=================================================================
   ## Event rate estimation
   ##=================================================================
   
-  lambda.hat <- nb.OT / sumw.BOT 
+  lambda.hat <- nb.OT / effDuration 
   est.N <- lambda.hat
 
   ## There wa a bug here previous to 0-5.0!!!
-  cov.N <- lambda.hat / sumw.BOT 
+  cov.N <- lambda.hat / effDuration 
   
   names(est.N) <- "lambda"
   names(cov.N) <- "lambda"
@@ -345,6 +807,9 @@
   ## 
   ## In this part, formals of functions are changed following the
   ## ideas in "fitdistr" of the MASS package. See therein.
+  ##
+  ## Note: the code could be rearranged using a loop on function names
+  ## 
   ##====================================================================
   
   ## reorder arguments to densfun and co
@@ -362,12 +827,12 @@
   ## then the other if any (e.g. surrogate parameters)
   formals(dfun.y) <- c(fms[c(1, m)], fms[-c(1, m)])
   
-  ## Atention: in function call, remember to use  log = TRUE
+  ## Caution: in function call, remember to use  log = TRUE
   
   logf.y <- function(parm, x) dfun.y(x, parm, log = TRUE)
   
-  ## Same thing for pfun. Note that although the main arg of
-  ## ditributions functions is usually names "q", we force it 
+  ## Same thing for 'pfun'. Note that although the main arg of
+  ## distributions functions is usually names "q", we force it 
   ## to be "x" here because f.y and F.y are usaed in the same
   ## manner in the log-likelihood!
   
@@ -391,44 +856,72 @@
   formals(qfun.y) <- c(fms[c(1, m)], fms[-c(1, m)])
   
   q.y <- function(parm, p) qfun.y(p, parm)
+
   
   ##=================================================================
   ## Hack formals and body for the wrapper functions
-  ##
-  ## The cas p.y == 0 (no estimation) is not possible at the time
-  ##
+  ## The case p.y == 0 (no estimation) is not possible at the time
   ##=================================================================
   
-  if(p.y >= 1) {
+  if (p.y >= 1) {
 
     ## to remove later!!!
     str <- paste(paste("parm[", 1:p.y, "]", collapse = ", ", sep = ""), ")")
     
     nfn <- parnames.y[!fixed.y]
-
-    ## Previously (before 0.5 ...)
-    ## str <- paste(paste(paste(nfn, paste("parm[", 1:p.y, "]", sep = ""), sep = " = "),
-    ##                   collapse = ", "), sep = "")
+    
     str <- paste(paste(paste(nfn, paste("parm[\"", nfn, "\"]", sep = ""), sep = " = "),
                        collapse = ", "), sep = "")
-      
-    ## Add fixed values if necessary
-    ## This is done by modifying the body of the functions by calling
-    ## the relevant function in it with suitable NAMED args. 
+
+  } else {
+    if (pf.y == 0)
+      stop("no parameter to estimate and no parameter fixed. Check distribution")
+  }
     
-    if (pf.y) {
-      ## modif du 2010-01-25 for fixed par
+  ## Add fixed values if necessary
+  ## This is done by modifying the body of the functions by calling
+  ## the relevant function in it with suitable NAMED args. 
+  
+  if (pf.y >= 1) {
+    ## modif du 2010-01-25 for fixed par
+    if (p.y >= 1) {
       strf <- paste(paste(paste(names(fixed.par.y), fixed.par.y, sep = " = "),
                           collapse = ", "), sep = "")
       str <- paste(str, strf, sep = ", ")
+    } else {
+      str <- paste(paste(paste(names(fixed.par.y), fixed.par.y, sep = " = "),
+                         collapse = ", "), sep = "")
     }
     
-    body(logf.y) <- parse(text = paste("dfun.y(x,", str,", log = TRUE)") )     
-    body(F.y) <- parse(text = paste("pfun.y(x,", str, ")"))
-    body(q.y) <- parse(text = paste("qfun.y(p,", str, ")"))
-    
-  }
+  } 
   
+  body(logf.y) <- parse(text = paste("dfun.y(x,", str,", log = TRUE)") )     
+  body(F.y) <- parse(text = paste("pfun.y(x,", str, ")"))
+  body(q.y) <- parse(text = paste("qfun.y(p,", str, ")"))
+  
+  ##==================================================================
+  ## a list of functions  to be exported.
+  ## Note that the definition of 'dfun.y', 'qfun.y' and 'pfun.y'
+  ## is taken from the environment where the funs are defined, i.e.
+  ## here (lexical scopting).
+  ##
+  ## CAUTION
+  ##
+  ## Do not re-use the functions logf.y, q.y ot F.y in any environment
+  ## where the definition of dfun.y, pfun.y or qfun.y could be
+  ## different
+  ##
+  ##==================================================================
+  
+  funs <- list(transfun = transfun,
+               invtransfun = invtransfun,
+               dfun.y = dfun.y,
+               pfun.y = pfun.y,
+               qfun.y = qfun.y,
+               logf.y = logf.y,
+               q.y = q.y, 
+               F.y = F.y)
+
   ##  modif 2010-01-25 for the fixed parms case
   ## (did not exist before)
   ind.est.y <- (1:parnb.y)[!fixed.y]   
@@ -533,12 +1026,10 @@
   } else {
 
     optim0 <- TRUE
-
-    ## Arbitrary distribution: 
-    ## Perform a general maximum-likelihood estimation 
+    
+    ## Arbitrary distribution: perform a general ML estimation 
     
     loglik0 <- function(parms) {
-      ## cat(parms, "\n")
       logL <- sum(logf.y(parm = parms, x = y.OT))     
     }
     
@@ -567,10 +1058,8 @@
     if (suspend.warnings) opt.old <- options(warn = -1)
     
     if (trace) {
-      cat("  parscale used in 'control'\n")
-      print(control$parscale)
-      cat("  fnscale used in 'control'\n")
-      print(control$fnscale)
+      cat("  parscale used in 'control'\n"); print(control$parscale)
+      cat("  fnscale used in 'control'\n"); print(control$fnscale)
     }   
     
     opt0 <- optim(par = start.par.y,
@@ -619,7 +1108,9 @@
     
     cov.prov0 <- -solve(opt0Hessian)
     eig  <- eigen(cov.prov0, symmetric = TRUE)$values 
-    if (any(eig < 0)) warning("hessian matrix not negative definite first optimization")
+    if (any(eig <= 0)) {
+      warning("hessian not negative definite (1-st optim). Confidence limits may be misleading")
+    }
     cov0.y[ind.est.y, ind.est.y] <- cov.prov0
     
   }
@@ -638,30 +1129,29 @@
   ## be maximised with "optim"
   ##=================================================================
   
-  if ( history || Udata ) {
+  if ( hist.MAX || hist.OTS ) {
 
-    if (history) {
-      ## homogenise with other obs.
-      if (!transFlag) z.HOT   <- z.H - threshold
-      else z.HOT   <- transfun(z.H) - threshold.trans
+    if (hist.MAX) {   ## homogenise with other obs.
+      if (!transFlag) zMod.MAX   <- z.MAX - threshold
+      else zMod.MAX   <- transfun(z.MAX) - threshold.trans
       
-      zr.BHOT <- tapply(z.HOT, block.H, min)
-      if (trace) {
-        cat("\n")
-        cat("Take into account historical data of time-length", sum(w.BH), "units\n")
-        cat("====================================================================\n")
-      }
+      zrMod.MAX <- tapply(zMod.MAX, block.MAX, min)
+
+      if (trace) 
+        cat("\nTake into account MAX historical data of time-length", sum(w.MAX), "units\n")
     }
-    if (Udata) {
-      ## homogenise with other obs.
-      if (!transFlag) x.UOT   <- x.U - threshold
-      else x.UOT   <- transfun(x.U) - threshold.trans
-      
-      if (trace) {
-        cat("\n")
-        cat("Take into account unoberved high levels on time-length", sum(w.U), "units \n")
-        cat("===========================================================================\n")
+    
+    if (hist.OTS) {   ## homogenise with other obs. 
+      if (!transFlag) {
+        zMod.OTS   <- z.OTS - threshold
+        thresholdMod.OTS <- threshold.OTS - threshold
+      } else {
+        zMod.OTS   <- transfun(z.OTS) - threshold.trans
+        thresholdMod.OTS <- transfun(threshold.OTS) - threshold.trans
       }
+      
+      if (trace) 
+        cat("\nTake into account OTS historical data on time-length", sum(w.OTS), "units \n")
     }
 
     ##-----------------------------------------------------------------
@@ -673,26 +1163,23 @@
     loglik <- function(parms) {
 
       lambda <- parms[1]  
-      lw.BOT <- lambda*sumw.BOT
+      lw <- lambda*effDuration
       
-      ## Ordinary OT part caution all blocks OT are
-      ## grouped as one in versions >= 0.3.0
-      logL  <- dpois(nb.OT, lambda = lw.BOT, log = TRUE)
+      ## Ordinary OT part caution all blocks OT are grouped as one 
+      logL  <- dpois(nb.OT, lambda = lw, log = TRUE)
       logL  <- logL + sum(logf.y(parm = parms[-1], x = y.OT))     
 
-      if (history) {
-        ## Historical part
-        lw.BH <- lambda*w.BH
-        logL <- logL + sum(r.BH*log(lw.BH)) - sum(lw.BH * ( 1 - F.y(x = zr.BHOT, parm = parms[-1]) ))
-        logL <- logL + sum(logf.y(parm = parms[-1], x = z.HOT))
-        ## cat("H = ", zr.BHOT, F.y(x = zr.BHOT, parm = parms[-1]), "\n")
+      if (hist.MAX) {
+        lw.MAX <- lambda*w.MAX   
+        logL <- logL + sum(r.MAX*log(lw.MAX)) - sum(lw.MAX * ( 1 - F.y(x = zrMod.MAX, parm = parms[-1]) ))
+        logL <- logL + sum(logf.y(parm = parms[-1], x = zMod.MAX))
       }
 
-      if (Udata) {
-        ## Unobserved part
-        lw.U <- lambda*w.U
-        logL <- logL - sum(lw.U * ( 1 - F.y(x = x.UOT, parm = parms[-1]) ))
-        ## cat("U = ", x.UOT, F.y(x = x.UOT, parm = parms[-1]), "\n")
+      if (hist.OTS) {
+        lw.OTS <- lambda * w.OTS * (1.0 - F.y(x = thresholdMod.OTS, parm = parms[-1]))
+        logL <- logL - sum(lw.OTS)
+        if (sum(r.OTS) > 0) logL <- logL + sum(r.OTS *log(lw.OTS)) + sum(logf.y(parm = parms[-1], x = zMod.OTS))
+        ## cat("LogL =", logL, "u.OTS = ", thresholdMod.OTS, "mod = ", -sum(lw.OTS), "\n")
       }
         
       logL
@@ -701,7 +1188,6 @@
     
     ## let's go...
     if (trace) cat("o Optimisation\n")
-    
     if (suspend.warnings) opt.old <- options(warn = -1)
 
     if (force.start.H) {
@@ -713,8 +1199,7 @@
 
     } else {
 
-      ## use the estimation without historical data. Note that the
-      ## elemnts need to be named 
+      ## use the estimation without historical data. Note that the elts need to be named 
       par.ini.all <- c(est.N, est.y)
       names(par.ini.all) <- parnames.all
       par.ini <- par.ini.all[!fixed.all]
@@ -726,9 +1211,8 @@
         
         if ( (distname.y == "gpd") && (par.ini["shape"] < 0) ) {
 
-          ## if one of the z.H is over the quantile with prob. 0.995 of the distribution,
-          ## try to give a larger value to the scale parameter. 
-          ## if (any(z.H) > q
+          ## if one of the historical levels  is over the quantile with prob. 0.995
+          ## of the distribution, try to give a larger value to the scale parameter. 
           
           warning(paste("initial parameters for the GPD distribution",
                         "lead to some values outside of support. These",
@@ -737,24 +1221,30 @@
           upmax <- q.y(parm = est.y, p = 0.999)
           
           ## known doctorizable situations
-          if ( history && any(z.H > upmax + threshold) ) {
+          if ( (hist.MAX || hist.OTS) && any(c(z.MAX, z.OTS, threshold.OTS) > upmax + threshold) ) {
             if (trace) {
+              mmax <- max(c(z.MAX, z.OTS, threshold.OTS))
+              cat("mmax = ", mmax, "\n")
+              
               uu <- threshold - par.ini["scale"] / par.ini["shape"]
               cat("   Upper limit of the support (estimation phase 1)", uu,"\n")
             }
+
+            if (trace)
+              cat("   Old par.ini[\"scale\"]", par.ini["scale"],"\n")
             
-            par.ini["scale"] <- par.ini["scale"] * ( max(z.H) - threshold ) / upmax
+            par.ini["scale"] <- par.ini["scale"] * ( max(c(z.MAX, z.OTS, threshold.OTS)) - threshold ) / upmax
             
             if (trace)
               cat("   New par.ini[\"scale\"]", par.ini["scale"],"\n")
             
-          } else if ( Udata && any(x.U > upmax + threshold) ) {
-            par.ini["scale"] <- par.ini["scale"] * (max(x.U) - threshold) / upmax 
           }
+          ## else if (hist.OTS && any(z.OTS > upmax + threshold) ) {
+          ##  par.ini["scale"] <- par.ini["scale"] * (max(z.OTS) - threshold) / upmax 
+          ##}
 
           if (trace) {
-            cat("   Initial values 2nd stage (modified)\n")
-            print(par.ini)
+            cat("   Initial values 2nd stage (modified)\n"); print(par.ini)
           }
           
         } else {
@@ -821,8 +1311,9 @@
     }
       
     if (trace) {
-      cat("Fixed parameters in historical optimization and hessian\n")
+      cat("   Fixed parameters in historical optimization and hessian\n")
       print(fixed.all)
+      cat("   Hessian\n")
       print(optHessian)
     }
     
@@ -832,13 +1323,20 @@
     cov.prov <- -solve(optHessian)
     
     eig  <- eigen(cov.prov, symmetric = TRUE)$values 
-    if (any(eig < 0)) warning("hessian matrix not negative definite 2nd optimization")
-      
+    if (any(eig <= 0)) {
+      warning("hessian not negative definite (2-nd optim). Confidence limits may be misleading")
+    }
     cov.all[!fixed.all, !fixed.all] <- cov.prov
     
-    res <- list(y.OT = y.OT,
+    res <- list(call = mc,
+                x.OT = x.OT,
+                y.OT = y.OT,
+                effDuration = effDuration,
                 threshold = threshold,
                 distname.y = distname.y,
+                p.y = p.y,
+                parnames.y = parnames.y,
+                fixed.y = fixed.y,
                 trans.y = trans.y,
                 est.N = est.N,
                 cov.N = cov.N,
@@ -846,11 +1344,18 @@
                 cov.y = cov0.y,
                 corr.y = cov2corr(cov0.y),
                 estimate = estimate,
+                fixed = fixed.all,
+                df = df,
+                p = p.y + 1,
                 opt0 = opt0,
                 opt = opt,
                 sigma = sqrt(diag(cov.all)),
                 cov = cov.all,
-                corr = cov2corr(cov.all))
+                corr = cov2corr(cov.all),
+                history.MAX = MAX,
+                history.OTS = OTS,
+                transFlag = transFlag,
+                funs = funs)
     
     ## For later use...
     est.y <- estimate[-1]
@@ -879,9 +1384,15 @@
     cov.all[1+ind, 1+ind] <- cov0.y[ind, ind, drop = FALSE]    
     cov.y <- cov0.y
     
-    res <- list(y.OT = y.OT,
+    res <- list(call = mc,
+                x.OT = x.OT,
+                y.OT = y.OT,
+                effDuration = effDuration,
                 threshold = threshold,
                 distname.y = distname.y,
+                p.y = p.y,
+                parnames.y = parnames.y,
+                fixed.y = fixed.y,
                 trans.y = trans.y,
                 est.N = est.N,
                 cov.N = cov.N,
@@ -889,9 +1400,16 @@
                 cov.y = cov0.y,
                 corr.y = cov2corr(cov0.y),
                 estimate = estimate,
+                fixed = fixed.all,
+                df = df,
+                p = p.y + 1,
                 sigma = sqrt(diag(cov.all)),
                 cov = cov.all,
-                corr = cov2corr(cov.all))
+                corr = cov2corr(cov.all),
+                history.MAX = MAX,
+                history.OTS = OTS,
+                funs = funs,
+                transFlag = transFlag)
   }
 
   ##=============================================================
@@ -900,48 +1418,52 @@
   ## Prepare a matrix object ret.lev
   ##
   ##=============================================================
-  
-  nc <- 3 + 2*length(conf.pct)
-  cnames <-
-    c("prob", "period", "quant",
-      paste(rep(c("L", "U"), length(conf.pct)), rep(conf.pct, each = 2), sep = "."))
 
 
-  ## Return levels (e.g. to be used in RLplot)
-  ret.lev <- matrix(NA, nrow = length(prob), ncol = nc)
-  rownames(ret.lev) <- prob
-  colnames(ret.lev) <- cnames
+  rl.period <- 1 / estimate[1] / (1 - rl.prob)
   
-  ret.lev[ , "prob"] <- prob
-  ret.lev[ , "period"] <- 1 / estimate[1] /(1 - prob)
-  ret.lev[ , "quant"] <- threshold + q.y(parm = estimate[-1], p = prob)
-    
-  ## Prepare a 'pred' matrix 
-  ## Return levels (e.g. to be used in RLplot)
-  
-  cnames <-
-    c("period", "prob", "quant",
-      paste(rep(c("L", "U"), length(conf.pct)), rep(conf.pct, each = 2), sep = "."))
+  ## restrict 'pred.period' if necessary
+  pred.prob <- 1.0 - 1.0 / estimate[1] / pred.period
+  ind <- (pred.prob > 0.0) & (pred.prob < 1.0)
+  if (any(!ind)) warning("some return periods in 'pred.period' out of range")
 
-  pred.prob <- 1 - 1/estimate[1]/pred.period
-  ind <- (pred.prob>0) & (pred.prob <1)
   pred.period <- pred.period[ind]
   pred.prob <- pred.prob[ind]
   
-  pred <- matrix(NA, nrow = length(pred.period), ncol = nc)
-  rownames(pred) <- pred.period
-  colnames(pred) <- cnames
+  rl.sort <- sort(c(rl.period, pred.period), index.return = TRUE)
+  rl.period <- rl.sort$x
   
-  pred[ , "period"] <- pred.period
-  pred[ , "prob"]  <- pred.prob
-  pred[ , "quant"] <- threshold + q.y(parm = estimate[-1], p = pred.prob)
+  rl.prob <- c(rl.prob, pred.prob)
+  rl.prob <- rl.prob[rl.sort$ix]
 
+  ## remove dupplicates
+  ind <- !duplicated(rl.period)
+  rl.period <- rl.period[ind]
+  rl.prob <- rl.prob[ind]
+  
+  ind.pred <- rl.period %in% pred.period
+  
+  nc <- 3 + 2*length(pct.conf)
+  cnames <-
+    c("period", "prob", "quant",
+      paste(rep(c("L", "U"), length(pct.conf)), rep(pct.conf, each = 2), sep = "."))
+  
+  ## Return levels (e.g. to be used in RLplot)
+  ret.lev <- matrix(NA, nrow = length(rl.period), ncol = nc)
+
+  ## 2012-12-22 comment out ret.lev
+  ## rownames(ret.lev) <- format(rl.period)
+  colnames(ret.lev) <- cnames
+
+  ret.lev[ , "period"] <- 1 / estimate[1] /(1 - rl.prob)
+  ret.lev[ , "prob"] <- rl.prob
+  ret.lev[ , "quant"] <- threshold + q.y(parm = estimate[-1], p = rl.prob)
+  
   if (transFlag) {
     ret.lev[ , "quant"] <- invtransfun(dth + ret.lev[ , "quant"])
-    pred[ , "quant"] <- invtransfun(dth +  pred[ , "quant"])
-  } 
+  }
   
-  if ( (distname.y == "exponential") && (!history) && (!Udata) ) {
+  if ( (distname.y == "exponential") && !hist.MAX && !hist.OTS ) {
 
     if (trace) cat("Special inference for the exponential case without history\n")
     
@@ -951,18 +1473,15 @@
     ## would be exact.
     ##--------------------------------------------------------------
     
-    for (ipct in 1:length(conf.pct)) {
+    for (ipct in 1:length(pct.conf)) {
       
-      alpha.conf <- (100 - conf.pct[ipct])/100
+      alpha.conf <- (100 - pct.conf[ipct])/100
       
       theta.L <- 2*nb.OT / est.y / qchisq(1 - alpha.conf/2, df = 2 * nb.OT)
       theta.U <- 2*nb.OT / est.y / qchisq(alpha.conf/2, df = 2 * nb.OT)
       
-      ret.lev[ , 2*ipct + 2] <- threshold + qexp(p = prob, rate = 1/theta.L)
-      ret.lev[ , 2*ipct + 3] <- threshold + qexp(p = prob, rate = 1/theta.U)
-      
-      pred[ , 2*ipct + 2] <- threshold + qexp(p = pred.prob, rate = 1/theta.L)
-      pred[ , 2*ipct + 3] <- threshold + qexp(p = pred.prob, rate = 1/theta.U) 
+      ret.lev[ , 2*ipct + 2] <- threshold + qexp(p = rl.prob, rate = 1/theta.L)
+      ret.lev[ , 2*ipct + 3] <- threshold + qexp(p = rl.prob, rate = 1/theta.U)
       
     }
     
@@ -970,13 +1489,10 @@
 
       dth <- threshold.trans - threshold
       
-      for (ipct in 1:length(conf.pct)) {
-
+      for (ipct in 1:length(pct.conf)) {
+        
         ret.lev[ , 2*ipct + 2] <- invtransfun(dth + ret.lev[ , 2*ipct + 2])
         ret.lev[ , 2*ipct + 3] <- invtransfun(dth + ret.lev[ , 2*ipct + 3])
-        
-        pred[ , 2*ipct + 2] <- invtransfun(dth + pred[ , 2*ipct + 2])
-        pred[ , 2*ipct + 3] <- invtransfun(dth + pred[ , 2*ipct + 3]) 
 
       }
       
@@ -989,8 +1505,7 @@
     res$infer.method <- "chi-square for exponential distribution (no historical data)"
     
   } else {
-
-     
+ 
     ##==============================================================
     ## DELTA METHOD
     ## matrices for numerical derivation
@@ -998,18 +1513,10 @@
     ## a tiny modification of its ip component.
     ##==============================================================
 
-    ## modif 2010-01-25 for the fixed parms case
     parmMat <- matrix(est.y[!fixed.y], nrow = p.y, ncol = p.y)
-    
-    ## rownames(parmMat) <- parnames.y
-    ## colnames(parmMat) <- parnames.y
     
     rownames(parmMat) <- parnames.y[!fixed.y]
     colnames(parmMat) <- parnames.y[!fixed.y]
-
-    ##  modif 2010-01-25 for the fixed parms case
-    ## (ligne inexistante avant)
-    ## eps <- sqrt(.Machine$double.eps)
     
     dparms <- abs(est.y[!fixed.y])*eps
     dparms[dparms < eps] <- eps
@@ -1017,9 +1524,8 @@
     for (ip in 1:p.y) parmMat[ip, ip] <- parmMat[ip, ip] + dparms[ip]
     
     delta <- rep(NA, p.y)
-    sig <- rep(NA, length(prob))
-    
-    
+    sig <- rep(NA, length(rl.prob))
+        
     ##=============================================================
     ## Compute the delta's  and sig's
     ## delta conains derivative w.r.t. unknown params
@@ -1033,27 +1539,20 @@
     ##
     ##=============================================================
     
-    for (i in 1:length(prob)) {
+    for (i in 1:length(rl.prob)) {
       
       for (ip in 1:p.y) {
-        
-        ##  modif 2010-01-25 for the fixed parms case 
-        ## dd <- ( q.y(parmMat[ , ip], p = prob[i]) -
-        ##       q.y(est.y, p = prob[i]) ) / dparms[ip]
 
         est.prov <- est.y
         est.prov[!fixed.y] <-  parmMat[ , ip]
         
-        dd <- ( q.y(est.prov, p = prob[i]) -
-               q.y(est.y, p = prob[i]) ) / dparms[ip]
-        
+        dd <- ( q.y(est.prov, p = rl.prob[i]) - q.y(est.y, p = rl.prob[i]) ) / dparms[ip]
         delta[ip] <- dd
         
       }
       
-      ## modif 2010-01-25 for the fixed parms case
-      ## sig[i] <- sqrt(t(delta)%*%cov.y%*%delta)
-       sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
+      sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
+
     }
     
     ##=============================================================
@@ -1063,70 +1562,38 @@
     ## Use a loop on i to remove this constraint ???
     ##==============================================================
       
-    for (ipct in 1:length(conf.pct)) {
-      alpha.conf <- (100 - conf.pct[ipct])/100
+    for (ipct in 1:length(pct.conf)) {
+      alpha.conf <- (100 - pct.conf[ipct])/100
       z.conf <- qnorm(1 - alpha.conf/2)
-      ret.lev[ , 2*ipct + 2] <- threshold + q.y(est.y, p = prob) - z.conf * sig
-      ret.lev[ , 2*ipct + 3] <- threshold + q.y(est.y, p = prob) + z.conf * sig
+      ret.lev[ , 2*ipct + 2] <- threshold + q.y(est.y, p = rl.prob) - z.conf * sig
+      ret.lev[ , 2*ipct + 3] <- threshold + q.y(est.y, p = rl.prob) + z.conf * sig
     }
     
     if (transFlag) {
-      for (ipct in 1:length(conf.pct)) {
+      for (ipct in 1:length(pct.conf)) {
         ret.lev[ , 2*ipct + 2] <- invtransfun(dth + ret.lev[ , 2*ipct + 2])
         ret.lev[ , 2*ipct + 3] <- invtransfun(dth + ret.lev[ , 2*ipct + 3])
       }
     }
       
-    ##=============================================================
-    ## Compute the delta's  and sig's
-    ## delta contains derivative w.r.t. unknown params
-    ##=============================================================
-
-    pred.sig <- rep(NA, length(pred.prob))
-    
-    for (i in 1:length(pred.prob)) {
-      for (ip in 1:p.y) {
-        est.prov <- est.y
-        est.prov[!fixed.y] <-  parmMat[ , ip]
-        dd <- ( q.y(est.prov, p = pred.prob[i]) -
-               q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
-        delta[ip] <- dd
-      }
-      ## modif 2010-01-25 for the fixed parms case
-      ##pred.sig[i] <- sqrt(t(delta)%*%cov.y%*%delta)
-      pred.sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
-    }
-    
-    ##=============================================================
-    ## Apply "delta method" for the quantiles
-    ##
-    ## Note that q.y MUST accept a vectorized prob 
-    ## Use a loop on i to remove this constraint ???
-    ##==============================================================
-    
-    
-    for (ipct in 1:length(conf.pct)) {
-      alpha.conf <- (100 - conf.pct[ipct])/100
-      z.conf <- qnorm(1 - alpha.conf/2)
-      pred[ , 2*ipct + 2] <- threshold + q.y(est.y, p = pred.prob) - z.conf * pred.sig
-      pred[ , 2*ipct + 3] <- threshold + q.y(est.y, p = pred.prob) + z.conf * pred.sig
-    }
-
-    if (transFlag) {
-      for (ipct in 1:length(conf.pct)) {
-        pred[ , 2*ipct + 2] <- invtransfun(dth  + pred[ , 2*ipct + 2])
-        pred[ , 2*ipct + 3] <- invtransfun(dth  + pred[ , 2*ipct + 3])
-      }
-    }
-
     res$infer.method <- "delta-method with numerical derivative"
     
   }
 
+  ##======================================================================
+  ## Add ret.lev and pred to the list of returned items
+  ##======================================================================
+  
+  res$pct.conf <- pct.conf
+  
   ret.lev <- as.data.frame(ret.lev)
   res[["ret.lev"]] <- ret.lev
 
-  pred <- as.data.frame(pred)
+  pred <- as.data.frame(ret.lev[ind.pred, , drop = FALSE])
+
+  ## change rownames to have integers, which is generally not the case for ret.lev!
+  rownames(pred) <- format(pred$period)
+    
   res[["pred"]] <- pred
   
   ##======================================================================
@@ -1134,8 +1601,12 @@
   ## matching and name matching in the call!!! This is because
   ## F.y has parm as first arg
   ##======================================================================
+
+  if (jitter.KS) {
+    KS <- ks.test(OTjitter(y.OT, threshold = 0.0),
+                  F.y, parm = estimate[-1])
+  } else KS <- ks.test(y.OT, F.y, parm = estimate[-1])
   
-  KS <- ks.test(y.OT, F.y, parm = estimate[-1])
   res$KS.test <- KS
 
   if (distname.y == "exponential")  res$expon.test <- gofExp.test(x = y.OT)
@@ -1143,66 +1614,11 @@
   ##======================================================================
   ## Return level plot
   ##======================================================================
-  
-  if (plot) {
-    
-    RLplot(data = ret.lev,
-           x = sort(x.OT),
-           duration = sumw.BOT,
-           lambda = estimate[1],
-           conf.pct = conf.pct,
-           mono = TRUE,
-           main = main,
-           ylim = ylim,
-           ...)
 
-    if (history) {
+  class(res) <- "Renouv"
 
-      ## compute the predicted number on each block
-      ## Should be at least r.BH
-      N.pred <- est.N[1]*w.BH
-      r.BH <- as.numeric(r.BH)
-      
-      ## Il doit y a ooir au moins r.BH données prédites!
-      N.pred[N.pred < r.BH] <- r.BH
-      
-      ## "tapply" would be more efficient less readable here
-      for (ib in 1:nlevels(block.H)) {
+  if (plot) plot(res, ...)
 
-        ## z.H[as.integer(block.H) == ib] conains the wantedr
-        ## odinates, but maybe  not in the right order.
-        z.H.ib <- z.H[as.integer(block.H) == ib]
-        ind.ib <- rev(order(z.H.ib))
-        a <- ( N.pred[ib] + 1 ) / N.pred[ib]
-        ww <- a * w.BH[ib] / (1:r.BH[ib]) 
-          
-        points(x = log(ww),
-               y = z.H.ib[ind.ib],
-               pch = 24,
-               col = "red3",
-               bg = NA,
-               lwd = 2,
-               cex = 1.1)
-        
-      }
-      
-    }
-    
-    ## "U data" x.U are given a return period w.U 
-    if (Udata) {
-      
-      ## points(x = log(w.U), y = x.U,
-      ##        pch = 21, col = "purple",
-      ##        bg = NA, cex = 1.2)
-      
-      abline(h = x.U, col = "purple")
-      
-    }
-     
-  }
-  
   return(res)
   
 }
-
-

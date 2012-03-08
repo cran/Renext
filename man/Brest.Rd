@@ -1,5 +1,6 @@
 \name{Brest}
 \alias{Brest}
+\encoding{UTF-8}
 \docType{data}
 \title{Surge heights at Brest}
 \description{
@@ -21,7 +22,7 @@
     }
     \item \code{$describe} : chr "High tide sea surge over 30 cm
     atBrest(France) separated 
-    byat least two days."
+    by at least two days."
     \item \code{$OTinfo} : List of 4
     \itemize{ 
       \item \code{$start}       : chr POSIXct[1:1], format: \code{"1845-12-31 23:59:39"}
@@ -57,8 +58,8 @@
   }
   
 Data come from hourly sea levels measured and predicted by the
-french \emph{Service Hydrogeographique et Oceanographique de la
-Marine} (SHOM).
+french \emph{Service \enc{Hydrogéographique}{Hydrogeographique}
+  et \enc{Océanographique}{Oceanographique} de la Marine} (SHOM).
 Observed sea levels are available at the url \url{http://www.sonel.org}.
 Data were processed (declustered) by IRSN in order to provide a series of independent
 surge heights at high tide. Surge height at high tide is defined as the difference

@@ -13,7 +13,7 @@
 \details{
   Vector of years containing missing periods in the
   \code{\link{Brest.years}} dataset. This years should be ignored
-  when computing yearly statistics sucha as event rates since sime
+  when computing yearly statistics such as event rates, since time
   records are lost.
 }
 %%\source{}

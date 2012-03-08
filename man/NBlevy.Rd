@@ -1,5 +1,6 @@
 \name{NBlevy}
 \alias{NBlevy}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Negative Binomial Levy point process}
 \description{
@@ -24,18 +25,18 @@
   \item{sum.w}{NOT IMPLEMENTED YET. The effective duration. If
     \code{sum.w} is strictly inferior to \code{sum(w)}, it is to be
     understood that missing periods occur within the counts period. This
-    can be taken into account with a suitable algorithm (Expectation Maximization, etc.)}
+    can be taken into account with a suitable algorithm (Expectation Maximisation, etc.)}
   \item{interval}{Interval giving min and max values for \code{gamma}.}
-  \item{optim}{If \code{TRUE} a one-dimensional optimization is
+  \item{optim}{If \code{TRUE} a one-dimensional optimisation is
     used. Else the zero of the derivative of the (concentrated)
     log-likelihood is searched for instead.}
   \item{plot}{Should a plot be drawn? MAY BE REMOVED IN THE FUTURE.}
   \item{\dots}{Arguments passed to \code{plot}.}
 }
 \details{
-  The vector \eqn{\mathbf{N}}{N} contains counts for events occuring
+  The vector \eqn{\mathbf{N}}{N} contains counts for events occurring
   on non-overlapping time periods with lengths given in \eqn{\mathbf{w}}{w}.
-  Under the NB Levy process assumptions, the observed counts 
+  Under the NB \enc{Lévy}{Levy} process assumptions, the observed counts 
   (i.e. elements of \eqn{\mathbf{N}}{N}) are independent random
   variables, each following a negative binomial distribution.
   The size parameter \eqn{r_k}{r[k]} for 
@@ -59,21 +60,21 @@
   \item{cov}{Covariance matrix (approx.).}
 }
 \references{
-  Podgorsky K. (2008) \emph{Negative Binomial Levy process -genesis,
-    properties and applications}. Lund Universisty, Sweden.
+  \enc{Podgórsky}{Podgorsky} K. (2008) \emph{Negative Binomial \enc{Lévy}{Levy} process -genesis,
+    properties and applications}. Lund University, Sweden.
   %%\url{http://www.maths.lth.se/matstat/staff/krys}
 }
-\author{Yves Deville }
+\author{Yves Deville}
 \note{
-  The Negative Binomial Levy process is an alternative to the homogeneous
+  The Negative Binomial \enc{Lévy}{Levy} process is an alternative to the homogeneous
   Poisson point process when counts are subject to overdispersion. In
-  the NB process, all counts share the same dispersion indice
+  the NB process, all counts share the same index of dispersion
   (variance/expectation ratio), namely \code{1/prob}. When \code{prob} is
   close to 1, the counts are nearly Poisson-distributed.
 }
 \seealso{\code{\link{NegBinomial}} for the negative binomial distribution,
-  \code{\link{glm.nb}} from the MASS package for fitting Generalized Linear Model of the negative
-  binomial family.}
+  \code{\link{glm.nb}} from the MASS package for fitting Generalised
+  Linear Model of the negative binomial family.}
 \examples{
 ## known parameters
 nint <- 100

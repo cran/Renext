@@ -58,7 +58,7 @@ class (with name such as "renouv"). Then classical \code{simulate}, \code{plot},
 ...  methods could be defined for that class.
 
 }
-\seealso{\code{\link{fRenouv}} to fit
+\seealso{\code{\link{Renouv}} to fit
   Renouvellement models.}
 \examples{
 \dontrun{

@@ -17,10 +17,11 @@
 \arguments{
   \item{x}{The vector to be plotted}
   \item{plot.pos}{Plotting position for points: either "exp" for
-    \emph{expected} ranks or "med" for a \emph{median} rank approximation (see \bold{Details} below).}
+    \emph{expected} ranks or "med" for a \emph{median} rank
+    approximation (see \bold{Details} below).}
   \item{rate}{Rate parameter for one or several "exponential
     distribution" lines to be plotted}
-  \item{labels}{text to display in legend when "exponential distribution" lines are specified}
+  \item{labels}{Text to display in legend when "exponential distribution" lines are specified}
   \item{mono}{Monochrome graph?}
   \item{\dots}{Arguments to be passed to \code{plot}}
 }
@@ -50,7 +51,7 @@
   The \code{\link{weibplot}} function for a classical "Weibull" plot.
   The \code{\link{interevt}} is useful to compute interevents (or
   "interarrivals") that should follow an exponential distribution in the
-  homogenous Poisson process context.
+  homogeneous Poisson process context.
 }
 \examples{
  x <- rexp(200)

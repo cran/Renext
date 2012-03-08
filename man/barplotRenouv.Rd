@@ -1,5 +1,6 @@
 \name{barplotRenouv}
 \alias{barplotRenouv}
+\encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Barplot for Renouv "Over Threshold" counts}
 \description{
@@ -48,7 +49,7 @@
    is coerced to character and the same is done for values of
    \code{block} before comparing them to the \code{na.block} values.
    If \code{block} variable is of class factor with levels representing
-   years (eg. 1980, 1981, etc.) missing blocks can be specified either
+   years (e.g. 1980, 1981, etc.) missing blocks can be specified either
    as \code{c("1980", "1981")} or as numeric \code{c(1980, 1981)}.
 
    For the chi-square test, counts for neighbouring frequency classes are
@@ -74,18 +75,18 @@
   For both tests, the statistic follows a chi-square distribution under the
   null hypothesis . The list of results contains the statistic
   \code{statistic}, the number of degrees of freedom \code{df} and 
-  the p-value \code{p.value}.
+  the \eqn{p}{p}-value \code{p.value}.
 }
 \references{See
-  Yagouti A., Abi-Zeid I., Ouarda, T.B.M.J. and B. Bobee (2001),
-  Revue de processus ponctuels et synthese de tests statistiques pour le
+  Yagouti A., Abi-Zeid I., Ouarda, T.B.M.J. and B. \enc{Bobée}{Bobee} (2001),
+  Revue de processus ponctuels et \enc{synthèse}{synthese} de tests statistiques pour le
   choix d'un type de processus \emph{Revue des Sciences de l'Eau}, \bold{1}, pp. 323-361.
 }
 \author{Yves Deville}
 \note{
-  The two tests (over-)dispersion and chi-square have \emph{one-sided} (upper
-  tail) p-value. In other words we do not intend to reject when
-  statistics take "abnormally small" values but only when abnormally
+  The two tests: (over-)dispersion and chi-square have \emph{one-sided} (upper
+  tail) \eqn{p}{p}-value. In other words, we do not intend to reject when
+  statistics take "abnormally small" values, but only when abnormally
   large values are met.
 
 %%  The 'expected' and 'observed' counts in the \code{freq} object do

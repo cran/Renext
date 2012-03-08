@@ -40,7 +40,7 @@
     density.}
   \item{rate2}{Rate (inverse expectation) for the "number 2" exponential
     density. Should in most cases be \code{> rate1}. See \emph{Details}.}
-  \item{delta}{Alternative parametrization \code{delta = rate2 - rate1}.}
+  \item{delta}{Alternative parametrisation \code{delta = rate2 - rate1}.}
 }
 
 \value{
@@ -48,7 +48,7 @@
   evaluates the density, the distribution and the quantile functions.
   \code{dmixexp2} generates a vector of \code{n} random draws from the
   distribution.
-  \code{hmixep2} gives hazard rate and \code{Hmixexp2} gives cumulated hazard.
+  \code{hmixep2} gives hazard rate and \code{Hmixexp2} gives cumulative hazard.
 }
 
 \details{
@@ -69,7 +69,7 @@
   A 'naive' identifiability constraint is
   \deqn{\lambda_1 < \lambda_2}{lambda1 < lambda2} i.e.
   \code{rate1 < rate2},
-  corresponding to the simple contraint \code{delta > 0}.
+  corresponding to the simple constraint \code{delta > 0}.
   The parameter \code{delta} can be given instead of \code{rate2}.
   
   The mixture distribution has a decreasing hazard, increasing Mean

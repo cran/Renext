@@ -3,8 +3,8 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Simple  estimation for the mixture of two exponential distributions}
 \description{
-  Compute a simple (preliminary)  estimation for the tree parameters of
-  the mxture of two exponentials
+  Compute a simple (preliminary) estimation for the tree parameters of
+  the mixture of two exponential distributions
 }
 \usage{
    ini.mixexp2(x, plot = FALSE)
@@ -31,9 +31,9 @@
   using two linear regressions. A
   regression without constant using only the smallest values
   gives an estimator of the mean rate.
-  A regression using only the largests values
+  A regression using only the largest values
   gives \code{rate1} and \code{prob1}. Yet  the constraints
-  muts be fulfilled. If they are, the estimates are returned
+  must be fulfilled. If they are, the estimates are returned
   (together with  \code{method = "Hreg"} suggesting a 
   cumulative hazard regression). If not, a (poor) default estimate
   is returned with  \code{method = "arbitrary"}.
@@ -45,7 +45,7 @@
   \item{method}{The method that really produced the estimators.}
 }
 %%\references{ }
-\author{Y. Deville}
+\author{Yves Deville}
 \note{  
   The method of moments is implemented in \code{mom.mixexp2}.
   Further investigations are needed to compare the estimators

@@ -12,13 +12,13 @@
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{densfun}{names of the distribution. This can be at present time:
+  \item{densfun}{Name of the distribution. This can be at present time:
     \code{"exponential"}, \code{"weibull"}, \code{"gpd"},
     \code{"gamma"}, \code{"negative binomial"}.
   }
-  \item{mean}{theoretical mean (expectation) of the distribution. Can be
+  \item{mean}{Theoretical mean (expectation) of the distribution. Can be
     a vector, in which case the parameters will be vectors.}
-  \item{sd}{standard deviation}
+  \item{sd}{Standard deviation.}
 }
 \details{
   For some distributions like Weibull, it is necessary to find

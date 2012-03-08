@@ -49,7 +49,7 @@
   
   axis(side = 2,
        at =  log(-log(probs)),
-       labels = formatC(1-probs, format = "f", dig = 2))
+       labels = formatC(1-probs, format = "f", digits = 2))
 
   
   if (!is.null(shape)) {
@@ -92,8 +92,8 @@
       ## position candidate
       coords <- par()$usr
 
-      if (is.null(labels)) labels <- paste("shape = ", formatC(shape, format = "f", dig = 2),
-                                         "scale = ", formatC(scale, format = "f", dig = 2))
+      if (is.null(labels)) labels <- paste("shape = ", formatC(shape, format = "f", digits = 2),
+                                         "scale = ", formatC(scale, format = "f", digits = 2))
       else labels <- rep(labels, length.out = nW)
       
       legend(x = range(x)[2]*0.9,

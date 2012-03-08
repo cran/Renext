@@ -2,23 +2,37 @@ export(barplotRenouv,
        expplot,
        EM.mixexp,
        mom.mixexp2, ini.mixexp2,
-       fRenouv, rRenouv,
+       rRenouv,
        fweibull,
        gof.date, gofExp.test,
        skip2noskip,
        interevt,
        dmixexp2, pmixexp2, qmixexp2, rmixexp2, hmixexp2, Hmixexp2,
        dSLTW, pSLTW, qSLTW, rSLTW,
-       dspareto, pspareto, qspareto, rspareto,
+       dlomax, plomax, qlomax, rlomax,
        mom2par,
        NBlevy,
-       plot.Rendata,
+       plot.Rendata, summary.Rendata, print.summary.Rendata,
+       Renouv, predict.Renouv,
+       plot.Renouv, summary.Renouv,
+       print.summary.Renouv, format.summary.Renouv,
+       ## makeMAXdata, makeOTSdata,
+       roundPred,
+       OTjitter,
        readXML,
        RLplot,
        weibplot)
 
 S3method(plot, Rendata)
+S3method(summary, Rendata)
+S3method(print, summary.Rendata)
 
+S3method(coef, Renouv)
+S3method(plot, Renouv)
+S3method(summary, Renouv)
+S3method(predict, Renouv)
+S3method(print, summary.Renouv)
+         
 importFrom(stats)
 importFrom(graphics)
 

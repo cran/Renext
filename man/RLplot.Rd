@@ -28,10 +28,10 @@
   \item{lambda}{Rate (in accordance with \code{duration}.}
   \item{conf.pct}{a vector (character or integer) giving confidence
     levels. See \bold{Details} below.}
-  \item{mono}{If \code{TRUE} colors are replaced by black.}
+  \item{mono}{If \code{TRUE} colours are replaced by black.}
   \item{mark.rl}{Return levels to be marked on the plot.}
   \item{mark.labels}{labels shown at positions in \code{mark.rl}.}
-  \item{mark.col}{Colors for marked levels.}
+  \item{mark.col}{Colours for marked levels.}
   \item{main}{Main title for the return level plot (defaults to empty title).}
   %%--------------------------------------------------------------------------
   \item{ylim}{Limits for the y axis (defaults to values computed from the data).}
@@ -78,7 +78,7 @@
 }
 \seealso{
   See \code{\link{expplot}} for a classical exponential plot.
-  See Also as \code{\link{fRenouv}} to fit "Renouvellement" models. The
+  See Also as \code{\link{Renouv}} to fit "Renouvellement" models. The
   \code{return.level} function in the
   \code{extRemes} package.
 }

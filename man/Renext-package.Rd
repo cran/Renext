@@ -2,6 +2,7 @@
 \alias{Renext-package}
 \alias{Renext}
 \docType{package}
+\encoding{UTF-8}
 \title{
 Renewal method for extreme values extrapolation
 }
@@ -20,15 +21,27 @@ Renewal method for extreme values extrapolation
    The package allows the joint use of possibly three kinds of data or
    information. The first kind is \emph{classical exceedances}, or
    \emph{"OT data"} and will always be required. It can be completed
-   with a second kind of data called \emph{historical data} consisting
-   in the largest observations over one or several periods called
-   historical blocks. A third usable kind of information called
-   \emph{unobserved levels} occurs when a fixed level is known not to
-   have been exceeded during a period with known duration. Historical
-   data are often available in hydrology (e.g. river flows) for large
+   with two kinds of \emph{historical data}. Both types are optional, and
+   concern periods or \emph{blocks} that must correspond to non-overlapping
+   periods, disjoint from the OT period.
+   
+   \itemize{
+     \item \emph{MAX data} correspond to the case where one knows
+     the  \eqn{r}{r} largest observations over each block. The number \eqn{r}{r} of
+     may vary between blocks. This kind of data
+     is often called \eqn{r}{r}-max data. 
+     \item \emph{OTS data} (for OT Supplementary data) correspond to the case
+     where one knows for each block \eqn{b}{b} all the observations
+     that exceeded a threshold \eqn{u_b}{u[b]} which is greater (usually
+     much greater) than
+     the main threshold \eqn{u}{u}. The number \eqn{r_b}{r[b]}
+     of such observations can be zero, in which case we may say that
+      \eqn{u_b}{u[b]} is an unobserved level.
+   }
+   Historical data are often available in hydrology (e.g. for river flows) for large
    periods such as past centuries. An unobserved level can typically be
    related to a material benchmark.
-
+     
    Maximum likelihood estimation is made possible in this context of
    heterogeneous data. Inference is based on the asymptotic normality of
    parameter vector estimate and on linearisation ("delta method") for
@@ -43,7 +56,7 @@ Renewal method for extreme values extrapolation
    check the assumption of Poisson-distributed events.
    
    The package development was initiated, directed and financed by the french \emph{Institut de
-   radioprotection et de surete nucleaire} (IRSN). The package is a
+   Radioprotection et de \enc{Sûreté}{Surete} \enc{Nucléaire}{Nucleaire}} (IRSN). The package is a
    non-academic tool designed for applied analysis on case studies and
    investigations or comparisons on classical probabilistic models.
    
@@ -56,23 +69,22 @@ Renewal method for extreme values extrapolation
   \tabular{ll}{
     Package: \tab Renext\cr
     Type: \tab Package\cr
-    Version: \tab 1.0-0\cr
-    Date: \tab 2010-06-10\cr
-    License: \tab GPL (>=2)\cr
+    Version: \tab 2.0-0\cr
+    Date: \tab 2012-03-08\cr
+    License: \tab GPL (>= 2)\cr
     LazyLoad: \tab yes\cr
   }
-  This package contains functions \code{\link{fRenouv}} and \code{\link{rRenouv}} to fit
-  or simulate from "renouvellement" models.
+  This package contains a function \code{\link{Renouv}} to fit "renouvellement" models.
 }
 \author{
   Yves Deville <deville.yves@alpestat.com>, IRSN <renext@irsn.fr>
   
-Maintainer: IRSN <renext@irsn.fr>
+  Maintainer: IRSN <renext@irsn.fr>
 }
 \references{
   \itemize{
-    \item Miquel J.(1984) \emph{Guide pratique d'estimation des
-      probabilites de crues}, Eyrolles (coll. EDF DER)
+    \item Miquel J. (1984) \emph{Guide pratique d'estimation des
+      \enc{probabilités}{probabilites} de crues}, Eyrolles (coll. EDF DER)
     \item Coles S. (2001)  \emph{Introduction to Statistical Modelling
       of Extremes Values}, Springer.
   }
@@ -86,16 +98,20 @@ Maintainer: IRSN <renext@irsn.fr>
   \code{POT}.
 }
 \examples{
-## artificial data
-test <- rRenouv(nb = 100, threshold = 40,
-                par.N = list(lambda = 2),
-                densfun.y = "weibull", par.y = mom2par("weibull", mean = 30, sd = 36))  
+## Garonne data set
+data(Garonne)
+summary(Garonne)
+plot(Garonne)
 
-## exponential exceedances
-fit.expon <- fRenouv(x.OT = test$x,
-                     sumw.BOT = 100,
-                     distname.y = "exponential",
-                     threshold = 50,
-                     conf.pct = c(70, 95, 99),
-                     main = "\"exponential\" distr. (special)")
+## Weibull exceedances
+fG <- Renouv(x = Garonne,
+             threshold = 3000,
+             distname.y = "weibull",
+             main = "Weibull fit for 'Garonne'")
+
+coef(fG)
+summary(fG)
+## classical 'predict' method with usual formal args 
+predict(fG, newdata = c(100, 150, 200),
+        level = c(0.8, 0.9))
 }

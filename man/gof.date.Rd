@@ -34,7 +34,7 @@
   \item{plot.type}{Character indicating the type of plot to
     produce when a \code{skip} data.frame is given. With
     \code{plot.type = "skip"} the plot shows
-    missing periods as grayed rectangles and the displays the results
+    missing periods as greyed rectangles and the displays the results
     of a Kolmogorov-Smirnov (KS) test performed on the events. For the 
     \code{"omit"} case the missing periods are collapsed into vertical lines on
     the plot and the displayed results are for an  "effective" KS test
@@ -49,14 +49,14 @@
   the uniform distribution on this interval.
   
   When the interval has limits taken at events the uniformity statement
-  remains true, but for \emph{inner} events. This behavior is met when
+  remains true, but for \emph{inner} events. This behaviour is met when
   \code{start} and \code{end} are not given and taken as the first and
   last events in \code{date}.  
 }
 \value{
   A list
   \item{effKS.statistic, KS.statistic}{Kolmogorov-Smirnov global
-    test statistic for uniformness (bilateral test) omitting slipped
+    test statistic for uniformity (bilateral test) omitting slipped
     periods or not.}
   \item{effKS.pvalue, KS.pavalue}{Critical probability in the KS test omitting
     skipped periods or not.}

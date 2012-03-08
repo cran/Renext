@@ -10,7 +10,7 @@ pmixexp2 <- function(q,
                      delta,
                      log = FALSE) {
   
-  res <- prob1*pexp(q, rate = rate1, log = FALSE) + (1-prob1)*pexp(q, rate = rate2, log = FALSE)
+  res <- prob1*pexp(q, rate = rate1, log.p = FALSE) + (1-prob1)*pexp(q, rate = rate2, log.p = FALSE)
 
   if (log) res <- log(res)
   res
@@ -70,7 +70,7 @@ hmixexp2 <- function(x,
                      delta) {
                        
   f <- prob1*dexp(x, rate = rate1, log = FALSE) + (1-prob1)*dexp(x, rate = rate2, log = FALSE)
-  F <- prob1*pexp(x, rate = rate1, log = FALSE) + (1-prob1)*pexp(x, rate = rate2, log = FALSE)
+  F <- prob1*pexp(x, rate = rate1, log.p = FALSE) + (1-prob1)*pexp(x, rate = rate2, log.p = FALSE)
   f/(1-F)
   
 }
@@ -85,8 +85,7 @@ Hmixexp2 <- function(x,
                      rate2 = rate1 + delta,
                      delta) {
   
-  F <- prob1*pexp(x, rate = rate1, log = FALSE) +
-    (1-prob1)*pexp(x, rate = rate2, log = FALSE)
+  F <- prob1*pexp(x, rate = rate1, log.p = FALSE) + (1-prob1)*pexp(x, rate = rate2, log.p = FALSE)
   
   -log(1-F)
   
@@ -112,75 +111,72 @@ qmixexp2 <- function(p,
     rate1 <- rate2
     rate2 <- ratep
   }
+
+  ## set the smallest rate to 1.0 in order to improve
+  ## conditionning
   
-  Hs <- - log(1-p)
+  rate1b <- rate1
+  rate1 <- 1.0
+  rate2 <- rate2 / rate1b
+
+  Hs <- - log(1.0 - p)
+  
+  ## Added in versions > 1.00 for p close to 1
+  ind <- (p > 0.99)
+  
+  if (any(ind)) {
+    Hs[ind] <- - log1p(-p[ind])
+  }
+
   lprob1 <- log(prob1)
 
   xs <- rep(NA, n)
   nit <- rep(NA, n)
-  x.L.prec <- -Inf
-  rate.bar <- prob1*rate1 + (1-prob1)*rate2
+  rate.bar <- prob1 + (1-prob1)*rate2
+
+  ## cat(sprintf("XXX rate1 = %16.10f,  rate1 = %16.10f, rate.bar = %16.10f, lprob1 = %16.10f\n",
+  ##             rate1, rate2, rate.bar, lprob1))
   
-  for (i in 1:n) {
+  for (i in 1L:n) {
     
     H.star <- Hs[i]
 
-    x.L <-  max(c(H.star/rate.bar, (lprob1 + H.star)/rate1))
-    x.U <-  H.star/rate1
+    x.L <-  max(c(H.star / rate.bar, H.star + lprob1))
+
+    ## cat(sprintf("INI H.star = %e, x.prov = %ef\n", H.star, x.L))
     
-    H.L <- Hmixexp2(x.L, prob1 = prob1, rate1 = rate1, rate2 = rate2) 
-    H.U <- Hmixexp2(x.U, prob1 = prob1, rate1 = rate1, rate2 = rate2) 
-    h.L <- hmixexp2(x.L, prob1 = prob1, rate1 = rate1, rate2 = rate2)
-    
-    dx <- x.U - x.L
+    H.L <- Hmixexp2(x.L, prob1 = prob1, rate1 = 1.0, rate2 = rate2) 
+    h.L <- hmixexp2(x.L, prob1 = prob1, rate1 = 1.0, rate2 = rate2)
     
     cvg <- FALSE
     iter <- 1
+    
+    while ( !cvg && (iter < 30) ) {
+    
+      x.prov <- x.L + (H.star - H.L) / h.L 
 
-    NR <- FALSE
-    
-    while ( !cvg && (iter < 20) ) {
-    
-      if (!NR) {
-        
-        a <- ( (H.U - H.L) / dx - h.L ) / dx
-        
-        if ( is.na(a) || (a >= -1e-6) ) {
-          ## cat(sprintf("i = %d  it. = %d x.L = %7.4f
-          ## x.U = %7.4f dx = %7.4f H.star = %10.7f a = %7.4f\n",
-          ## i, iter, x.L, x.U, dx, H.star, a))
-          ## warning("a >= 0")
-          NR <- TRUE
-          x.prov <- x.L + (H.star - H.L) / h.L
-        } else {
-          Delta <- h.L*h.L - 4*a*(H.L-H.star)
-          x.prov <- x.L + ( -h.L + sqrt(Delta) ) / 2 / a          
-        }
-          
-      } else {
-        x.prov <- x.L + (H.star - H.L) / h.L
-      }
-        
+      ## cat(sprintf("iter = %3d x.prov = %16.10f\n", iter, x.prov)) 
+      
       H.prov <- Hmixexp2(x.prov,
                          prob1 = prob1,
-                         rate1 = rate1,
+                         rate1 = 1.0,
                          rate2 = rate2)
       
-      if (abs(H.prov - H.star) < tol) {
+      if ( abs(H.prov - H.star) < tol) {
         x.star <- x.prov
         cvg <- TRUE
       } else {
-    
-        if (H.prov < H.star) {
-          x.L <- x.prov
-          h.L <- hmixexp2(x.prov, prob1 = prob1, rate1 = rate1, rate2 = rate2)
-          H.L <- H.prov 
-        } else {
-          x.U <- x.prov
-          H.U <- H.prov       
-        }
         
-        dx <- x.U - x.L
+        ## For convexity reasons, H.prov should always be <= H.star
+        if (H.prov <= H.star) {
+          x.L <- x.prov
+          h.L <- hmixexp2(x.prov, prob1 = prob1, rate1 = 1.0, rate2 = rate2)
+          H.L <- H.prov
+        } else {
+          h.L <- 1.1*h.L
+          ## cat(sprintf("** H.star - H.prov = %12.8f\n", H.star-H.prov))        
+        } 
+       
       }
       
       iter <- iter + 1
@@ -189,10 +185,9 @@ qmixexp2 <- function(p,
     
     if (cvg) xs[i] <- x.star
     else {
-      print(NR)
-      cat(sprintf("i = %d  it. = %d\n x.L = %e x.U = %e dx = %e\n
-                  H.L= %e H.U= %e H.star = %e a = %e\n",
-                  i, iter, x.L, x.U, dx, H.L, H.U, H.star, a))
+      cat(sprintf("i = %d  it. = %d\n x.L = %e\n
+                  H.L= %e H.star = %e\n",
+                  i, iter, x.L, H.L, H.star))
       cat(sprintf("prob1 = %e  rate1 = %e rate2 = %e\n",
              prob1, rate1, rate2))
       cat(sprintf("p = %e\n",
@@ -202,6 +197,7 @@ qmixexp2 <- function(p,
     nit[i] <- iter
   }
 
+  xs <- xs / rate1b
   attr(xs, "nit") <- nit
   ## print(nit)
   xs

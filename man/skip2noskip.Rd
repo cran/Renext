@@ -27,7 +27,7 @@ Compute non-skipped periods form start and end of skipped periods.
   Thus the returned dataframe will have \code{nrow(skip)+1}
   rows. However,  \code{start} and \code{end}
   can be \code{NULL} in which case only the \code{nrows(skip)-1} "inner"
-  non-skiped periods will be returned. If  \code{start} and \code{end}
+  non-skipped periods will be returned. If  \code{start} and \code{end}
   are \code{NULL} and \code{skip} has only one row, the returned result
   is \code{NULL}.
 }
@@ -36,7 +36,7 @@ Compute non-skipped periods form start and end of skipped periods.
   \code{end}. Each row corresponds to a non-skipped period
 }
 %% \references{ ~put references to the literature/web site here ~ }
-\author{Y. Deville}
+\author{Yves Deville}
 %\note{ }
 \seealso{\code{\link{readXML}} for reading data from XML and csv files.}
 \examples{

@@ -5,8 +5,9 @@
    Plot 'Rendata' datasets with OT and historical data
 }
 \usage{
-  plot.Rendata(x,
-               textOver = quantile(x$OTdata[, x$info$varName], probs = 0.99),
+    \method{plot}{Rendata}(x,
+     textOver = quantile(x$OTdata[, x$info$varName], probs = 0.99),
+     showHist = TRUE,
                  ...) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -16,12 +17,14 @@
   \item{textOver}{Mark values of the variable in the \code{OTdata} part of
     \code{x}. Values above the \code{textOver} value (if any) will be
     marked with the character version of the block, typically a year}
+  \item{showHist}{If \code{True}, the historical periods (is any) are shown
+    on the plot.}
   \item{\dots}{further args to be passed to \code{plot} function.}
 }
 \details{
-  The plot shows the main data of the objact \code{x} (the \code{OTdata}
+  The plot shows the main data of the object \code{x} (the \code{OTdata}
   part) as well as historical data \code{MAXdata} or \code{OTSdata} if
-  any. Different colors are used on the background. This function is
+  any. Different colours are used on the background. This function is
   not intended to produce nice plots to be printed.
 }
 %%\value{}

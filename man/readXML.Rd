@@ -28,7 +28,7 @@
    indications within the index file, other files are read (e.g. csv
    files). In this way, data returned as a list can contain heterogeneous data:
    Over Threshold (OT) data, missing periods, MAX data, etc.
-   Various informations are also stored in list elements with name
+   Various pieces of information are also stored in list elements with name
    containing the \code{"info"} string.
 
    This function requires the CRAN package XML.

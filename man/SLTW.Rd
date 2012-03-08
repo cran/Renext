@@ -62,7 +62,7 @@
   and \code{rSLTW} generates random deviates.
 }
 %%\references{  }	
-\seealso{\code{\link{spareto}} for the shifted Pareto distribution which
+\seealso{\code{\link{Lomax}} for the Lomax distribution which
   is a limit case of \code{SLTW}.
 }
 

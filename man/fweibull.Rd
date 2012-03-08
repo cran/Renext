@@ -42,7 +42,7 @@
 \author{Yves Deville}
 \note{
  A well-accepted verdict is that expected information is better than
- observed information for problems with no mising data as it is the case
+ observed information for problems with no missing data as it is the case
  here. We suspect  in the present estimation context that the expected information matrix
  has often a better condition number than its observed version.
  

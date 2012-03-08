@@ -55,7 +55,7 @@ expplot <- function(x,
   
   axis(side = 2,
        at =  -log(probs),
-       labels = formatC(1-probs, format = "f", dig = 2))
+       labels = formatC(1-probs, format = "f", digits = 2))
 
   if (!is.null(rate)) {
     
@@ -91,7 +91,8 @@ expplot <- function(x,
     ## candidate position for legend.
     coords <- par()$usr
     
-    if (is.null(labels)) labels <- paste("rate = ", formatC(rate, format = "f", dig = 2))
+    if (is.null(labels)) labels <- paste("rate = ",
+                                         formatC(rate, format = "f", digits = 2))
     else labels <- rep(labels, length.out = nW)
     
     legend(x = range(x)[2]*0.9,

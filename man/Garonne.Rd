@@ -1,9 +1,10 @@
 \name{Garonne}
 \Rdversion{1.1}
 \alias{Garonne}
+\encoding{UTF-8}
 \docType{data}
 \title{
-   Flow of the french river La Garonne
+  Flow of the french river La Garonne
 }
 \description{
   %%  ~~ A concise (1-5 lines) description of the dataset. ~~
@@ -59,7 +60,7 @@
     }
 \details{
    The data concern the french river \emph{La Garonne} at the gauging
-   station named \emph{Le Mas d'Agenais} where many floods occured during 
+   station named \emph{Le Mas d'Agenais} where many floods occurred during 
    the past centuries.
    
    The data consist in OT data and historical data. The variable is
@@ -79,8 +80,8 @@
    The data were taken from the book by Miquel.
 }
 \references{
-   Miquel J.(1984) \emph{Guide pratique d'estimation des
-   probabilites de crues}, Eyrolles (coll. EDF DER)
+   Miquel J. (1984) \emph{Guide pratique d'estimation des
+   \enc{probabilités}{probabilites} de crues}, Eyrolles (coll. EDF DER)
 }
 \examples{
 data(Garonne)

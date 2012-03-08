@@ -1,50 +1,50 @@
 ##======================================================
-## Y is logexp if log X - log threshold is
-## exponential. This is the shifted Pareto distribution
+## Y is logexp if log(X) - log(threshold) is
+## exponential. This is the Lomax distibution!
 ##======================================================
 
-rspareto <- function(n, delta = 1.0, shape = 4.0) {
+rlomax <- function(n, scale = 1.0, shape = 4.0) {
   
-  if (delta <= 0) stop("'delta' must be > 0")
+  if (scale <= 0) stop("'scale' must be > 0")
   if (shape <= 0) stop("'shape' must be > 0")
   X <- (runif(n))^(-1/shape) 
-  X <- delta*X
-  X - delta
+  X <- scale*X
+  X - scale
 
 }
 
-dspareto <- function(x, delta = 1.0, shape = 4.0, log = FALSE) {
+dlomax <- function(x, scale = 1.0, shape = 4.0, log = FALSE) {
   
-  if (delta <= 0) stop("'delta' must be >0")
+  if (scale <= 0) stop("'scale' must be >0")
   if (shape <= 0) stop("'shape' must be > 0")
   f <- rep(0, length(x))
   ind <- x > 0
-  f[ind] <- log(shape) - (shape + 1)*log(delta + x[ind]) + shape*log(delta)
+  f[ind] <- log(shape) - (shape + 1)*log(scale + x[ind]) + shape*log(scale)
   if (!log) f[ind] <- exp(f[ind])
   f
   
 }
 
-pspareto <- function(q, delta = 1.0, shape = 4.0, lower.tail = FALSE) {
+plomax <- function(q, scale = 1.0, shape = 4.0, lower.tail = FALSE) {
 
-  if (delta <= 0) stop("'delta' must be >0")
+  if (scale <= 0) stop("'scale' must be >0")
   if (shape <= 0) stop("'shape' must be  >0")
   S <- rep(0, length(q))
   ind <- q > 0 
-  S[ind] <- (delta / (delta + q[ind]) )^shape
+  S[ind] <- (scale / (scale + q[ind]) )^shape
   if (lower.tail) S[!ind] <- 1
   else S[ind] <- 1 - S[ind]
   S
   
 }
 
-qspareto <- function(p, delta = 1.0, shape = 4.0) {
+qlomax <- function(p, scale = 1.0, shape = 4.0) {
 
-  if (delta <= 0) stop("'delta' must be >0")
+  if (scale <= 0) stop("'scale' must be >0")
   if (shape <= 0) stop("'shape' must be > 0")
   if ( any(p < 0) || any(p > 1) ) stop("'p' must be >=0 and <=1")
   lr <- -log(1-p) / shape  
-  delta* (exp(lr) -1)
+  scale* (exp(lr) -1)
 
 }
 

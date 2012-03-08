@@ -34,9 +34,9 @@
 }
 %%\value{}
 %% \references{}
-\author{Y. Deville}
+\author{Yves Deville}
 \note{
-  The graph displayed use a log scale for x. The log-log scale for y is
+  The graph displayed uses a log scale for x. The log-log scale for y is
   emulated via the construction of suitable graduations. So be careful when
   adding graphical material (points, etc) to this graph with functions of
   the "add to plot" family (\code{points}, \code{lines}, ...).

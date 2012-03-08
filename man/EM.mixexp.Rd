@@ -1,9 +1,9 @@
 \name{EM.mixexp}
 \alias{EM.mixexp}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Expectation-Maximisation for a mixture of exponentials}
+\title{Expectation-Maximisation for a mixture of exponential distributions}
 \description{
-  Experimental function for Expectation-Maximization (EM)
+  Experimental function for Expectation-Maximisation (EM)
   estimation
 }
 \usage{
@@ -29,7 +29,7 @@
   \item{estimate}{Estimated values as a named vector.}
   \item{logL}{Vector giving the log-likelihood for successive iterations.}
   \item{Alpha}{Matrix with \code{m} columns giving probability weights
-    for succesive iterations. Row with number \code{it} contains the
+    for successive iterations. Row with number \code{it} contains the
     \code{m} probabilities at iteration \code{it}.}
   \item{Theta}{Matrix with \code{m} columns giving the estimates of the
     \code{m} expectations for the successive iterations}

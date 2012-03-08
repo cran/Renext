@@ -1,0 +1,224 @@
+Dear Emacs, please make this -*-Text-*- mode!
+
+     	CHANGES IN Renext package VERSION 2.0-0
+
+CHANGES
+
+    o This 'Changelog' cleaned.	
+
+
+	CHANGES IN Renext package VERSION 1.5-1
+
+CHANGES
+
+    o Typos in the 'RenextGuide' document.
+
+ 
+		CHANGES IN Renext package VERSION 1.5-0
+
+CHANGES
+
+    o The 'fit.Renouv' function is renamed 'Renouv' as would 
+    expect most R users.
+
+    o The shifted Pareto 'spareto' distribution and its functions
+    are renamed as "Lomax" distribution and 'xlomax' with x in 
+    "d", "p", "r", "h", "H". 
+
+    o Many slight changes in the vignette most of them striving
+    to improve the English.
+
+    o The vignette code (.Rnw) and subsequent material needed
+    is no longer shipped with the package for the sake of its
+    size and the resources needed in the build step.
+    
+    o The warning message produced when hessian is not definite
+    negative is strengthened.
+
+
+BUG FIXES
+
+    o In the 'plot.Renouv' function, when historical data 
+    are shown on the plot it can be the case that their
+    number exceeds the predicted number. This was a problem
+    for the determination of the plotting position. Now the 
+    predicted number is modified in order to be at least the 
+    observed number.
+
+
+		CHANGES IN Renext package VERSION 1.4-1
+
+CHANGES
+
+    o The 'fRenouv' function is REMOVED, and 'fit.Renouv' should
+    now be used.    
+
+    o Many minor corrections (essentially spelling) were made
+    in the documentation.	
+
+    o The documentation of the 'fit.Renouv' function now lists
+    the 'special distributions' and their parameters.
+
+    o  The 'print.summary.Renouv' function now informs the user
+    about the inference method used (delta method or exact chi 
+    square). It also displays relevant information about historical 
+    blocks used in the fit, if any.
+  
+    o The 'ret.lev' table returned by 'fit.Renouv' no longer
+    has rownames indicating the return period. The reason is 
+    that this table (a data.frame object) can not by default
+    have ties in its rownames, and formating general (not
+    'pretty') return periods is difficult. 
+
+    o Changes in the vignette.  NOT FULLY CHECKED YET (spelling!)
+    Some details have been added about the "log-exponential" and the 
+    "square-exponential" distributions.
+
+
+BUG FIXES
+
+    o The 'predict.Renouv' gave an error when the object 'x'
+    had a transformation 'trans.y'. Fixed. 
+
+    o The 'fit.Renouv' function returned in some cases 
+    an error message in place of a table in its 'ret.lev' element. 
+    This was due to 'rownames'. Fixed.
+
+
+
+		CHANGES IN Renext package VERSION 1.4-0
+
+CHANGES
+
+    o  The 'plot.Renouv' function was changed. The 'problim'
+    and 'Tlim' arg now work as expected. The rule to set the x axis
+    is quite complex to describe, but yet rather natural to use. 
+
+    o The vignette was modified mainly in the chapter devoted to 
+    the 'fit.Renouv'. The two types of historical data 'MAX' and 
+    'OTS' are now described with their likelihood. There is no 
+    longer reference to the old 'fRenouv' function, and all 
+    code chunks now refer to 'fit.Renouv'. The methods for 
+    'Rendata' and 'Renouv' classes are shortly described.
+
+
+BUG FIXES
+
+    o  In 'fit.Renouv', a problem occurred when only one MAX block
+    was given without being enclosed in a list().
+
+    o In 'plot.Renouv' it was implicitly assumed that 'L.95'
+    and 'U.95' were present in the table which caused an error
+    in the determination of the y axis.
+
+
+		CHANGES IN Renext package VERSION 1.3-1
+
+NEW FEATURES 		
+			
+    o  'fit.Renouv' now internally uses the function 'plot.Renouv'
+    when its 'plot' formal is set to TRUE
+
+    		   
+CHANGES 
+
+    o Packages 'evd', 'numDeriv' are now required 'Depends'.
+
+
+BUG FIXES
+
+    o  In 'fit.Renouv', a bug affected 'historical data' arguments. It
+    caused problems with "gpd" distribution with historical data.   
+
+
+		CHANGES IN Renext package VERSION 1.3-0
+
+NEW FEATURES 		
+			
+    o  'fit.Renouv' now internally uses the function 'plot.Renouv'
+    when its 'plot' formal is set to TRUE
+
+    		   
+CHANGES 
+
+    o Packages 'evd', 'numDeriv' are now required 'Depends'.
+
+    o In 'makeOTSdata' and 'makeOTSdata' giving a NULL value to the
+    argument data allows to bypass the use of the historical data
+    possibly present in the x object. A similar behaviour is know retained
+    in the the 'fit.Renouv' function.
+
+    o In 'plot.Renouv', the arguments have been changed. 'pct.conf', and
+    arguments concerning marks suffixed as '.mark'. By default, no
+    mark is shown. The arguments 'main' and 'ylim' have been removed but 
+    can still be used through the dots mechanism. The new arguments 'problim'
+    and 'Tlim' allow the user to set the axis limits. When historical data	
+    are present in the object, they are now plotted with filled symbols, the
+    filling color indicates the block.
+
+	
+BUG FIXES
+
+    o  In 'fit.Renouv' a problem occurred with MAX data when 
+    one block was given as a numeric vector (rather than a list).
+    A numeric problem occurred in with 'OTS' data with no threshold
+    exceedances due to the use of r*log(1-F) with r = 0 and F very
+    close to 1.  
+    
+
+
+		CHANGES IN Renext package VERSION 1.2-0
+
+NEW FEATURES 		
+			
+    o New function 'fit.Renouv'. This is mainly a cleaned version of
+    'fRenouv' (which will remains here for a couple of  sub-versions).  
+    The historical data are now clearly identified as of two types 'MAX'
+    and 'OTS',	both using one or several periods called blocks. MAX 
+    data (or r-max) are as before with new formals; OTS data use blocks 
+    with all values over a known threshold over the main sample threshold. 
+    The likelihood is then slightly different than that of the MAX-data case.
+    		   
+    o New S3 class 'Renouv' with methods: 'summary', 'coefficients', 'predict'  
+    and 'plot'. The method 'predict' computes return levels and confidence
+    bounds (when possible), while 'plot' produces a return level plot 
+    with the main sample and also historical data when present. 
+    
+    o New method for the class 'Rendata': 'summary'. The 'plot'
+    method was slightly changed to show historical data when this is
+    possible.	
+
+    o New function 'OTjitter'. Works like 'jitter' but avoids  
+    jiterrized data falling under the threshold. This is used
+    in 'fit.Renouv' to avoid the warning concerning ties in 
+    the Kolmogorov-Smirnov test. In practice, there seem to very very
+    little difference in the stat and p-value when jitterizing is
+    used.
+
+
+CHANGES 
+
+    o Vignette. Correction of an error (p. 32) about the return-level.
+    Modification of the parts concerning historical data.
+
+
+		CHANGES IN Renext package VERSION 1.1-0
+
+CHANGES 		
+			
+    o Function 'qmixexp2': quadratic interpolation during the first
+    iterations replaced by a simpler linear interpolation, i.e. a
+    standard Newton-Raphson method, easier to analyze. The method
+    has been secured by placing the iterate below the true unknown root
+    on the basis of concavity, by inflating the derivative if needed. 
+    Scale the data through a multiplication of these by the smallest
+    rate names 'rate1', which should improve numerical accuracy.
+    
+    o Vignette. Correction of bugs in the index and around code 
+    chunks. The were due to end of lines chars that were moved
+    in the .Rnw source file.
+
+    o Vignette. Correction of several misspells or typos. Added a figure  
+    showing GPD densities for several values of the shape parameter 'xi'. 	   
+
+
