@@ -1,10 +1,10 @@
 Package: Renext
 Type: Package
 Title: Renewal method for extreme values extrapolation
-Version: 2.0-0
-Date: 2012-03-08
+Version: 2.0-11
+Date: 2012-08-23
 Author: Yves Deville <deville.yves@alpestat.com>, IRSN <renext@irsn.fr>
-Maintainer: IRSN <renext@irsn.fr>
+Maintainer: Lise Bardet <lise.bardet@irsn.fr>
 Depends: R (>= 2.8.0), evd, numDeriv
 Suggests: MASS, graphics, ismev, XML
 Description: R package dedicated to some Extreme values problems and
@@ -13,6 +13,6 @@ Description: R package dedicated to some Extreme values problems and
 License: GPL (>= 2)
 LazyLoad: yes
 URL: https://gforge.irsn.fr/gf/project/renext
-Packaged: 2012-03-09 10:19:51 UTC; yves
+Packaged: 2012-08-23 13:26:39 UTC; yves
 Repository: CRAN
-Date/Publication: 2012-03-09 10:38:34
+Date/Publication: 2012-08-24 12:33:23

@@ -69,8 +69,8 @@ Renewal method for extreme values extrapolation
   \tabular{ll}{
     Package: \tab Renext\cr
     Type: \tab Package\cr
-    Version: \tab 2.0-0\cr
-    Date: \tab 2012-03-08\cr
+    Version: \tab 2.0-11\cr
+    Date: \tab 2012-08-23\cr
     License: \tab GPL (>= 2)\cr
     LazyLoad: \tab yes\cr
   }
@@ -79,7 +79,7 @@ Renewal method for extreme values extrapolation
 \author{
   Yves Deville <deville.yves@alpestat.com>, IRSN <renext@irsn.fr>
   
-  Maintainer: IRSN <renext@irsn.fr>
+  Maintainer: Lise Bardet <lise.bardet@irsn.fr>
 }
 \references{
   \itemize{

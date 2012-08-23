@@ -1419,7 +1419,6 @@ Renouv <- function(x,
   ##
   ##=============================================================
 
-
   rl.period <- 1 / estimate[1] / (1 - rl.prob)
   
   ## restrict 'pred.period' if necessary

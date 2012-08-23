@@ -1,13 +1,26 @@
 Dear Emacs, please make this -*-Text-*- mode!
 
-     	CHANGES IN Renext package VERSION 2.0-0
+        	CHANGES IN Renext package VERSION 2.0-11
+
+CHANGES
+
+    o Unused hidden file (.BAKRbuildignore) removed.
+
+    o Coerce a 'skip' argument to integer (read as character 
+    from XML file).
+
+    o Changed the Maintainer address, now the personal address
+    of Lise Bardet.
+
+
+ 	        CHANGES IN Renext package VERSION 2.0-0
 
 CHANGES
 
     o This 'Changelog' cleaned.	
 
 
-	CHANGES IN Renext package VERSION 1.5-1
+                CHANGES IN Renext package VERSION 1.5-1
 
 CHANGES
 
