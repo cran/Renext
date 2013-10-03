@@ -349,7 +349,7 @@ read.periodsFile <- function(node,
   readData <- read.csv(file = path,
                        header = FALSE,
                        sep = xmlGetAttr(node, "sep"),
-                       skip = xmlGetAttr(node, "skip"),
+                       skip = as.integer(xmlGetAttr(node, "skip")),
                        colClasses = colClasses,
                        as.is = TRUE,
                        col.names= colNames)

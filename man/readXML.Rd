@@ -64,11 +64,12 @@
 }
 \examples{
 \dontrun{
-library(XML)
-## use 'index.xml' file shiped with Renext
-dir1 <- system.file("Rendata", package = "Renext")
-BrestNew1 <- readXML(name = "Brest", dir = dir1)
-test1 <- readXML(name = "test1", dir = dir1)
+if (require(XML)) {
+   ## use 'index.xml' file shiped with Renext
+   dir1 <- system.file("Rendata", package = "Renext")
+   BrestNew1 <- readXML(name = "Brest", dir = dir1)
+   test1 <- readXML(name = "test1", dir = dir1)
+}
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

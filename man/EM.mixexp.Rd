@@ -7,14 +7,11 @@
   estimation
 }
 \usage{
-   EM.mixexp(x, m = 2)
+EM.mixexp(x, m = 2)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{Sample vector with values \code{>0}. }
-  \item{m}{Number of mixture components}
-  %%\item{plot}{If \code{TRUE} the expectation parameters (inverse
-  %%rates) are 'matplot'-ted as functions of iteration number.}
+  \item{m}{Number of mixture components.}
 }
 \details{
    The EM algorithm is very simple for exponential mixtures (as well as
@@ -44,7 +41,6 @@
 \seealso{\code{\link{mom.mixexp2}} and \code{\link{ini.mixexp2}} for
   "cheap" estimators when \code{m = 2}.}
 \examples{
-library(Renext)
 set.seed(1234)
 x <- rmixexp2(n = 100, prob1 = 0.5, rate2 = 4)
 EM.mixexp(x) -> res

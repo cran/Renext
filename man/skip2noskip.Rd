@@ -40,7 +40,7 @@ Compute non-skipped periods form start and end of skipped periods.
 %\note{ }
 \seealso{\code{\link{readXML}} for reading data from XML and csv files.}
 \examples{
-data(Brest)
+## Brest data embeds a description of the gaps
 
 ns <- skip2noskip(skip = Brest$OTmissing)
 

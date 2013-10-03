@@ -5,7 +5,7 @@
 \description{
   Years with missing periods in the 'Brest.years' dataset
 }
-\usage{data(Brest.years.missing)}
+\usage{Brest.years.missing}
 \format{
   The format is:
  int [1:49] 1846 1847 1852 1857 1858 1859 1860 1861 1862 1863 ...
@@ -19,7 +19,6 @@
 %%\source{}
 %%\references{}
 \examples{
-data(Brest.years.missing)
 print(Brest.years.missing)
 }
 \keyword{datasets}

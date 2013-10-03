@@ -1,8 +1,10 @@
 ##==============================================================================
-## Author Y. Deville 
+## Author: Yves Deville
+##
 ## Find ML estimate of a two parameter Weibull distribution using a sample x.
-## The pameter eta = beta^alpha is used in place of beta (= scale) where
-## alpha = shape. Then eta is concentrated out of the likelihood.
+##
+## The parameter 'eta' = beta^alpha is used in place of beta (= scale) where
+## alpha = shape. Then 'eta' is concentrated out of the likelihood.
 ##==============================================================================
 
 "fweibull" <- function(x,
@@ -12,17 +14,15 @@
   if (any(x <= 0)) stop("all elements in 'x' must be >0")  
   
   n <- length(x)
-
   xbar <- mean(x)
   
-  ## caution: x is changed from now on 
   lx <- log(x)
   mlx <- mean(lx)
   
   alpha <- 1.2825 / sd(lx)
   
   phi <- function(alpha) {
-    if (alpha<1e-8) stop("alpha must be > 0") 
+    if (alpha < 1e-8) stop("'alpha' must be > 0") 
     xa <- x^alpha
     sum(xa*lx) / sum(xa) -mlx - 1/alpha
   }

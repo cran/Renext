@@ -2,19 +2,19 @@
 \alias{NBlevy}
 \encoding{UTF-8}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Negative Binomial Levy point process}
+\title{Negative Binomial Levy process}
 \description{
-   Negative Binomial Levy point process estimation from partial observations (counts)
+   Negative Binomial Lévy process estimation from partial observations (counts)
 }
 \usage{
-   NBlevy(N,
-          gamma = NA,
-          prob = NA,
-          w = rep(1, length(N)),
-          sum.w = sum(w),
-          interval = c(0.01, 1000),
-          optim = TRUE,
-          plot = FALSE, ...)
+NBlevy(N,
+       gamma = NA,
+       prob = NA,
+       w = rep(1, length(N)),
+       sum.w = sum(w),
+       interval = c(0.01, 1000),
+       optim = TRUE,
+       plot = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -66,8 +66,8 @@
 }
 \author{Yves Deville}
 \note{
-  The Negative Binomial \enc{Lévy}{Levy} process is an alternative to the homogeneous
-  Poisson point process when counts are subject to overdispersion. In
+  The Negative Binomial \enc{Lévy}{Levy} process is an alternative to the Homogeneous
+  Poisson Process when counts are subject to overdispersion. In
   the NB process, all counts share the same index of dispersion
   (variance/expectation ratio), namely \code{1/prob}. When \code{prob} is
   close to 1, the counts are nearly Poisson-distributed.
@@ -78,17 +78,15 @@
 \examples{
 ## known parameters
 nint <- 100
-gam <- 6
-prob <- 0.20
+gam <- 6; prob <- 0.20
 
 ## draw random w, then the counts N
 w <- rgamma(nint, shape = 3, scale = 1/5)
-N <- rnbinom(nint, size = w*gam, prob = prob)
-mu <- w*gam*(1-prob)/prob
+N <- rnbinom(nint, size = w * gam, prob = prob)
+mu <- w * gam * (1 - prob) / prob
 Res <- NBlevy(N = N, w = w)
 
 ## Use example data 'Brest'
-data(Brest)
 
 ## compute the number of event and duration
 ## of the non-skipped periods
@@ -113,13 +111,6 @@ ns2 <- gof2$noskip
 fit2 <- NBlevy(N = ns2$nevt, w = ns2$duration)
 
 c(fit1$prob, fit2$prob)
-
-
-
-
-
-
-
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

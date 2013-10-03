@@ -3,20 +3,20 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Return level plot}
 \description{
-  Return level plot for "Renouvellement" models
+  Return level plot for "Renouvellement" data.
 }
 \usage{
-   RLplot(data,
-          x = NULL,
-          duration = 1,
-          lambda,
-          conf.pct = 95,
-          mono = TRUE,
-          mark.rl = 100,
-          mark.labels = mark.rl,
-          mark.col = NULL,
-          main = NULL,
-          ylim = NULL,
+RLplot(data,
+       x = NULL,
+       duration = 1,
+       lambda,
+       conf.pct = 95,
+       mono = TRUE,
+       mark.rl = 100,
+       mark.labels = mark.rl,
+       mark.col = NULL,
+       main = NULL,
+       ylim = NULL,
           ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -30,12 +30,10 @@
     levels. See \bold{Details} below.}
   \item{mono}{If \code{TRUE} colours are replaced by black.}
   \item{mark.rl}{Return levels to be marked on the plot.}
-  \item{mark.labels}{labels shown at positions in \code{mark.rl}.}
+  \item{mark.labels}{Labels shown at positions in \code{mark.rl}.}
   \item{mark.col}{Colours for marked levels.}
   \item{main}{Main title for the return level plot (defaults to empty title).}
-  %%--------------------------------------------------------------------------
   \item{ylim}{Limits for the y axis (defaults to values computed from the data).}
-  %%--------------------------------------------------------------------------
   \item{\dots}{Further args to be passed to \code{plot}. Should be
     removed in future versions.}
 }
@@ -49,11 +47,10 @@
   and related packages, but the return level is here in log-scale while
   Coles uses a loglog-scale. A line corresponds
   here to a one parameter exponential distribution, while Coles'plot
-  corresponds to Gumbel. Since \eqn{log(-log(1-p))}{log(-log(1-p))} is
-  close to  \eqn{log(p)}{log(p)} when \eqn{p}{p} is
-  close to 1, the two plots differ only for small return levels.
+  corresponds to Gumbel, however the two plots differ only for small
+  return periods.
   This plot is identical to an \code{expplot} but with x and y scales
-  changed. Only axis tick-marks differ. The convexity of the scatter plot
+  changed: only axis tick-marks differ. The convexity of the scatter plot
   is therefore opposed in the two plots.
   
 }
@@ -62,7 +59,7 @@
  Coles S. (2001)  \emph{Introduction to Statistical Modelling
    of Extremes Values}, Springer.
 }
-\author{Y. Deville}
+\author{Yves Deville}
 \note{
   Confidence limits correspond to \emph{two-sided symmetrical intervals}. This
   means that the (random) confidence interval may be under or above the
@@ -125,7 +122,7 @@ RLplot(data = data, x = x, lambda = lambda.hat, duration = nyear,
        mark.rl = 10, mark.labels = "10 ans", mono = FALSE, mark.col = "SeaGreen",
        main = "Poisson-exponential return levels")
 
-points(x = log(50), y = 25, pch = 18, cex = 1.4, col ="purple") 
+points(x = log(50), y = 25, pch = 18, cex = 1.4, col = "purple") 
 text(x = log(50), y = 25, col ="purple", pos = 4, labels = "special event") 
 
 }

@@ -10,7 +10,7 @@
   %%  ~~ A concise (1-5 lines) description of the dataset. ~~
   Flow of the french river La Garonne at le Mas d'Agenais
 }
-\usage{data(Garonne)}
+\usage{Garonne}
 \format{
   The format is:
   List of 7
@@ -24,8 +24,7 @@
       \item \code{$varShortLab} : chr \code{"Flow"}
       \item \code{$varUnit}    : chr \code{"m3/s"}
     }
-    \item \code{$describe} : chr \code{"Flow of the french riverLa
-      Garonneat the gauging stationLe Mas d'Agenais. The data are taken from Miquel's book."}
+    \item \code{$describe} : chr \code{"Flow of the french river La Garonne ..."}
     \item \code{$OTinfo} :List of 4
     \itemize{
       \item \code{$start}       : POSIXct[1:1], format: \code{"1913-01-01"}
@@ -80,11 +79,16 @@
    The data were taken from the book by Miquel.
 }
 \references{
-   Miquel J. (1984) \emph{Guide pratique d'estimation des
-   \enc{probabilités}{probabilites} de crues}, Eyrolles (coll. EDF DER)
+  Miquel J. (1984) \emph{Guide pratique d'estimation des
+    \enc{probabilités}{probabilites} de crues}, Eyrolles (coll. EDF DER).
+
+  Parent E. and Bernier J. (2003) Bayesian POT modeling for Historical
+  data. \emph{Journal of Hydrology} vol. 274, pp. 95-108.
+  
+
+   
 }
 \examples{
-data(Garonne)
 plot(Garonne) 
 }
 \keyword{datasets}

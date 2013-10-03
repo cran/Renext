@@ -17,7 +17,7 @@
   \item{textOver}{Mark values of the variable in the \code{OTdata} part of
     \code{x}. Values above the \code{textOver} value (if any) will be
     marked with the character version of the block, typically a year}
-  \item{showHist}{If \code{True}, the historical periods (is any) are shown
+  \item{showHist}{If \code{TRUE}, the historical periods (is any) are shown
     on the plot.}
   \item{\dots}{further args to be passed to \code{plot} function.}
 }
@@ -36,15 +36,16 @@
 }
 \seealso{\code{\link{readXML}}}
 \examples{
-library(XML)
-## use 'index.xml' file shipped with Renext
-dir1 <- system.file("Rendata", package = "Renext")
-BrestNew <- readXML(name = "Brest", dir = dir1)
-plot.Rendata(BrestNew)
-GaronneNew <- readXML(name = "Garonne", dir = dir1)
-plot.Rendata(GaronneNew)
-test1 <- readXML(name = "test1", dir = dir1)
-plot.Rendata(test1)
+if (require(XML)) {
+   ## use 'index.xml' file shipped with Renext
+   dir1 <- system.file("Rendata", package = "Renext")
+   BrestNew <- readXML(name = "Brest", dir = dir1)
+   plot(BrestNew)
+   GaronneNew <- readXML(name = "Garonne", dir = dir1)
+   plot(GaronneNew)
+   test1 <- readXML(name = "test1", dir = dir1)
+   plot(test1)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

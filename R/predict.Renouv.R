@@ -13,17 +13,22 @@ predict.Renouv <- function(object,
                            trace = 1,
                            eps = 1e-6,
                            ...) {
-   
+  
+  if ( names(object$estimate)[1L] != "lambda") {
+    stop("element 1 of 'estimate' must have name \"lambda\"")
+  }
+  
   pct.conf <- level*100
   pred.period <- newdata
   
   nc <- 3L + 2L*length(pct.conf)
   
-  ## Prepare a 'pred' matrix whith dims and names
+  ## Prepare a 'pred' matrix with dims and names
   
   cnames <- c("period", "prob", "quant",
-      paste(rep(c("L", "U"), length(pct.conf)), rep(pct.conf, each = 2), sep = "."))
-
+      paste(rep(c("L", "U"), length(pct.conf)),
+            rep(pct.conf, each = 2L), sep = "."))
+  
   pred.prob <- 1.0 - 1/object$estimate[1L]/pred.period
   ind <- (pred.prob > 0.0) & (pred.prob < 1.0)
   pred.period <- pred.period[ind]
@@ -49,15 +54,21 @@ predict.Renouv <- function(object,
   est.y <- object$estimate[-1]
   fixed.y <- object$fixed.y
   cov.y <- object$cov[-1, -1, drop = FALSE]
-  nb.OT <- length(object$y.OT)
-    
-  if ( (object$distname.y == "exponential") && !object$history.MAX$flag && !object$history.OTS$flag ) {
+
+  nb.OT <- object$nb.OT
+  if ( is.null(nb.OT) ) nb.OT <- length(object$y.OT)
+  
+  ## cat("nb.OT = ", nb.OT, "\n")
+  ## nb.OT <- object$nb.OT
+  
+  if ( (object$distname.y == "exponential") && !object$history.MAX$flag
+      && !object$history.OTS$flag ) {
     
     if (trace) cat("Special inference for the exponential case without history\n")
     
     ##--------------------------------------------------------------
     ## Use the sampling distribution to derive confidence
-    ## limits on quantiles. If lambda was known, these limits
+    ## limits on quantiles. If 'lambda' was known, these limits
     ## would be exact.
     ##--------------------------------------------------------------
     
@@ -68,8 +79,10 @@ predict.Renouv <- function(object,
       theta.L <- 2*nb.OT / est.y / qchisq(1 - alpha.conf/2, df = 2 * nb.OT)
       theta.U <- 2*nb.OT / est.y / qchisq(alpha.conf/2, df = 2 * nb.OT)
       
-      pred[ , 2L * ipct + 2L] <- object$threshold + qexp(p = pred.prob, rate = 1.0/theta.L)
-      pred[ , 2L * ipct + 3L] <- object$threshold + qexp(p = pred.prob, rate = 1.0/theta.U) 
+      pred[ , 2L * ipct + 2L] <-
+        object$threshold + qexp(p = pred.prob, rate = 1.0/theta.L)
+      pred[ , 2L * ipct + 3L] <-
+        object$threshold + qexp(p = pred.prob, rate = 1.0/theta.U) 
       
     }
     
@@ -77,21 +90,22 @@ predict.Renouv <- function(object,
 
       ## dth was defined above
       
-      for (ipct in 1L:length(pct.conf)) {
-        
-        pred[ , 2L * ipct + 2L] <- object$funs$invtransfun(dth + pred[ , 2L * ipct + 2L])
-        pred[ , 2L * ipct + 3L] <- object$funs$invtransfun(dth + pred[ , 2L * ipct + 3L]) 
-
+      for (ipct in 1L:length(pct.conf)) { 
+        pred[ , 2L * ipct + 2L] <-
+          object$funs$invtransfun(dth + pred[ , 2L * ipct + 2L])
+        pred[ , 2L * ipct + 3L] <-
+          object$funs$invtransfun(dth + pred[ , 2L * ipct + 3L]) 
       }
       
     }
     
     
-    ##=============================================================
+    ##==============================================================
     ## perform Bartlett's gof test
     ##==============================================================
 
-    infer.method <- "chi-square for exponential distribution (no historical data)"
+    infer.method <-
+      "chi-square for exponential distribution (no historical data)"
     
   } else {
      
@@ -101,68 +115,76 @@ predict.Renouv <- function(object,
     ## The column ip of Parmat contains the parameter value with
     ## a tiny modification of its ip component.
     ##==============================================================
-    
-    parmMat <- matrix(est.y[!fixed.y], nrow = p.y, ncol = p.y)
-    
-    rownames(parmMat) <- object$parnames.y[!fixed.y]
-    colnames(parmMat) <- object$parnames.y[!fixed.y]
-    
-    dparms <- abs(est.y[!fixed.y])*eps
-    dparms[dparms < eps] <- eps
-    
-    for (ip in 1:p.y) parmMat[ip, ip] <- parmMat[ip, ip] + dparms[ip]
-    
-    delta <- rep(NA, p.y)
-    sig <- rep(NA, length(pred.prob))
-    
-    ##=============================================================
-    ## ComRpute the delta's  and sig's
-    ## delta conains derivative w.r.t. unknown params
-    ##
-    ## CAUTION
-    ##
-    ## The quantile function q.y takes a vector as first arg which
-    ## should morally be of length p.y but is here of length
-    ## parnb.y. This works because q.y uses the elements in named
-    ## form irrespective of their position.
-    ##
-    ##=============================================================
-    
-    for (i in 1:length(pred.prob)) {
-      
-      for (ip in 1:p.y) {
 
-        est.prov <- est.y
-        est.prov[!fixed.y] <-  parmMat[ , ip]
+    sig <- rep(0, length(pred.prob))
+
+    if (p.y > 0L) { ## ADDED 2013-09-07
+      
+      parmMat <- matrix(est.y[!fixed.y], nrow = p.y, ncol = p.y)
+      
+      rownames(parmMat) <- object$parnames.y[!fixed.y]
+      colnames(parmMat) <- object$parnames.y[!fixed.y]
+      
+      dparms <- abs(est.y[!fixed.y])*eps
+      dparms[dparms < eps] <- eps
+      
+      for (ip in 1:p.y) parmMat[ip, ip] <- parmMat[ip, ip] + dparms[ip]
+    
+      delta <- rep(NA, p.y)
+      ## sig <- rep(NA, length(pred.prob)) ## MOVED 
+    
+      ##=============================================================
+      ## Compute the delta's  and sig's
+      ## delta contains derivative w.r.t. unknown params
+      ##
+      ## CAUTION
+      ##
+      ## The quantile function 'q.y' takes a vector as first arg which
+      ## should morally be of length 'p.y', but is here of length
+      ## parnb.y. This works because 'q.y' uses the elements in named
+      ## form, irrespective of their position.
+      ##
+      ##=============================================================
+      
+      for (i in 1:length(pred.prob)) {
         
-        dd <- ( object$funs$q.y(est.prov, p = pred.prob[i]) -
-               object$funs$q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
-        delta[ip] <- dd
+        for (ip in 1:p.y) {
+          
+          est.prov <- est.y
+          est.prov[!fixed.y] <-  parmMat[ , ip]
+          
+          dd <- ( object$funs$q.y(est.prov, p = pred.prob[i]) -
+                 object$funs$q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
+          delta[ip] <- dd
+          
+        }
+        
+        sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
         
       }
+    }  ## ADDED 2013-09-07
       
-      sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
-
-    }
     
     ##=============================================================
     ## Compute the delta's  and sig's
     ## delta contains derivative w.r.t. unknown params
     ##=============================================================
 
-    pred.sig <- rep(NA, length(pred.prob))
-    
-    for (i in 1:length(pred.prob)) {
-      for (ip in 1:p.y) {
-        est.prov <- est.y
-        est.prov[!fixed.y] <-  parmMat[ , ip]
-        dd <- ( object$funs$q.y(est.prov, p = pred.prob[i]) -
-               object$funs$q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
-        delta[ip] <- dd
+    pred.sig <- rep(0, length(pred.prob))
+
+    if (p.y > 0L){
+      for (i in 1:length(pred.prob)) {
+        for (ip in 1:p.y) {
+          est.prov <- est.y
+          est.prov[!fixed.y] <-  parmMat[ , ip]
+          dd <- ( object$funs$q.y(est.prov, p = pred.prob[i]) -
+                 object$funs$q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
+          delta[ip] <- dd
+        }
+        ## modif 2010-01-25 for the fixed parms case
+        ##pred.sig[i] <- sqrt(t(delta)%*%cov.y%*%delta)
+        pred.sig[i] <- sqrt(t(delta) %*% cov.y[!fixed.y, !fixed.y]%*%delta)
       }
-      ## modif 2010-01-25 for the fixed parms case
-      ##pred.sig[i] <- sqrt(t(delta)%*%cov.y%*%delta)
-      pred.sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
     }
     
     ##=============================================================
@@ -176,8 +198,10 @@ predict.Renouv <- function(object,
     for (ipct in 1:length(pct.conf)) {
       alpha.conf <- (100 - pct.conf[ipct])/100
       z.conf <- qnorm(1 - alpha.conf/2)
-      pred[ , 2*ipct + 2] <- object$threshold + object$funs$q.y(est.y, p = pred.prob) - z.conf * pred.sig
-      pred[ , 2*ipct + 3] <- object$threshold + object$funs$q.y(est.y, p = pred.prob) + z.conf * pred.sig
+      pred[ , 2*ipct + 2] <-
+        object$threshold + object$funs$q.y(est.y, p = pred.prob) - z.conf * pred.sig
+      pred[ , 2*ipct + 3] <-
+        object$threshold + object$funs$q.y(est.y, p = pred.prob) + z.conf * pred.sig
     }
 
     if (object$transFlag) {

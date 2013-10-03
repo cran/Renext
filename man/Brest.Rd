@@ -6,7 +6,7 @@
 \description{
   Surge heights near high tide at Brest tide gauge station (France), detailed version
 }
-\usage{data(Brest)}
+\usage{Brest}
 \format{
   The format is:
   List of 5
@@ -20,9 +20,7 @@
       \item \code{$varShortLab} : chr \code{"Surge"}
       \item \code{$varUnit} : chr \code{"cm"}
     }
-    \item \code{$describe} : chr "High tide sea surge over 30 cm
-    atBrest(France) separated 
-    by at least two days."
+    \item \code{$describe} : chr "High tide sea surge over 30 cm at Brest(France)..."
     \item \code{$OTinfo} : List of 4
     \itemize{ 
       \item \code{$start}       : chr POSIXct[1:1], format: \code{"1845-12-31 23:59:39"}
@@ -49,7 +47,7 @@
   \itemize{
     \item \code{info} gives general information about the data
     \item \code{OTinfo} gives general information about the Over the
-    Threshold part of data. The effective duration (\code{effduration}
+    Threshold part of data. The effective duration (\code{effDuration}
     element) is the total duration for the periods with effective
     measurements.
     \item \code{OTdata} give OT measurements
@@ -74,7 +72,6 @@ due to leap years and leap seconds.
 \source{\url{http://www.sonel.org}}
 %%\references{~~ possibly secondary sources and usages ~~}
 \examples{
-data(Brest)
 str(Brest)
 Brest$OTinfo$start
 plot(Brest)

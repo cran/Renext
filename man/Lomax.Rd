@@ -8,7 +8,6 @@
 \description{
   Density function, distribution function, quantile function and
   random generation for the Lomax distribution. 
-  distribution. 
 }
 \usage{
    dlomax(x, scale = 1.0, shape = 4.0, log = FALSE)
@@ -25,17 +24,17 @@
   \item{log}{Logical; if \code{TRUE}, the log density is returned.}
   \item{lower.tail}{Logical; if \code{TRUE} (default), probabilities
     are \eqn{\textrm{Pr}[X <= x]}{Pr[X <= x]}, otherwise,
-    \eqn{\textrm{Pr}[X > x]}{X>x}}.
+    \eqn{\textrm{Pr}[X > x]}{Pr[X > x]}.}
 }
 \details{
-  The lomax distribution function with shape \eqn{\rho>0}{rho>0} and
-  scale \eqn{\delta>0}{delta>0} has distribution function
-  \deqn{F(y) = 1- \left[\frac{\delta}{\delta+y}\right]^\rho \quad y>0}{
-    F(y) = 1 - [delta /(delta+y)]^rho      y > 0}
+  The Lomax distribution function with shape \eqn{\alpha > 0} and
+  scale \eqn{\beta > 0} has survival function
+  \deqn{S(y) = \left[1 + y/\beta \right]^{-\alpha} \qquad (y > 0)}{
+    S(y) = [1 + y/\beta ]^(-\alpha)       (y > 0)}
   This distribution has increasing hazard and decreasing mean residual
   life (MRL). The coefficient of variation decreases with
-  \eqn{\rho}{rho} and tends to \eqn{1}{1} for large \eqn{\rho}{rho}.
-  The default value \eqn{\rho=4}{rho = 4} corresponds to \eqn{CV = \sqrt{2}}{CV
+  \eqn{\alpha}, and tends to \eqn{1}{1} for large \eqn{\alpha}.
+  The default value \eqn{\alpha=4} corresponds to \eqn{\textrm{CV} = \sqrt{2}}{CV
     = sqrt(2)}.
 }
 \value{
@@ -44,28 +43,40 @@
   and \code{rlomax} generates random deviates.
 }
 \note{
-  This distribution is sometimes called \emph{log-exponential}
-  and also called the \emph{Lomax distribution}. It
-  is occasionally used in POT with \code{scale} taken as
-  the threshold. 
+  This distribution is sometimes called \emph{log-exponential}. It
+  is a special case of Generalised Pareto Distibution (GPD)
+  whith positive shape \eqn{\xi > 0}, scale \eqn{\sigma}
+  and location \eqn{\mu=0}.
+  The Lomax and GPD parameters are related according to
+  \deqn{\alpha = 1/\xi, \qquad
+    \beta = \sigma/\xi.}{\alpha = 1/\xi,    \beta = \sigma/\xi.}
+  The Lomax distribution can be used in POT to describe exceedances
+  following GPD with shape \eqn{\xi>0} thus with decreasing
+  hazard and increasing Mean Residual Life.
+  
+  Note that the exponential distribution with rate \eqn{\nu}
+  is the limit of a Lomax distibution having large scale \eqn{\beta} and large
+  shape \eqn{\alpha}, with the constraint on the shape/scale ratio
+  \eqn{\alpha/\beta =  \nu}.
+  
 }
 \references{
   Johnson N. Kotz S. and N. Balakrishnan 
   \emph{Continuous Univariate Distributions} vol. 1, Wiley 1994.
+
+  \href{http://en.wikipedia.org/wiki/Lomax_distribution}{Lomax distribution in Wikipedia}
+  
 }
 
 %%\references{  }	
-%%\seealso{\code{\link{}} }
+\seealso{\code{\link{flomax}} to fit the Lomax distibution by Maximum Likelihood. }
 
 \examples{
-library(Renext)
 shape <- 5; scale <- 10
-
 xl <- qlomax(c(0.00, 0.99), scale = scale, shape = shape)
 x <- seq(from = xl[1], to = xl[2], length.out = 200)
 f <- dlomax(x, scale = scale, shape = shape)
 plot(x, f, type = "l", main = "Lomax distribution density")
-
 F <- plomax(x, scale = scale, shape = shape)
 plot(x, F, type ="l", main ="Lomax distribution function")
 }

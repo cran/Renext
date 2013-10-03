@@ -8,7 +8,7 @@
   values above the given threshold.
 }
 \usage{
-   OTjitter(x, threshold = NULL)
+OTjitter(x, threshold = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -38,7 +38,7 @@
   \code{\link{jitter}}
 }
 \examples{
-data(Garonne)
+## Garonne data (heavily rounded)
 x <- Garonne$OTdata$Flow
 min(x) 
 xmod <- OTjitter(x, threshold = 2500)

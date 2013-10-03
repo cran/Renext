@@ -1,7 +1,7 @@
 \name{roundPred}
 \alias{roundPred}
 \title{
-  Round quantiles in a pseudo-prediction table.
+  Round quantiles in a pseudo-prediction table
 }
 \description{
   Round the quantiles of a pseudo prediction table such

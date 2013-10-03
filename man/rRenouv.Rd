@@ -1,9 +1,9 @@
 \name{rRenouv}
 \alias{rRenouv}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Simulation of renewal ("Renouvellement") data}
+\title{Simulation of "Renouvellement" data}
 \description{
-  Simulation of renewal ("Renouvellement") data, i.e. observations Over
+  Simulation of "Renouvellement" data, i.e. observations Over
   a Threshold and their counts on  blocks (e.g. years).
 }
 \usage{
@@ -62,7 +62,6 @@ class (with name such as "renouv"). Then classical \code{simulate}, \code{plot},
   Renouvellement models.}
 \examples{
 \dontrun{
-require(evd)
 test1 <- rRenouv(nb = 100,
                 threshold = 40,
                 par.N = list(lambda = 2),

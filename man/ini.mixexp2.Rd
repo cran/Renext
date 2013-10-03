@@ -22,11 +22,11 @@
   This function gives estimators using several methods if
   necessary. The goal is to find the rates \code{rate1},
   \code{rate2} and the mixing probability \code{prob1} with the
-  'feasibility' constraints \code{0 < rate1 < rate2} and
+  'feasibility' constraints \code{0 < rate1} \code{< rate2} and
   \code{0 < prob1 < 1}. 
 
   First the method of moments is used. If the estimates are
-  feasible they are returned with \code{method = "moments"}.
+  feasible they are returned with \code{method} \code{=} \code{"moments"}.
   If not, the estimates are derived
   using two linear regressions. A
   regression without constant using only the smallest values
@@ -34,9 +34,9 @@
   A regression using only the largest values
   gives \code{rate1} and \code{prob1}. Yet  the constraints
   must be fulfilled. If they are, the estimates are returned
-  (together with  \code{method = "Hreg"} suggesting a 
+  (together with  \code{method =} \code{"Hreg"} suggesting a 
   cumulative hazard regression). If not, a (poor) default estimate
-  is returned with  \code{method = "arbitrary"}.
+  is returned with  \code{method =} \code{"arbitrary"}.
 }
 \value{
   A list 
@@ -57,7 +57,6 @@
 }
 \seealso{See \code{\link{MixExp2}}, \code{\link{mom.mixexp2}}. }
 \examples{
-library(Renext)
 set.seed(1234)
 x <- rmixexp2(n = 100, prob1 = 0.5, rate2 = 4)
 res <- ini.mixexp2(x, plot = TRUE)

@@ -31,12 +31,10 @@
 
 %%\seealso{}
 \examples{
-## no historical data
-data(Brest)
+## Brest example: no historical data
 summary(Brest)
 
-## example with historical data
-data(Garonne)
+## Garonne example:  with historical data
 summary(Garonne)
 
 }

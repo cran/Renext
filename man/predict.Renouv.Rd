@@ -1,7 +1,7 @@
 \name{predict.Renouv}
 \alias{predict.Renouv}
 \title{
-  Compute return levels and confidence limits for a "Renouv" object.
+  Compute return levels and confidence limits for a "Renouv" object
 }
 \description{
   Compute return levels and confidence limits for an object of class "Renouv".
@@ -14,7 +14,6 @@
         trace = 1, eps = 1e-06,
         \dots)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{An object of class \code{"Renouv"} typically created
     by using the \code{Renouv} function.
@@ -72,8 +71,7 @@
   \code{\link{Renouv}} to fit \code{Renouv} model.
 }
 \examples{
-library(Renext)
-data(Brest)
+## Use Brest data
 fit <- Renouv(Brest)
 pred <- predict(fit, newdata = c(100, 125, 150, 175, 200),
                 level = c(0.99, 0.95))

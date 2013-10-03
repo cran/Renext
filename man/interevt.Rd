@@ -50,7 +50,7 @@
     the \code{skip} arg if given.
   }
   \item{axis}{When needed, a list with some material to build an axis with uneven
-    ticks as in the \code{gof.date} with \code{skip.action = "omit"}
+    ticks as in the \code{gof.date} with \code{skip.action = "omit"}.
   } 
 }
 %%\references{ }
@@ -71,7 +71,7 @@
 \seealso{\code{\link{gof.date}} for goodness-of-fit diagnostics for dates of
   events \code{\link{expplot}} for diagnostics concerning the exponential distribution.}
 \examples{
-data(Brest)
+## Use Brest data
 ie <- interevt(date = Brest$OTdata$date, skip = Brest$OTmissing)
 
 expplot(ie$interevt$duration, rate = 1 / mean(ie$interevt$duration),
@@ -86,8 +86,6 @@ expplot(ie1$interevt$duration, main = "Threshold = 35")
 ind2 <- Brest$OTdata$Surge >= 55
 ie2 <- interevt(date = Brest$OTdata$date[ind2], skip = Brest$OTmissing)
 expplot(ie2$interevt$duration, main = "Threshold = 55 cm")
-
-
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -7,16 +7,16 @@
   Barplot for "Over Threshold" counts in time blocks (usually years)
 }
 \usage{
-    barplotRenouv(data,
-                  blockname = colnames(data)[1],
-                  varname = colnames(data)[2],
-                  threshold = quantile(data[, varname], 0.2),
-                  na.block = NULL,
-                  plot = TRUE,
-                  main = NULL, xlab = NULL, ylab = NULL,
-                  mono = FALSE,
-                  prob.theo = 0.999,
-                  ...)
+ barplotRenouv(data,
+               blockname = colnames(data)[1],
+               varname = colnames(data)[2],
+               threshold = quantile(data[, varname], 0.2),
+               na.block = NULL,
+               plot = TRUE,
+               main = NULL, xlab = NULL, ylab = NULL,
+               mono = FALSE,
+               prob.theo = 0.999,
+               ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -96,11 +96,7 @@
 }
 \seealso{\code{\link{plot.Rendata}}}
 \examples{
-library(Renext)
-data(Brest.years)
-data(Brest.years.missing)
-
-## na.block influence
+## na.block influence for Brest data
 opar <- par(mfrow = c(2, 2))
 
 bp1 <- barplotRenouv(data = Brest.years, threshold = 30,
@@ -125,8 +121,6 @@ for (i in 1:length(thresh)) {
                    main = paste("threshold =", thresh[i], "cm at Brest"))
 }
 par(opar)
-
-
 }
 
 

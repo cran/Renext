@@ -27,7 +27,7 @@
     (negative or complex rates), a vector of three \code{NA} is
     returned.}
   \item{method}{
-    Character \code{"moments"}}
+    Character \code{"moments"}.}
     
 }
 \references{

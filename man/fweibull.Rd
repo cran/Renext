@@ -7,13 +7,12 @@
   Weibull distribution
 }
 \usage{
-  fweibull(x,
-           info.observed = FALSE,
-           check.loglik = FALSE)
+fweibull(x, info.observed = FALSE, check.loglik = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{Sample vector to be fitted}
+  \item{x}{Sample vector to be fitted. Should contain only positive
+    non-NA values.}
   \item{info.observed}{Should the observed information matrix be used or
     the expected one be used? }
   \item{check.loglik}{If \code{TRUE}, the log-likelihood is recomputed
@@ -32,11 +31,11 @@
 }
 \value{
   A list
-  \item{estimate}{parameter ML estimates}
-  \item{sd}{(asymptotic) standard deviation for estimate}
-  \item{cov}{(asymptotic) covariance matrix computed from theoretical or
-    observed information matrix}
-  \item{eta}{the estimated value for eta}
+  \item{estimate}{Parameter ML estimates.}
+  \item{sd}{The (asymptotic) standard deviation for estimate.}
+  \item{cov}{The (asymptotic) covariance matrix computed from theoretical or
+    observed Information matrix.}
+  \item{eta}{The estimated value for eta.}
 }
 %%\references{ }
 \author{Yves Deville}
@@ -48,26 +47,31 @@
  
 }
 \seealso{
-  \code{\link{weibplot}} for Weibull plots
+  \code{\link{weibplot}} for Weibull plots.
 }
 \examples{
-library(MASS) 
+
 n <- 1000
-shape <- 2*runif(1)
-x <- 100*rweibull(n, shape = 0.8, scale = 1)
+shape <- 2 * runif(1)
+x <- 100 * rweibull(n, shape = 0.8, scale = 1)
 res <- fweibull(x)
-res2 <- fitdistr(x , "weibull")
-est <- cbind(res$estimate, res2$estimate)
-colnames(est) <- c("Renext", "MASS")
-loglik <- c(res$loglik, res2$loglik)
-est <- rbind(est, loglik)
-est
+
+## compare with MASS
+if (require(MASS)) {
+   res2 <- fitdistr(x , "weibull")
+   est <- cbind(res$estimate, res2$estimate)
+   colnames(est) <- c("Renext", "MASS")
+   loglik <- c(res$loglik, res2$loglik)
+   est <- rbind(est, loglik)
+   est
+}
+
+## Weibull plot
 weibplot(x,
          shape = c(res$estimate["shape"], res2$estimate["shape"]),
          scale = c(res$estimate["scale"], res2$estimate["scale"]),
          labels = c("Renext 'fweibull'", "MASS 'fitdistr'"),
          mono = TRUE)
-
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

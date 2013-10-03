@@ -9,31 +9,31 @@
   possibly historical data of two kinds.
 }
 \usage{
-   Renouv(x,
-          threshold = NULL,
-          effDuration = NULL,
-          distname.y = "exponential",
-          MAX.data = NULL,
-          MAX.effDuration = NULL,
-          OTS.data = NULL,
-          OTS.effDuration = NULL,
-          OTS.threshold = NULL,
-          fixed.par.y = NULL,
-          start.par.y = NULL,
-          force.start.H = FALSE,
-          numDeriv = TRUE,
-          trans.y = NULL,
-          jitter.KS = TRUE,
-          pct.conf = c(95, 70),
-          rl.prob = NULL,
-          prob.max = 1.0-1e-04 ,
-          pred.period = NULL,
-          suspend.warnings = TRUE,
-          control = list(maxit = 300, fnscale = -1),
-          control.H = list(maxit = 300, fnscale = -1),
-          trace = 0,
-          plot = TRUE,
-          ...)
+Renouv(x,
+       threshold = NULL,
+       effDuration = NULL,
+       distname.y = "exponential",
+       MAX.data = NULL,
+       MAX.effDuration = NULL,
+       OTS.data = NULL,
+       OTS.effDuration = NULL,
+       OTS.threshold = NULL,
+       fixed.par.y = NULL,
+       start.par.y = NULL,
+       force.start.H = FALSE,
+       numDeriv = TRUE,
+       trans.y = NULL,
+       jitter.KS = TRUE,
+       pct.conf = c(95, 70),
+       rl.prob = NULL,
+       prob.max = 1.0-1e-04 ,
+       pred.period = NULL,
+       suspend.warnings = TRUE,
+       control = list(maxit = 300, fnscale = -1),
+       control.H = list(maxit = 300, fnscale = -1),
+       trace = 0,
+       plot = TRUE,
+       ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -49,27 +49,27 @@
     period .
   }
   \item{distname.y}{Name of the distribution for the exceedances over
-    the threshold.
+    the threshold. See \bold{Details} below.
   }
-  \item{MAX.data}{Either numeric vector or a list of numeric vectors representing
-    historical data  \eqn{r}{r}-max by blocks. When a vector is
+  \item{MAX.data}{Either a numeric vector or a list of numeric vectors representing
+    historical data  \eqn{r}{r}-max by blocks. When \emph{a vector} is
     given, there is only one block, and the data are the
     corresponding \eqn{r}{r}-max observed levels where \eqn{r}{r} is the
     vector length; the block duration is given in
-    \code{OTS.effDuration}. When a list is given, each list
+    \code{MAX.effDuration}. When \emph{a list} is given, each list
     element contains the data for one block, and the 
-    effective duration are in \code{OTS.effDuration}
+    effective duration are in \code{MAX.effDuration}
   }
   \item{MAX.effDuration}{Vector of (effective) durations, one by
     block MAX data.
   }
   \item{OTS.data}{
     A numeric vector or a list of numeric vectors representing
-    supplementary Over Threshold data in blocks. When a vector is
+    supplementary Over Threshold data in blocks. When a \emph{vector} is
     given, there is only one block, and the data contain all the 'historical'
     levels over the corresponding threshold given in
     \code{OTS.threshold}. The block duration is given in
-    \code{OTS.effDuration}. When a list is given, each list
+    \code{OTS.effDuration}. When a \emph{list} is given, each list
     element contains the data for one block, and the threshold and
     effective duration are in \code{OTS.threshold} and \code{OTS.effDuration}.
   }
@@ -77,7 +77,9 @@
     A numeric vector giving the (effective) durations for the OTS blocks.
   }
   \item{OTS.threshold}{
-    A vector giving the thresholds for the different OTS blocks.
+    A vector giving the thresholds for the different OTS blocks. The
+    given values must be greater than or equal to the value of
+    \code{threshold}.
   }
   \item{fixed.par.y}{Named list of known (or fixed) parameter values for the
     \code{y}-distribution.
@@ -173,6 +175,8 @@
     \code{exponential} \tab \code{rate} \cr%
     \code{weibull} \tab \code{shape}, \code{scale}\cr%
     \code{gpd} \tab \code{scale}, \code{shape}\cr%
+    \code{lomax} \tab \code{scale}, \code{shape}\cr%
+    \code{maxlo} \tab \code{scale}, \code{shape}\cr%
     \code{log-normal} \tab \code{meanlog},
     \code{sdlog} \cr%
     \code{gamma} \tab \code{shape}, \code{scale}\cr%
@@ -206,7 +210,7 @@
   Some parameters can be fixed (known); then the parameter set will be
   the reunion of those appearing in \code{start.par.y}
   and those in \code{fixed.par.y}. Anyway, in the present version, \emph{at least one parameter
-  must be unknown} for the \code{y} part of model.
+  must be unknown} for the \code{y} part of the model.
   
   \emph{Mathematical requirements} exist for a correct use of ML. They
   are refered to as "regularity conditions" in ML theory. Note that
@@ -311,7 +315,7 @@ Miquel J. (1984) \emph{Guide pratique d'estimation des
   acceptable scaling leads to data (exceedances) of a few units to a few
   hundreds, but \bold{an order of magnitude of thousands or more should be
     avoided and reduced by scaling}. The rescaling is recommanded for the square
-  exponential distribution (obtained with \code{trans = "square"}) since
+  exponential distribution (obtained with \code{trans =} \code{"square"}) since
   the observations are squared. 
 
   Another possible way to solve the problem is to change the
@@ -321,13 +325,12 @@ Miquel J. (1984) \emph{Guide pratique d'estimation des
 }
 \seealso{\code{\link{rRenouv}} to simulate "renouvellement" data,
   \code{\link{RLplot}} for the \emph{return level plot}. See
-  \code{\link{optim} for the tuning of optimisation.}
+  \code{\link[stats]{optim}} for the tuning of the optimisation. The
+  \code{\link{RenouvNoEst}} can be used to create an object with S3 class
+  \code{"Renouv"} from known parameters.
 }
 \examples{
-library(Renext)
-data(Garonne)
-
-## use a "Rendata" object as 'x'. Historical data are used!
+## Garonne data. Use a "Rendata" object as 'x'. Historical data are used!
 fit <- Renouv(x = Garonne, distname = "weibull", trace = 1,
               main = "'Garonne' data")
 summary(fit)
@@ -349,7 +352,6 @@ fit3 <-
            OTS.threshold = c(7000, 6000), 
            trace = 1,
            main = "'Garonne' data with artificial \"OTS\" data")
-
 ## Add historical (fictive) data
 fit4 <- Renouv(x = Garonne$OTdata$Flow,
                threshold = 2500,

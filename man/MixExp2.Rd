@@ -57,17 +57,17 @@
     f(x) = \alpha_1 \lambda_1 \, e^{-\lambda_1 x} + (1-\alpha_1)
     \lambda_2 \, e^{-\lambda_2x} \qquad x > 0
   }{
-    f(x) = alpha1*lambda1*exp(-lambda1*x) + (1-alpha1)*lambda2*
-    exp(-lambda2*x)     (x > 0)
+    f(x) = \alpha_1 \lambda_1 exp(- \lambda_1 x) +
+          (1 - \alpha_1) \lambda_2 exp(- \lambda_2 x)     (x > 0)
   }
-  where \eqn{\alpha_1}{alpha1} is the probability given in
+  where \eqn{\alpha_1} is the probability given in
   \code{prob1}
-  while \eqn{\lambda_1}{lambda1} and\eqn{\lambda_2}{lambda2} are
+  while \eqn{\lambda_1} and\eqn{\lambda_2} are
   the two rates given in \code{rate1} and \code{rate2}.
   %% \code{prob1*depx(x, rate = rate1) + (1-prob1)*dexp(x, rate = rate2)}
   
   A 'naive' identifiability constraint is
-  \deqn{\lambda_1 < \lambda_2}{lambda1 < lambda2} i.e.
+  \deqn{\lambda_1 < \lambda_2} i.e.
   \code{rate1 < rate2},
   corresponding to the simple constraint \code{delta > 0}.
   The parameter \code{delta} can be given instead of \code{rate2}.
@@ -90,7 +90,8 @@ qs <- qmixexp2(p = c(0.99, 0.999), prob1 = prob1,
                rate1 = rate1, rate2 = rate2) 
 x <- seq(from = 0, to = qs[2], length.out = 200)
 F <- pmixexp2(x, prob1 = prob1, rate1 = rate1, rate2 = rate2)
-plot(x, F, type = "l")
+plot(x, F, type = "l", col = "orangered", lwd = 2,
+     main = "Mixexp2 distribution and quantile for p = 0.99")
 abline(v = qs[1])
 abline(h = 0.99)
 

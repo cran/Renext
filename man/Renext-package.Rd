@@ -4,39 +4,45 @@
 \docType{package}
 \encoding{UTF-8}
 \title{
-Renewal method for extreme values extrapolation
+  Renewal method for extreme values extrapolation
 }
 \description{
-   This package proposes fits and diagnostics for the so-called "renewal method", an
+  This package proposes fits and diagnostics for the so-called
+  \emph{méthode du renouvellement}, an
    alternative to other "Peaks Over Threshold" (POT) methods.
-   The renewal method generalises the classical POT by allowing the exceedances
+   The  \emph{méthode du renouvellement} generalises the classical POT by allowing the exceedances
    over the threshold to follow a probability distribution which can differ from the
    Generalised Pareto Distribution (GPD). Weibull or gamma exceedances
    are sometimes preferred to GPD exceedances. The special case of
    exponential exceedances (which falls in the three families: GPD,
    Weibull and gamma) has a special interest since it allows exact
-   inference for the (one dimensional) parameter and for the quantiles
+   inference for the (scalar)  parameter and for the quantiles
    form OT data (only).
    
    The package allows the joint use of possibly three kinds of data or
    information. The first kind is \emph{classical exceedances}, or
-   \emph{"OT data"} and will always be required. It can be completed
-   with two kinds of \emph{historical data}. Both types are optional, and
-   concern periods or \emph{blocks} that must correspond to non-overlapping
-   periods, disjoint from the OT period.
+   \emph{"OT data"}, and is always be required (for this version). It can be completed
+   with two kinds of data resulting from a temporal aggregation as is
+   often the case for \emph{historical data}. Both types are optional, and
+   concern periods or \emph{blocks} that must not overlap nor cross
+   the OT period.
    
    \itemize{
+     
      \item \emph{MAX data} correspond to the case where one knows
      the  \eqn{r}{r} largest observations over each block. The number \eqn{r}{r} of
      may vary between blocks. This kind of data
-     is often called \eqn{r}{r}-max data. 
+     is often called '\eqn{r}{r}-largest', or "\eqn{r}{r}-Largest Order
+     Statistics" (\eqn{r}{r}-LOS).
+     
      \item \emph{OTS data} (for OT Supplementary data) correspond to the case
      where one knows for each block \eqn{b}{b} all the observations
      that exceeded a threshold \eqn{u_b}{u[b]} which is greater (usually
      much greater) than
      the main threshold \eqn{u}{u}. The number \eqn{r_b}{r[b]}
      of such observations can be zero, in which case we may say that
-      \eqn{u_b}{u[b]} is an unobserved level.
+     \eqn{u_b}{u[b]} is an unobserved level. A threshold \eqn{u_b}{u[b]}
+     is sometimes called a \emph{perception threshold}.
    }
    Historical data are often available in hydrology (e.g. for river flows) for large
    periods such as past centuries. An unobserved level can typically be
@@ -69,8 +75,8 @@ Renewal method for extreme values extrapolation
   \tabular{ll}{
     Package: \tab Renext\cr
     Type: \tab Package\cr
-    Version: \tab 2.0-11\cr
-    Date: \tab 2012-08-23\cr
+    Version: \tab 2.1-0\cr
+    Date: \tab 2013-10-03\cr
     License: \tab GPL (>= 2)\cr
     LazyLoad: \tab yes\cr
   }
@@ -99,7 +105,6 @@ Renewal method for extreme values extrapolation
 }
 \examples{
 ## Garonne data set
-data(Garonne)
 summary(Garonne)
 plot(Garonne)
 
@@ -110,7 +115,12 @@ fG <- Renouv(x = Garonne,
              main = "Weibull fit for 'Garonne'")
 
 coef(fG)
+vcov(fG)
 summary(fG)
+logLik(fG)
+## re-plot if needed
+plot(fG)
+
 ## classical 'predict' method with usual formal args 
 predict(fG, newdata = c(100, 150, 200),
         level = c(0.8, 0.9))

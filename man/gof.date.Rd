@@ -1,9 +1,9 @@
 \name{gof.date}
 \alias{gof.date}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Goodness-of-fit for the repartition of dates}
+\title{Goodness-of-fit for the distribution of dates}
 \description{
-  Goodness-of-fit diagnostics for the repartition of event dates
+  Goodness-of-fit diagnostics for the distribution of event dates
   in a (assumed) Poisson process
 }
 \usage{
@@ -105,8 +105,6 @@
   interevents ans subsequent diagnostics.}
 \examples{
 ## Use "Brest" dataset
-data(Brest)
-
 ## simple plot. Kolmogorov-Smirnov is not useful
 gof1 <- gof.date(date = Brest$OTdata$date)
 

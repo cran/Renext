@@ -24,26 +24,26 @@
   \item{log}{Logical; if \code{TRUE}, the log density is returned.}
   \item{lower.tail}{Logical; if \code{TRUE} (default), probabilities
     are \eqn{\textrm{Pr}[X \le x]}{Pr[X <= x]}, otherwise,
-    \eqn{\textrm{Pr}[X > x]}{X>x}}.
+    \eqn{\textrm{Pr}[X > x]}{Pr[X > x]}.}
 }
 \details{
-  The SLTW distribution function with shape \eqn{\alpha>0}{alpha>0},
-  scale \eqn{\beta>0}{beta>0} and
-  shift \eqn{\delta>0}{delta>0} has distribution function
-  \deqn{F(y) = 1-
+  The SLTW distribution function with shape \eqn{\alpha > 0},
+  scale \eqn{\beta > 0} and
+  shift \eqn{\delta > 0} has survival function
+  \deqn{S(y) = 
     \exp\left\{
        -\left[  \left( \frac{y + \delta}{\beta} \right)^\alpha
        -        \left( \frac{\delta}{\beta}   \right)^\alpha
        \right]
-    \right\} \qquad y>0
+    \right\} \qquad (y > 0)
   }{
-    F(y) = 1 - exp{ -[ ((y+delta)/beta)^alpha -(delta/beta)^alpha ] }
-            y>0
+    S(y) = exp{- [(y + \delta)/\beta]^\alpha + [\delta/\beta]^\alpha}
+              (y > 0)
   }
-  This distribution is that of \eqn{Y=X-\delta}{Y = X - delta}
-  conditional to  \eqn{X > \delta}{X > delta} where \eqn{X}{X}
-  follows a Weibull distribution with shape \eqn{\alpha}{alpha}
-  and scale \eqn{\beta}{beta}.
+  This distribution is that of \eqn{Y := X - \delta}
+  conditional to  \eqn{X > \delta} where \eqn{X}
+  follows a Weibull distribution with shape \eqn{\alpha}
+  and scale \eqn{\beta}.
   
   The hazard and mean residual life (MRL) are monotonous functions
   with the same monotonicity as their Weibull equivalent (with the same
@@ -53,7 +53,7 @@
   This distribution is sometimes called \emph{power exponential}. It
   is occasionally used in POT with the shift \code{delta} taken as
   the threshold as it should be when the distribution for the
-  level \eqn{X}{X} (and not for the exceedance \eqn{Y}{Y}) is known to be
+  level \eqn{X} (and not for the exceedance \eqn{Y}) is known to be
   the standard Weibull distribution. 
 }
 \value{

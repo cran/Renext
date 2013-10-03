@@ -5,7 +5,7 @@
 \description{
   Surge heights at Brest (France) 
 }
-\usage{data(Brest.years)}
+\usage{Brest.years}
 \format{
   A data frame with 954 observations on the following 2 variables.
   \describe{
@@ -25,7 +25,6 @@
 %\source{ }
 %%\references{}
 \examples{
-data(Brest.years)
 names(Brest.years)
 }
 \keyword{datasets}

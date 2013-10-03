@@ -330,7 +330,9 @@ plot.Rendata <- function(x,
       }
         
       if (!is.na(textOver)){
-        ind <- (x$OTSdata[, x$info$varName] > textOver)
+        ## Added checks for NA on 2013-06-14
+        ## ind <- (x$OTSdata[, x$info$varName] > textOver)
+        ind <- (x$OTSdata[ , x$info$varName] > textOver) & !is.na(x$OTSdata[ , "date"])
         if (any(ind)) {
           points(x = x$OTSdata[ind, "date"],
              y = x$OTSdata[ind, x$info$varName],
@@ -387,8 +389,8 @@ plot.Rendata <- function(x,
       
       if (!is.na(textOver)){
         
-        ind <- (x$MAXdata[, x$info$varName] > textOver)
-        ## nothing shown sor missing dates...
+        ind <- (x$MAXdata[ , x$info$varName] > textOver) & !is.na(x$MAXdata[ , "date"])
+        ## nothing shown for missing dates... 
         if (any(ind)) {
           points(x = x$MAXdata[ind, "date"],
                  y = x$MAXdata[ind, x$info$varName],

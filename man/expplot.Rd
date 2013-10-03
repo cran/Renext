@@ -6,16 +6,16 @@
   Plot a vector using "exponential distribution" scales
 }
 \usage{
-   expplot(x,
-           plot.pos = "exp",
-           rate = NULL,
-           labels = NULL,
-           mono = TRUE,
-           ...)
+expplot(x,
+        plot.pos = "exp",
+        rate = NULL,
+        labels = NULL,
+        mono = TRUE,
+        ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{The vector to be plotted}
+  \item{x}{The vector to be plotted.}
   \item{plot.pos}{Plotting position for points: either "exp" for
     \emph{expected} ranks or "med" for a \emph{median} rank
     approximation (see \bold{Details} below).}
@@ -23,7 +23,7 @@
     distribution" lines to be plotted}
   \item{labels}{Text to display in legend when "exponential distribution" lines are specified}
   \item{mono}{Monochrome graph?}
-  \item{\dots}{Arguments to be passed to \code{plot}}
+  \item{\dots}{Arguments to be passed to \code{plot}.}
 }
 \details{
   This plot shows \eqn{-\log[1-F(x)]}{-log[1-F(x)]} against
@@ -38,7 +38,7 @@
 }
 %% \value{}
 %% \references{}
-\author{Y. Deville}
+\author{Yves Deville}
 \note{
   The log scale for y is emulated via the construction of suitable graduations. So be careful when
   adding graphical material (points, etc) to this graph with functions of

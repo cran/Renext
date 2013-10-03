@@ -1,40 +1,55 @@
+
+import(stats)
+import(graphics)
+import(evd)
+import(numDeriv)
+       
 export(barplotRenouv,
        expplot,
        EM.mixexp,
        mom.mixexp2, ini.mixexp2,
        rRenouv,
-       fweibull,
+       fweibull, flomax,  fgamma, fmaxlo,  ## ML fits
+       ## fgpd1, flomax1, fmaxlo1,         ## ML fits with 1 param ?
        gof.date, gofExp.test,
        skip2noskip,
        interevt,
        dmixexp2, pmixexp2, qmixexp2, rmixexp2, hmixexp2, Hmixexp2,
        dSLTW, pSLTW, qSLTW, rSLTW,
        dlomax, plomax, qlomax, rlomax,
+       dmaxlo, pmaxlo, qmaxlo, rmaxlo,
        mom2par,
        NBlevy,
        plot.Rendata, summary.Rendata, print.summary.Rendata,
-       Renouv, predict.Renouv,
-       plot.Renouv, summary.Renouv,
+       Renouv, RenouvNoEst,
+       predict.Renouv,
+       plot.Renouv, lines.Renouv,
+       summary.Renouv,
        print.summary.Renouv, format.summary.Renouv,
        ## makeMAXdata, makeOTSdata,
+       ## checkDist, makeFuns, transFuns,
        roundPred,
        OTjitter,
        readXML,
-       RLplot,
+       RLplot, RLpar, RLlegend.ini, RLlegend.show,
        weibplot)
 
+## methods for rhe S3 class "Rendata"
 S3method(plot, Rendata)
 S3method(summary, Rendata)
 S3method(print, summary.Rendata)
 
+## methods for rhe S3 class "Renouv"
+S3method(AIC, Renouv)
+S3method(BIC, Renouv)
 S3method(coef, Renouv)
 S3method(plot, Renouv)
-S3method(summary, Renouv)
+S3method(lines, Renouv)
+S3method(logLik, Renouv)
+S3method(nobs, Renouv)
 S3method(predict, Renouv)
+S3method(summary, Renouv)
+S3method(vcov, Renouv)
+
 S3method(print, summary.Renouv)
          
-importFrom(stats)
-importFrom(graphics)
-
-## What would/will be done
-## importFrom(evd)

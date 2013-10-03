@@ -5,7 +5,7 @@
 \description{
   Surge heights near high tide at Dunkerque tide gauge station (France)
 }
-\usage{data(Dunkerque)}
+\usage{Dunkerque}
 \format{
   The format is:
   List of 7
@@ -19,9 +19,7 @@
       \item \code{$varShortLab} : chr \code{"Surge"}
       \item \code{$varUnit}    : chr \code{"cm"}
     }
-    \item \code{$describe} : chr \code{"High tide sea surge over 30 cm
-      atDunkerque(France) 
-      separated byat least two days."}
+    \item \code{$describe} : chr \code{"High tide sea surge over 30 cm at Dunkerque... "}
     \item \code{$OTinfo} : List of 4
     \itemize{
       \item \code{$start}     : POSIXct[1:1], format: \code{"1956-01-01"}
@@ -66,7 +64,6 @@
 %\source{ }
 %\references{ }
 \examples{
-data(Dunkerque)
 Dunkerque$info
 plot(Dunkerque)
 }

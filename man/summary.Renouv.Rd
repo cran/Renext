@@ -76,8 +76,7 @@
   
 }
 \examples{
-library(Renext)
-data(Brest)
+## use Brest data
 fit <- Renouv(Brest)
 summary(fit)
 }
