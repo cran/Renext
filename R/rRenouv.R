@@ -1,4 +1,4 @@
-## Méthode de renouvellement
+## Methode de renouvellement
 
 rRenouv <- function(densfun.y = "exponential",
                     par.y = list(rate = 1),
@@ -28,7 +28,7 @@ rRenouv <- function(densfun.y = "exponential",
     if (!is (densfun.y, "function")) stop("densfun.y doit etre character ou function")
   }
   
-  ## Simulons les effectifs N selon la loi spécifiée
+  ## simulate the counts
   
   if (aggreg) {
     

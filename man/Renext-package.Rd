@@ -7,17 +7,18 @@
   Renewal method for extreme values extrapolation
 }
 \description{
+  
   This package proposes fits and diagnostics for the so-called
-  \emph{méthode du renouvellement}, an
-   alternative to other "Peaks Over Threshold" (POT) methods.
-   The  \emph{méthode du renouvellement} generalises the classical POT by allowing the exceedances
-   over the threshold to follow a probability distribution which can differ from the
-   Generalised Pareto Distribution (GPD). Weibull or gamma exceedances
-   are sometimes preferred to GPD exceedances. The special case of
-   exponential exceedances (which falls in the three families: GPD,
-   Weibull and gamma) has a special interest since it allows exact
-   inference for the (scalar)  parameter and for the quantiles
-   form OT data (only).
+  \emph{méthode du renouvellement}, an alternative to other
+  "Peaks Over Threshold" (POT) methods.  The \emph{méthode du
+  renouvellement} generalises the classical POT by allowing the
+  exceedances over the threshold to follow a probability distribution
+  which can differ from the Generalised Pareto Distribution
+  (GPD). Weibull or gamma exceedances are sometimes preferred to GPD
+  exceedances. The special case of exponential exceedances (which falls
+  in the three families: GPD, Weibull and gamma) has a special interest
+  since it allows exact inference for the (scalar) parameter and for the
+  quantiles form OT data (only).
    
    The package allows the joint use of possibly three kinds of data or
    information. The first kind is \emph{classical exceedances}, or
@@ -66,17 +67,17 @@
    non-academic tool designed for applied analysis on case studies and
    investigations or comparisons on classical probabilistic models.
    
-   Additional information and material related to this package can be
-   found at the URL
-   \url{https://gforge.irsn.fr/gf/project/renext}.
+   %% Additional information and material related to this package can be
+   %% found at the URL
+   %% \url{https://gforge.irsn.fr/gf/project/renext}.
    
 }
 \details{
   \tabular{ll}{
     Package: \tab Renext\cr
     Type: \tab Package\cr
-    Version: \tab 2.1-0\cr
-    Date: \tab 2013-10-03\cr
+    Version: \tab 2.1-10\cr
+    Date: \tab 2015-04-27\cr
     License: \tab GPL (>= 2)\cr
     LazyLoad: \tab yes\cr
   }

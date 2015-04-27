@@ -1,5 +1,20 @@
 Dear Emacs, please make this -*-Text-*- mode!
 
+	         CHANGES IN Renext package VERSION 2.1-10
+
+CHANGES
+
+    o Changed the 'readXML' function to include a 'requireNamespace'
+    and '::' in the XML functions. Removed unwanted non-ascii
+    characters in R files.
+  
+BUG FIX
+    
+    o For the 'Lomax' and 'Maxlo' distributions 'plomax' and 'pmaxlo',
+   the parameter 'lower.tail' was misleading, since they did not work
+   as usual. Yet the default was for the distribution function as
+   usual so this problem had no impact on ML estimation.
+
 
 	         CHANGES IN Renext package VERSION 2.1-0
 

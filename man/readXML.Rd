@@ -58,12 +58,14 @@
 \seealso{
   See \code{\link{Brest}} for an example of such a list.
   
-  See URL \url{https://gforge.irsn.fr/gf/project/renext} for data
-  related to \code{Renext}.
+  %% See URL \url{https://gforge.irsn.fr/gf/project/renext} for data
+  %% related to \code{Renext}.
   
 }
 \examples{
 \dontrun{
+## see examples of datasets that can be read and rules
+browseURL(file.path(system.file("Rendata", package = "Renext"), "index.xml"))
 if (require(XML)) {
    ## use 'index.xml' file shiped with Renext
    dir1 <- system.file("Rendata", package = "Renext")

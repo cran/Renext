@@ -51,5 +51,6 @@ S3method(predict, Renouv)
 S3method(summary, Renouv)
 S3method(vcov, Renouv)
 
+S3method(format, summary.Renouv)
 S3method(print, summary.Renouv)
          

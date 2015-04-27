@@ -25,17 +25,17 @@ dmaxlo <- function(x, scale = 1.0, shape = 4.0, log = FALSE) {
   
 }
 
-pmaxlo <- function(q, scale = 1.0, shape = 4.0, lower.tail = FALSE) {
+pmaxlo <- function(q, scale = 1.0, shape = 4.0, lower.tail = TRUE) {
 
   ## if (scale <= 0) stop("'scale' must be > 0")
   ## if (shape <= 0) stop("'shape' must be > 0")
   if ((scale <= 0) || (shape <= 0)) return(rep(NaN, length(q)))
-  S <- rep(0, length(q))
-  ind <- q > 0 
-  S[ind] <- (1 - q[ind]/scale)^shape
-  if (lower.tail) S[!ind] <- 1
-  else S[ind] <- 1 - S[ind]
-  S
+  F <- rep(0, length(q))
+  ind <- (q > 0) 
+  F[ind] <- (1 - q[ind] / scale)^shape
+  if (lower.tail) F[ind] <- 1 - F[ind]
+  else F[!ind] <- 1
+  F
   
 }
 

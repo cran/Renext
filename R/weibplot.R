@@ -24,7 +24,7 @@
   else  F <- (1:n) / (n + 1)
   transF <- log(-log(1-F))
   
-  ## Passons en échelle log
+  ## Passons en echelle log
   par(xlog = TRUE)
   
   plot(x = xs,

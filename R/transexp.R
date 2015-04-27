@@ -21,23 +21,23 @@ dlomax <- function(x, scale = 1.0, shape = 4.0, log = FALSE) {
   if ((scale <= 0) || (shape <= 0)) return(rep(NaN, length(x)))
   f <- rep(0, length(x))
   ind <- x > 0
-  f[ind] <- log(shape) - (shape + 1)*log(scale + x[ind]) + shape*log(scale)
+  f[ind] <- log(shape) - (shape + 1) * log(scale + x[ind]) + shape * log(scale)
   if (!log) f[ind] <- exp(f[ind])
   f
   
 }
 
-plomax <- function(q, scale = 1.0, shape = 4.0, lower.tail = FALSE) {
+plomax <- function(q, scale = 1.0, shape = 4.0, lower.tail = TRUE) {
 
   ##if (scale <= 0) stop("'scale' must be >0")
   ## if (shape <= 0) stop("'shape' must be  >0")
   if ((scale <= 0) || (shape <= 0)) return(rep(NaN, length(q)))
-  S <- rep(0, length(q))
-  ind <- q > 0 
-  S[ind] <- (scale / (scale + q[ind]) )^shape
-  if (lower.tail) S[!ind] <- 1
-  else S[ind] <- 1 - S[ind]
-  S
+  F <- rep(0, length(q))
+  ind <- (q > 0) 
+  F[ind] <- (scale / (scale + q[ind]))^shape
+  if (lower.tail) F[ind] <- 1 - F[ind]
+  else F[!ind] <- 1
+  F
   
 }
 
@@ -47,7 +47,7 @@ qlomax <- function(p, scale = 1.0, shape = 4.0) {
   ## if (shape <= 0) stop("'shape' must be > 0")
   if ((scale <= 0) || (shape <= 0)) return(rep(NaN, length(p)))
   if ( any(p < 0) || any(p > 1) ) stop("'p' must be >=0 and <=1")
-  lr <- -log(1-p) / shape  
+  lr <- -log(1 - p) / shape  
   scale* (exp(lr) -1)
 
 }
@@ -113,3 +113,4 @@ qSLTW <- function(p, delta = 1.0,  shape = 1.0, scale = 1.0) {
   quant <- quant^(1/shape) - delta
   
 }
+
