@@ -1,21 +1,345 @@
 Dear Emacs, please make this -*-Text-*- mode!
-
-	         CHANGES IN Renext package VERSION 2.1-10
+     
+     CHANGES IN  Renext package VERSION 3.0-0	
 
 CHANGES
 
-    o Changed the 'readXML' function to include a 'requireNamespace'
-    and '::' in the XML functions. Removed unwanted non-ascii
-    characters in R files.
-  
+   o Only minor changes in doc/guide. The major number stands for the
+   completion 2.x efforts.
+
+   o Remind that 2.1-10 on CRAN was a patched version solving problems
+   revealed by CRAN checks
+
+     CHANGES IN  Renext package VERSION 2.4-0	
+
+CHANGES
+
+   o Several functions involving POSIXct objects have been changed in
+   the aim of removing concatenation of POSIXct with the 'c' method,
+   which drops the timezone and leads to strange timezone in the
+   remote past.
+
+   o In the 'OT2MAX' function, the code for the preparation of the
+   output was unclear for the case when 'dataFrames' is FALSE. 
+
+   o Changed the doc of the 'parDeriv' function.
+
+   o in 'fGEV.MAX' a suitable constant is added to the final logLik
+   in order make this value comparable to the one computed by the 
+   classical method for maxima or r largest (evd, ismev).
+
 BUG FIX
+
+    o In 'plot.renouv', the 'pct.conf' argument was not duely passed
+    to 'lines.Renouv'. Fixed.
+
+    o In 'OT2MAX' function the determination of the end was wrong
+    because it was loosing a full year at the end of data.
+
+     CHANGES IN  Renext package VERSION 2.3-0
+
+CHANGES
+
+   o The content of the 'data' directory was renewed to save the
+   examples as '.rda' files instead of the previous '.R' dump files.
+   The 'POSIXct' objects in data are now with "GMT" time zone. The .Rd
+   files were also modified to change some POSIXct extractions and to
+   remove the 'AsIs' class indication for chr variables ('comment').
+   
+   o 'rRenouv' and its help is removed. 
+	
+   o 'gpd2lomax', 'gpd2maxlo', 'lomax2gpd', 'maxlo2gpd' are no longer
+   exported and their .Rd files have been removed.
+
+   o Code and doc of 'LRExp.test' function changed to add the "maxlo"
+   alternative. Code for 'anova.Renouv' now calls 'LRExp.test' when
+   needed, to avoid code duplication.
+ 
+   o 'readXML' and its documentation: added the possibility of
+   specifying the time zone. Doc: browse 'index.xml' in the examples.
+
+   o Typos and misspellings in the doc.
+
+   o Help page for 'NBLevy' (outdated reference and so on).
+
     
-    o For the 'Lomax' and 'Maxlo' distributions 'plomax' and 'pmaxlo',
+BUG FIX
+
+   o In 'Renouv' the correction of initial values for the "GPD"
+   distribution with initial shape < 0 was not done.
+
+   o In 'lines.Renouv', the DEBUG parameter was TRUE generating
+   verbose noise.
+
+    CHANGES IN Renext package VERSION 2.2-3
+
+CHANGES
+
+   o Added derivation w.r.t. parameters of the Lomax and Maxlo
+   distributions in 'parDeriv', and changed the 'examples' section.
+
+   o In the 'predict' method for 'Renouv' objects, the probability 
+   column will no longer be found by default. The previous computation
+   can be retrieved by using the non-default formal value prob = TRUE.
+   
+   o Some typos/errors in the documentation have been fixed.
+
+   o Replaced 'require' by 'requireNamepace' for suggested package
+   "XML".
+
+BUG FIX
+
+   o For the 'Lomax' and 'Maxlo' distributions 'plomax' and 'pmaxlo',
    the parameter 'lower.tail' was misleading, since they did not work
-   as usual. Yet the default was for the distribution function as
-   usual so this problem had no impact on ML estimation.
+   as usual. Yet the default was for the distribution function as 
+   usual so this problem had no impact on ML estimation. 
 
 
+     CHANGES IN Renext package VERSION 2.2-2
+
+CHANGES
+
+   o 'predict.Renouv' now has its argument 'cov.rate' working.
+   Turn to TRUE for default?
+
+   o added some 'eval' needed in the legend construction
+   'lines.Renouv'.
+
+   o Corrected inefficient data control in 'makeOTSdata'.
+     
+
+     CHANGES IN Renext package VERSION 2.2-1
+
+BUG FIX
+
+    o Problems with symbol numbers and names in 'lines.Renouv'.
+
+             CHANGES IN Renext package VERSION 2.2-0
+
+BUG FIX
+
+    o With the "GPD" distribution 'Renouv' did not return the logLik
+    as expected.
+
+CHANGES
+	     
+    o The package now imports from the 'splines' package since
+    'splineDesign' is required to approximate the quantile functions
+    required in some tests.
+
+    o Technical data is added in a 'sysdata.rda' file of the R
+    directory.
+		 
+    o In 'Renouv', the returned data list named 'history.MAX' and
+    'history.OTS' have two new slots called 'dataNames' and
+    'blockNames'.  The are extracted from the object's data frames
+    when 'x' has class "Rendata" or are extracted from the names used
+    in the list provided by user in the 'MAX.data' or 'OTS.data'
+    arguments when 'x' is numeric. These indications are used in the
+    legend built for plots built with the 'plot' or 'lines' methods
+    of the "Renouv" class.
+
+    o The the formal arguments of 'plot.Renouv' and 'lines.Renouv'
+    have been modified to allow the user to better manage the block
+    data (MAX or OTS).  Some blocks can be shown or not thanks to
+    extended possibilities of the 'show' argument. The new
+    'byBlockStyle' argument can also be used to decide if the blocks
+    of a same type (MAX, OTS) should be plot with the same style 
+    and to adapt the legend in correspondence. 	  
+    
+    o Many changes have been done in the 'RenextGuide' document shipped
+    as a pdf file with the package. 
+
+NEW FEATURES
+    
+    o Several functions have been added to perform tests of
+    exponentiality or Gumbelity: 'CV2.test, 'Jackson.test',
+    'LRExp.test', 'LRGumbel.test' and other related functions,
+    e.g. the 'pGreenwood1' function. The related 'anova' method
+    was also implemented.
+
+
+     CHANGES IN Renext package VERSION 2.1-9
+
+BUG FIX
+
+    o The new 'OT2MAX' did not work without missing information.
+ 
+
+     CHANGES IN Renext package VERSION 2.1-8
+
+BUG FIX
+
+    o The 'SandT' function did not work correctly for objects with
+    class "Renouv".
+
+NEW FEATURES 
+
+    o The 'OT2MAX' now returns some summary information about gaps and
+    can plot the mean gap rate.
+
+
+       CHANGES IN Renext package VERSION 2.1-7
+
+CHANGES 
+
+    o 'Hpoints' is now duely exported.
+
+    o  Corrections in 'fmaxlo' and 'fGPD' docs concerning the constraint.
+
+BUG FIX
+
+    o The 'flomax' and 'fmaxlo' functions could not work with cov =
+    FALSE, due to a bad variable name. Fixed.
+
+
+        CHANGES IN Renext package VERSION 2.1-6
+
+NEW FEATURES 
+
+    o It is now possible to use the 'RLplot' method on an object of
+    class "Rendata". The plotting positions come from 'SandT' and no
+    fit is required.
+
+CHANGES 
+
+    o 'SandT' now optionally uses the old plotting positions with
+    naive = TRUE.  	
+    
+    o 'lines' 'PPplot' and 'QQplot' methods now use the plotting
+    positions as described in 'Renext Computing Details'.
+
+    o The maximal number of historical blocks to be coloured
+    individually in 'plot.Renouv' or 'RLplot' can be reduced.
+
+BUG FIX
+
+    o In the function 'SandT', the removal of ex-aequos among 
+    the tresholds was wrong (and finally useless). Fixed.
+    
+    o When fitting the "GPD" special distribution with historical
+    data, the check that all HD falls in the support was missing. 
+
+         CHANGES IN Renext package VERSION 2.1-5
+
+CHANGES 
+
+    o 'fmaxlo' now uses a lower bound on the shape parameter, since
+    the unconstrained ML estimate is always at the boundary.
+
+    o In 'flomax' a better lower bound for the ML estimate of the
+    scale parameter is now used.
+
+    o 'fmaxlo' and 'flomax' now use an explicit formula for the
+    inverse of the expected information matrix. Both functions now
+    have a 'cov' formal. When FALSE, the computations boil down to a
+    maximisation of the profile log-likelihood, and the covariance is
+    not computed. This aims to have a fast evaluation e.g. in order to
+    sample a likelihood ratio statistic.
+ 
+    o 'fGPD' has been refactored, and now merely turn to the
+    estimation of an exponential distribution when the CV is close to
+    1.0.
+
+BUG FIX
+
+    o In the function 'SandT', the value of the survival was incorrect
+    because it used the rate of events for the first inter-threshold range
+    only, and not the whole rate.
+
+          CHANGES IN Renext package VERSION 2.1-4
+
+CHANGES 
+
+    o Added a new distribution named "GPD" that can be used in
+    'Renouv'. This distribution has functions returning NaN when the
+    parameter vector falls outside of its validity domain (scale > 0),
+    and therefore unconstrained optim can be used for ML estimation. 
+
+    o In 'fGEV.MAX', a scaling is added and a 'try' to overcome the
+    problem of non-invertible hessian. A new threshold choice is
+    proposed based on the spacings.
+       
+BUG FIX
+
+    o In the function 'fmaxlo', the lower bound chosen for ML
+    estimation was too small for a numerical evaluation of logLik and
+    its derivative, leading to a (wrong) negative derivative, and to a
+    warning.
+
+           CHANGES IN Renext package VERSION 2.1-3
+
+CHANGES 
+
+    o The 'envir' formal of the 'RLlegend.*' functions is removed.
+    for simplicity. A new function 'RLlegend.print', non exported, is
+    added for debugging legend problems.
+
+    o A 'label' formal argument is added to 'Renouv' and is by default
+    set to "". This character string appears in the legend as a prefix
+    to the graphical objects description ("quant", "conf", ...) and
+    where a mysterious "res" was shown before. When the call to the 
+    'plot' method within 'Renouv' leads to an error, the result
+    is returned with a simple warning.
+       
+BUG FIX
+
+    o In the function 'makeOTSdata', some problem could occur
+    when MAX.r == 0. This created strange problems in 'SandT'.
+
+           CHANGES IN Renext package VERSION 2.1-2
+
+CHANGES 
+
+    o New functions dedicated to block maxima in relation with
+    POT/Marked process. These are 'gGEV.MAX' and utility functions
+    'Ren2*', '*2Ren', 'parini.MAX' and 'parini.OTS', ...
+    
+    o New function 'rRendata' to simulate "Rendata" objects. This is
+    very useful for testing estimation of plotting functions.    
+
+    o New method 'spacings' computing the spacings.
+	
+    o New function 'fGPD' for ML estimation of a GPD from a sample. Works
+    by calling either 'flomax' or 'fmaxlo'.
+
+    o New function 'parDeriv' computing the derivatives w.r.t parameters
+    of the density and survival of some distributions, at the time,
+    only "weibull" and "gpd".
+
+    o In 'Renouv' it is now possible to give 'x = NULL' in which case only 
+    historical data are used. At the time, this is done by calling the 
+    'Renouv4' function. The 'parini.MAX' and 'parini.OTS' functions
+    perform the key step of parameter initialisation.
+    
+    o New function 'OT2MAX' to create block maxima from marked
+    process data.
+    
+    o New function 'SandT' computing the survival and the return periods
+    using an adaptation of Hisch and Stedinger's method. This is 
+    useful for plotting positions. 
+
+    o New methods 'QQplot' and 'PPlot' for the class "Renouv". Some
+    work is still needed to deal with historical data.
+
+
+           CHANGES IN Renext package VERSION 2.1-1
+
+BUG FIX
+
+    o 'print.summary.Renouv' produced an error when some OTS blocks
+    had length 1. Fixed.
+
+CHANGES
+
+    o Following an advice given by B. Ripley, an environment object is
+    created in the package in order to share variables between the
+    package functions without turning these into global
+    variables. Thus the legend management functions 'RLlegend.ini',
+    'RLlegend.show' and the 'plot' and 'lines' method for class
+    "Renouv" no longer require defining an environment and passing it
+    as an argument. See the example of 'RLlegend'.
+ 
 	         CHANGES IN Renext package VERSION 2.1-0
 
 CHANGES
@@ -24,7 +348,6 @@ CHANGES
     "Caution" section in the help page of 'plot' and 'lines' methods  
     for the S3 class "Renouv".
 	
-
 	         CHANGES IN Renext package VERSION 2.0-15
 
 CHANGES
@@ -48,7 +371,7 @@ CHANGES
     o Added an 'nobs' field in output of 'Renouv3' (for AIC or BIC). 
     
     o The 'logLik' method for class "Renouv" now uses 'df' and 'nobs'
-    and no longer uses 'p.y' and 'nb.OT', but duely computed values
+    and no longer uses 'p.y' and 'nb.OT', but duly computed values
     which can be used with historical data. The documentation of the
     'logLik' method was changed consequently.
 
@@ -68,7 +391,7 @@ CHANGES
     if the shape parameter of the GPD is < -0.5.
     
     o In 'Renouv3.R', some precautions have been added using 'try' in
-    order to manage situatione when the hessian is non-invertible or
+    order to manage situations when the hessian is non-invertible or
     has negative eigenvalues. For compatibility reasons, the
     covariance and standard deviations objects are then filled with NA
     rather than set to NULL.
@@ -176,7 +499,7 @@ CHANGES
     'RLlegend' no longer show a box by default.
 
     o Changes in the "RenextGuide" document. They concern the
-    likelihood for OTS data (subsection 3.4.2 "Likelihhod", therein a
+    likelihood for OTS data (subsection 3.4.2 "Likelihood", therein a
     remark about concentrating the likelihood with historical data and
     coefficient of variations (subsections B.2.2 "Some indicators" and
     B.3.2. "Generalised Pareto Distribution/ Estimation and
@@ -197,7 +520,7 @@ NEW FEATURES
     o New functions 'RLlegend.ini' and 'RLlegend.show' to fill legends
     for return levels plot built with two or more 'plot' and 'lines'
     steps. The legend is built in a semi-automatic fashion by
-    collecting informations given in the 'par' argument: line types,
+    collecting information given in the 'par' argument: line types,
     colors, ...
 
     o New temporary function 'Renouv3'. This follows the re-factored
@@ -249,7 +572,7 @@ CHANGES
 
     o Re-factoring of the 'Renouv' function in order to reach a better
     code re-use. The result is in a 'Renouv2' function still on
-    developpement.
+    development.
 
 
 BUG (NOT FIXED YET)
@@ -476,7 +799,7 @@ CHANGES
 			
     o Function 'qmixexp2': quadratic interpolation during the first
     iterations replaced by a simpler linear interpolation, i.e. a
-    standard Newton-Raphson method, easier to analyze. The method has
+    standard Newton-Raphson method, easier to analyse. The method has
     been secured by placing the iterate below the true unknown root on
     the basis of concavity, by inflating the derivative if needed.
     Scale the data through a multiplication of these by the smallest

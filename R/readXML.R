@@ -1,15 +1,31 @@
-##============================================================
-## Given a POSIXct object 'x', and a period data.frame,
-## returns a logical vector ot the same length as 'x'
-## and telling if the element of x falls within a period.
-##
-## NOTE: the periods must be clean: non-overlapping and
-## in ascending order.
-##
-## The intervals are assumed to be <= ... < as in the
-## 'findInterval' function
-##============================================================
+##==============================================================================
+## DO NOT 'ROXYGEN' THIS
+## Most functions are private (non-exported) functions
+##============================================================================== 
 
+
+##=============================================================================
+##' For a vector of datetime \code{x} and a set of time
+##' non-overlapping periods, find if the elements of \code{x} fall in
+##' one period.
+##'
+##' @title Indicator for the union of periods
+##' 
+##' @param x \code{POSIXct}.
+##' 
+##' @param periods Data frame of periods with two \code{POSIXct} columns
+##' \code{start} and \end{} and one row by period.
+##' 
+##' @param check Passed to \code{timeints2bounds} for control.
+##'
+##' @return Logical vector with the same length as \code{x}.
+##'
+##' @author yves
+##' 
+##' @note The periods must be clean: non-overlapping and in ascending
+##' order. The intervals are assumed to be left closed [ (  as in the
+##' 'findInterval' function.
+##' 
 inInts <- function(x,
                    periods,
                    check = TRUE) {
@@ -24,29 +40,51 @@ inInts <- function(x,
     
 }
 
-##============================================================
-## Build non-overlapping time intervals in ascrending order
-## The intervals 'data' is data.frame with columns 'start',
-## 'end' and 'comment'; it must have one row or more.
-##============================================================
-
+##==============================================================================
+##' Build time intervals thar are non-overlapping and in ascending
+##' order from a set of periods which may not fulfill these two
+##' conditions.
+##' 
+##' @title Build non-overlapping time intervals in ascending order
+##'
+##' @param data A data frame with \code{POSIXct} columns 'start and 'end',
+##' and a character colum 'comment'.
+##'
+##' @param start Class \code{POSIXct} or coerced to this class with
+##' \code{tz = TZ}.
+##'
+##' @param end Class \code{POSIXct} or coerced to this class with
+##' \code{tz = TZ}.
+##'
+##' @param TZ The time zone.
+##'
+##' @param trace Level of verbosity.
+##'
+##' @return A data frame 
+##'
+##' @author yves
+##'
+##' @note Changed on 2015-04-18: remind that the concatenation methods 'c' drops
+##' the timezone attribute of POSIXct objects!
+##' 
 cleanInt <- function(data,
                      start = NULL,
                      end = NULL,
+                     TZ = "GMT",
                      trace = 0) {
     
     ## limited control
-    if ( !("start" %in% colnames(data))
-        || !("end" %in% colnames(data)) )
+    if (!("start" %in% colnames(data)) || !("end" %in% colnames(data))) {
         stop("'data' must contain columns 'start' and 'end'")
+    }
     
-    if ( !(is(data$start, "POSIXct"))
-        || !(is(data$end, "POSIXct")) )
+    if (!(is(data$start, "POSIXct")) || !(is(data$end, "POSIXct"))) {
         stop("columns 'start' and 'end' must be of class \"POSIXct\"")
+    }
     
-    ind <- data$start > data$end
+    ind <- (data$start > data$end)
     if ( any(ind) ) {
-        warning("'data' contains rows with start > end")
+        warning("'data' contains rows with 'start' > 'end'")
         data <- data[!ind, ]
     } 
     
@@ -66,19 +104,28 @@ cleanInt <- function(data,
         
         n <- 0
         
-        for (i in 2:length(startCol)){
+        for (i in 2L:length(startCol)){
             
             if (startCol[i] > end.old) {
-                if (n==0) {
-                    start.clean <- start.old
-                    end.clean <- end.old
-                    comment.clean <- comment.old
+                if (n == 0) {
+                    ## start.clean <- start.old
+                    ## end.clean <- end.old
+                    ## comment.clean <- comment.old
+                    daf <- data.frame(start = start.old,
+                                      end = end.old,
+                                      comment = comment.old,
+                                      stringsAsFactors = FALSE)
                 } else {
-                    start.clean <- c(start.clean, start.old)
-                    end.clean <- c(end.clean, end.old)
-                    comment.clean <- c(comment.clean, comment.old)
+                    ## start.clean <- c(start.clean, start.old)
+                    ## end.clean <- c(end.clean, end.old)
+                    ## comment.clean <- c(comment.clean, comment.old)
+                    daf <- rbind(daf,
+                                 data.frame(start = start.old,
+                                            end = end.old,
+                                            comment = comment.old,
+                                            stringsAsFactors = FALSE))
                 }
-                n <- n+1
+                n <- n + 1
                 start.old <- startCol[i]
                 end.old <- endCol[i]
                 comment.old <- commentCol[i]
@@ -88,17 +135,20 @@ cleanInt <- function(data,
             
         }
         
-        ## build a dataframe. It can not have zero rows
-        ## at this stage, but car is needed if 'start' or
-        ## 'end' formal is given
+        ## build a dataframe. It can not have zero rows at this stage,
+        ## but care is needed if 'start' or 'end' formal is given
         
-        start.clean <- c(start.clean, start.old)
-        end.clean <- c(end.clean, end.old)
-        comment.clean <- c(comment.clean, comment.old)
+        ## start.clean <- c(start.clean, start.old)
+        ## end.clean <- c(end.clean, end.old)
+        ## comment.clean <- c(comment.clean, comment.old)
+        daf <- rbind(daf, data.frame(start = start.old,
+                                     end = end.old,
+                                     comment = comment.old,
+                                     stringsAsFactors = FALSE))
         
-        daf <- data.frame(start = as.POSIXct(start.clean),
-                          end = as.POSIXct(end.clean),
-                          comment = I(comment.clean))
+        ## daf <- data.frame(start = as.POSIXct(start.clean),
+        ##                   end = as.POSIXct(end.clean),
+        ##                  comment = I(comment.clean))
         
         if (as.numeric(trace) >= 1) {
             print(daf)
@@ -110,7 +160,8 @@ cleanInt <- function(data,
     
     ## Cut at begining or end if necessary
     if (!is.null(start)) {
-        start <- as.POSIXct(start)
+        start <- as.POSIXct(start, tz = TZ)
+        
         if (start > daf$start[1]) {
             ## period is a period number
             chgs <- timeints2bounds(daf[ , c("start", "end")])
@@ -122,9 +173,10 @@ cleanInt <- function(data,
             ## start is in a gap... or not
             inGap <- period %% 2
             numGap <- period %/% 2 + 1
-            if (trace)
+            if (trace) {
                 cat("restrict with 'start' = ", format(start), "inGap = ",
                     inGap, "numGap = ", numGap, "\n")
+            }
             daf <- daf[ 1:nrow(daf) >= numGap, ]
             if ( (nrow(daf) > 0) && inGap) daf$start[1] <- start
         }
@@ -135,7 +187,7 @@ cleanInt <- function(data,
     }
     
     if (nrow(daf) && (!is.null(end))) {
-        end <- as.POSIXct(end)
+        end <- as.POSIXct(end, tz = TZ)
         if (end < daf$end[nrow(daf)]) {
             ## period is a period number
             chgs <- timeints2bounds(daf[ , c("start", "end")])
@@ -146,11 +198,12 @@ cleanInt <- function(data,
             ## end is in a gap... or not
             inGap <- period %% 2
             numGap <- period %/% 2 + 1 + inGap
-            if (trace)
+            if (trace) {
                 cat("restrict with 'end' = ", format(end), "inGap = ",
                     inGap, "numGap = ", numGap, "\n")
-            daf <- daf[ 1:nrow(daf) < numGap, ]
-            if ( (nrow(daf) > 0) && inGap) daf$end[nrow(daf)] <- end
+            }
+            daf <- daf[1L:nrow(daf) < numGap, ]
+            if ((nrow(daf) > 0) && inGap) daf$end[nrow(daf)] <- end
         }
     }
     
@@ -158,17 +211,34 @@ cleanInt <- function(data,
     
 }
 
-##============================================================
-## Returns an <event></events> node as a data.frame or NULL
-## object if no <event/> chld is found.
-## Note that 'date' is a POSIXct object, and that the format
-## is assumed to be understandable by R.
-## Other formats (such as locale specific) should be
-## used within files and not within the XML file directly.
-##============================================================
-
+##==============================================================================
+##' Parse a node with \code{event} children in a XML file.
+##' 
+##' @title Parse a node with \code{event} children
+##'
+##' @param node An XML node with \code{event} children.
+##'
+##' @param varName Name of the variable.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace Level of verbosity.
+##'
+##' @return \code{NULL} if the provided node has no \code{event}
+##' child, and else a data frame with one \code{POSIXct} column
+##' \code{date} a \code{Var} column for the variable, and a character
+##' column \code{comment}.
+##'
+##' @author yves
+##'
+##' @note \code{date} is a \code{POSIXct} object, The format given in
+##' the XML file is assumed to be understandable by R. Other formats
+##' (such as locale specific) should if needed be used within csv
+##' files and not within the XML file directly.
+##' 
 parse.eventsNode <- function(node,
                              varName = "Var",
+                             TZ = "GMT",
                              trace = 1) {
     
     event.nodes   <- XML::xmlElementsByTagName(node, "event")
@@ -178,7 +248,7 @@ parse.eventsNode <- function(node,
         comment  <- NULL
         
         ## 'date' is kept as character here
-        for (i in 1:length(event.nodes)) {
+        for (i in 1L:length(event.nodes)) {
             node.i <- event.nodes[[i]]
             date <- c(date, XML::xmlGetAttr(node.i, "date"))
             Var <- c(Var, as.numeric(XML::xmlValue(node.i)))
@@ -189,17 +259,22 @@ parse.eventsNode <- function(node,
         
         ## 'date' is kept as character here. Are there true
         ## datetime in it?
-        date2 <- as.POSIXct(rep(NA, length(date)))
-        ind <- grep("[0-9]{1,4}-[0-1][0-9]-[0-3][0-9]($|( ([0-1][0-9]|[2][0-3]):([0-5][0-9])))",
+        date2 <- as.POSIXct(rep(NA, length(date)), tz = TZ)
+        ind <- grep(paste("[0-9]{1,4}-[0-1][0-9]-[0-3][0-9]($|( ", 
+                          "([0-1][0-9]|[2][0-3]):([0-5][0-9])))", sep = ""),
                     date, perl = TRUE)
-        ## use loop since format could differ(?)
+       
         if (length(ind)) {
-            for (i in ind) date2[i] <- as.POSIXct(date[i])
+            date[!ind] <- NA
+            date2 <- as.POSIXct(date, tz = TZ)
+        } else {
+            date2 <- as.POSIXct(rep(NA, length(date)), tz = TZ)
         }
         
-        Data <- data.frame(date = as.POSIXct(date2),
+        Data <- data.frame(date = date2,
                            Var = as.numeric(Var),
-                           comment = I(comment))
+                           comment = comment,
+                           stringsAsFactors = FALSE)
         colnames(Data)[2] <- varName
         Data
     } else {
@@ -208,16 +283,31 @@ parse.eventsNode <- function(node,
     
 }
 
-##============================================================
-## Returns an <period></periods> node as a data.frame or NULL
-## object.
-## Note that 'start' and 'end' are POSIXct objects and that
-## their format is assumed to be understandable by R.
-## Other formats (such as locale specific) should be
-## used within files and not within the XML file directly.
-##============================================================
-
+##==============================================================================
+##' Parse a node with \code{period} children in a XML file.
+##' 
+##' @title Parse a node with \code{period} children
+##'
+##' @param node A XML node with \code{period} children.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace Level of verbosity.
+##'
+##' @return \code{NULL} if the provided node has no \code{period}
+##' child, and else a data frame with two \code{POSIXct} columns
+##' \code{start} and \code{end}, and a character column
+##' \code{comment}.
+##'
+##' @author yves
+##'
+##' @note \code{date} is a \code{POSIXct} object, The format given in
+##' the XML file is assumed to be understandable by R. Other formats
+##' (such as locale specific) should if needed be used within csv
+##' files and not within the XML file directly.
+##' 
 parse.periodsNode <- function(node,
+                              TZ = "GMT",
                               trace = 1) {
     
     stopifnot(requireNamespace("XML", quietly = TRUE))
@@ -229,7 +319,7 @@ parse.periodsNode <- function(node,
         end <- NULL
         comment  <- NULL
         
-        for (i in 1:length(period.nodes)) {
+        for (i in 1L:length(period.nodes)) {
             node.i <- period.nodes[[i]]
             start <- c(start, XML::xmlGetAttr(node.i, "start"))
             end <- c(end, XML::xmlGetAttr(node.i, "end"))
@@ -237,15 +327,13 @@ parse.periodsNode <- function(node,
             if (length(comment.i) == 0) comment.i <- ""
             comment <- c(comment, comment.i)
         }
+       
+        Prov <- data.frame(start = as.POSIXct(start, tz = TZ),
+                           end = as.POSIXct(end, tz = TZ),
+                           comment = as.character(comment),
+                           stringsAsFactors = FALSE)
         
-        ## start <- as.POSIXct(start)
-        ## end <- as.POSIXct(end)
-        Prov <- data.frame(start = as.POSIXct(start),
-                           end = as.POSIXct(end),
-                           comment = as.character(comment))
-        
-        Data <- cleanInt(data = Prov,
-                         trace = trace)
+        Data <- cleanInt(data = Prov, trace = trace)
         
     } else{
         NULL
@@ -253,15 +341,33 @@ parse.periodsNode <- function(node,
     
 }
 
-##=============================================================
-## Read an 'events' file with description given in 'node'.
-## The varname must be given since it is an attribute of an
-## ancestor of node.
-##=============================================================
-
+##=============================================================================
+##' Read an 'events' file with description given in \code{node}.
+##'
+##' The varname must be given since it is an attribute of an ancestor
+##' of the given node.
+##' 
+##' @title Read an 'events' file with description given in \code{node}
+##'
+##' @param node An XML node with attributes telling the number of columns,
+##' which is the variable, and so on.
+##'
+##' @param dir Path of the directory to read from.
+##'
+##' @param varName The variable name.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace 
+##'
+##' @return A data frame with the events read and suitable columns.
+##'
+##' @author yves
+##' 
 read.eventsFile <- function(node,
                             dir,
                             varName = "Var",
+                            TZ = "GMT",
                             trace = 1) {
 
     stopifnot(requireNamespace("XML", quietly = TRUE)) 
@@ -296,11 +402,12 @@ read.eventsFile <- function(node,
     
     ## Now re-arrange datetime
     readData[ , dtCol] <- as.POSIXct(strptime(readData[ , dtCol],
-                                              format = dtFormat))
-    
-    if (commentCol == 0) 
+                                              format = dtFormat, tz = TZ))
+    if (commentCol == 0) {
         readData <- data.frame(readData,
-                               comment = I(rep("", nrow(readData))))
+                               comment = rep("", nrow(readData)),
+                               stringsAsFactors = FALSE)
+    }
     
     if (trace) {
         cat("events data read from file\n")
@@ -316,16 +423,34 @@ read.eventsFile <- function(node,
     
 }
 
-##===================================================================
-## Read a 'periods' file with desctiption in 'node'. The file path is
-## in the 'path' attribute of 'node', and must be located in the
-## directory given in 'dir'.
-##
-## Note that 'start' and 'end' must be in the same format
-##===================================================================
-
+## =============================================================================
+##' Read a 'periods' file with description given in \code{node}
+##'
+##' @title Read a 'periods' file with description given in \code{node}
+##'
+##' @param node An XML node with attributes telling which columns are
+##' \code{start}, \code{end}, and so on. The path of the file to read
+##' (relative to \code{dir}) is given in the 'path' attribute of
+##' 'node'.
+##'
+##' @param dir Path of the directory to read from.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace Level of verbosity.
+##' 
+##' @return A data frame with two \code{POSIXct} columns \code{start},
+##' \code{end} a character column \code{comment} and possibly more.
+##'
+##' @author yves
+##'
+##' @note The \code{start} and \code{end} columns must be in the same
+##' format given as \code{dtFormat} attribute of the node.  The file
+##' read must be in the directory given in \code{dir}.
+##' 
 read.periodsFile <- function(node,
                              dir,
+                             TZ = "GMT",
                              trace = 1) {
     
     stopifnot(requireNamespace("XML", quietly = TRUE)) 
@@ -357,11 +482,13 @@ read.periodsFile <- function(node,
                          skip = as.integer(XML::xmlGetAttr(node, "skip")),
                          colClasses = colClasses,
                          as.is = TRUE,
-                         col.names= colNames)
+                         col.names = colNames)
     
     ## Now re-arrange datetimes
-    readData[ , "start"] <- as.POSIXct(strptime(readData[ , "start"], format = dtFormat))
-    readData[ , "end"] <- as.POSIXct(strptime(readData[ , "end"], format = dtFormat))
+    readData[ , "start"] <- as.POSIXct(strptime(readData[ , "start"],
+                                                format = dtFormat, tz = TZ))
+    readData[ , "end"] <- as.POSIXct(strptime(readData[ , "end"],
+                                              format = dtFormat, tz = TZ))
     
     if (trace) {
         cat("events data read from file\n")
@@ -377,22 +504,42 @@ read.periodsFile <- function(node,
     
 }
 
-##====================================================================
-## Read or Parse 'events' as specified in 'node' which should have
-## children only of type "events" or "file". Anyway, other children
-## will not be taken into consideration. The node given in 'node'
-## formal is typically of type "data".
-##
-## The varname must be given since it is an attribute of an ancestor
-## of node and not of the node itself.
-##====================================================================
-
+## =============================================================================
+##' Read or Parse 'events' as specified in \code{node}
+##'
+##' For each child of \code{node} which is of type \code{events}
+##' or \code{file}
+##' 
+##' @title Read or Parse 'events' as specified in \code{node}
+##'
+##' @param node An XML node.
+##'
+##' @param dir Path of the directory to read from.
+##'
+##' @param varName Variable name, as read in the ancestor of \code{node}.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace Level of verbosity.
+##'
+##' @return A data frame of events obtained by row binding of several
+##' events data frames.
+##'
+##' @author yves
+##'
+##' @note The variable name must be given since it is an attribute of
+##' an ancestor of \code{node}, and not of the node itself.
+##' \code{node} should have children only of type \code{events} or
+##' \code{file}. Anyway, other children will not be taken into
+##' consideration. The node given in \code{node} formal is typically of
+##' type "data".
+##' 
 readOrParse.events <- function(node,
                                dir,
                                varName = "Var",
+                               TZ = "GMT",
                                trace = 1) {
 
-    
     stopifnot(requireNamespace("XML", quietly = TRUE))
     
     events <- list()
@@ -400,16 +547,19 @@ readOrParse.events <- function(node,
     ## file node???
     file.nodes   <- XML::xmlElementsByTagName(node, "file")
     
-    if (length(file.nodes) > 1) 
-        stop("at the time a 'data' can not contain more than one 'file' child node")
+    if (length(file.nodes) > 1) {
+        stop("at the time a 'data' can not contain more than one 'file' ",
+             "child node")
+    }
     
     if (length(file.nodes) > 0) {
         
-        for (i in  length(file.nodes) ) {
-            nevents <- nevents + 1
+        for (i in 1L:length(file.nodes) ) {
+            nevents <- nevents + 1L
             events.i <- read.eventsFile(node = file.nodes[[i]],
                                         dir = dir,
                                         varName = varName,
+                                        TZ = TZ,
                                         trace = trace)
             if (nevents > 1) events <- rbind(events, events.i)
             else  events <- events.i
@@ -420,10 +570,11 @@ readOrParse.events <- function(node,
     events.nodes   <- XML::xmlElementsByTagName(node, "events")
     
     if (length(events.nodes) > 0) {
-        for (i in  length(events.nodes) ) {
+        for (i in 1L:length(events.nodes) ) {
             nevents <- nevents + 1
             events.i <- parse.eventsNode(node = events.nodes[[i]],
                                          varName = varName,
+                                         TZ = TZ,
                                          trace = trace)
             if (nevents > 1) events <- rbind(events, events.i)
             else  events <- events.i
@@ -435,15 +586,32 @@ readOrParse.events <- function(node,
     else NULL
 }
 
-##=================================================================
-## Read or Parse 'periods' as specified in 'node' which should be
-## have children only of type "periods" or "file". Anyway, other
-## children will not be taken into consideration. The node given
-## in 'node' is typically of type "data".
-##=================================================================
-
+## =============================================================================
+##' Read or Parse 'periods' as specified in an XML node
+##' 
+##' @title  Read or Parse 'periods' as specified in an XML node
+##'
+##' @param node An XML node.
+##'
+##' @param dir Path of the directory to read from.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace Level of verbosity.
+##' 
+##' @return A data frame of periods obtained by row binding of several
+##' periods data frames.
+##'
+##' @author yves
+##'
+##' @note \code{node} should have children only of type \code{periods}
+##' or \code{file}. Anyway, other children will not be taken into
+##' consideration. The node given in \code{node} is typically of type
+##' \code{data}.
+##' 
 readOrParse.periods <- function(node,
                                 dir,
+                                TZ = "GMT",
                                 trace = 1) {
     
     stopifnot(requireNamespace("XML", quietly = TRUE))
@@ -452,66 +620,92 @@ readOrParse.periods <- function(node,
     nperiods <- 0
     ## file node???
     file.nodes   <- XML::xmlElementsByTagName(node, "file")
-  
-  if (length(file.nodes) > 1) 
-    stop("at the time a 'data' can not contain more than one 'file' child node")
-  
-  if (length(file.nodes) > 0) {
-    for (i in  length(file.nodes) ) {
-      nperiods <- nperiods + 1
-      periods.i <- read.periodsFile(node = file.nodes[[i]],
-                                    dir = dir,
-                                    trace = trace)
-      if (nperiods > 1) periods <- rbind(periods, periods.i)
-      else  periods <- periods.i
+    
+    if (length(file.nodes) > 1)
+        stop("at the time a 'data' can not contain more than one ",
+             "'file' child node")
+    
+    if (length(file.nodes) > 0) {
+        for (i in 1L:length(file.nodes) ) {
+            nperiods <- nperiods + 1
+            periods.i <- read.periodsFile(node = file.nodes[[i]],
+                                          dir = dir,
+                                          TZ = TZ,
+                                          trace = trace)
+            if (nperiods > 1) periods <- rbind(periods, periods.i)
+            else  periods <- periods.i
+        }
     }
-  }
-  
-  ## periods node???
-  periods.nodes   <- XML::xmlElementsByTagName(node, "periods")
-  
-  if (length(periods.nodes) > 0) {
-    for (i in  length(periods.nodes) ) {
-      nperiods <- nperiods + 1
-      periods.i <- parse.periodsNode(node = periods.nodes[[i]],
-                                               trace = trace)
-      if (nperiods > 1) periods <- rbind(periods, periods.i)
-      else  periods <- periods.i
+    
+    ## periods node???
+    periods.nodes   <- XML::xmlElementsByTagName(node, "periods")
+    
+    if (length(periods.nodes) > 0) {
+        for (i in 1L:length(periods.nodes) ) {
+            nperiods <- nperiods + 1
+            periods.i <- parse.periodsNode(node = periods.nodes[[i]],
+                                           TZ = TZ,
+                                           trace = trace)
+            if (nperiods > 1) periods <- rbind(periods, periods.i)
+            else  periods <- periods.i
+        }
     }
-  }
-  
-  if (nperiods) periods
-  else NULL
-
+    
+    if (nperiods) periods
+    else NULL
+    
 }
-
-##==============================================================
-## The readXML funtion reads heterogenous data from an XML
-## repository
-## 
-##                  
-##===============================================================
-
+          
+##=============================================================================
+##' Read heterogenous data from an XML repository.    
+##'
+##' @title Read heterogenous data from an XML repository 
+##'
+##' @param name Name of the dataset to read.
+##'
+##' @param dir Path of the directory where files will be found.
+##'
+##' @param index Name of an index file which must be found in
+##' \code{dir}. This file describes the structure of the datasets,
+##' and one of them must have the name specified in \code{name}.
+##' For some datasets, observations are read from csv files thet must
+##' be located in \code{dir}.
+##'
+##' @param TZ Time zone.
+##'
+##' @param trace Level of verbosity.
+##'
+##' @return An object with class \code{"Rendata"}. This is a list with
+##' \code{OTinfo} \code{OTdata}. It also can have elements
+##' \code{OTSinfo} and \code{OTSdata} if \code{OTS} blocks are given
+##' in the file or \code{MAXinfo} and \code{MAXdata} if \code{MAX}
+##' blocks are given in the file.
+##'
+##' @author yves
+##' 
 readXML <- function(name,
                     dir,
                     index = "index.xml",
+                    TZ = "GMT",
                     trace = 0) {
     
     stopifnot(requireNamespace("XML", quietly = TRUE))
     
-    ##----------------------------------------------------
+    ##-------------------------------------------------------------------------
     ## check that the file exists and can be read
-    ##----------------------------------------------------
-    if ((file.access(names = dir, mode = 0)!=0) ||
-        (!file.info(dir)$isdir)) stop("dir =", dir, "is not an existing directory")
-    
+    ##-------------------------------------------------------------------------
+
+    if ((file.access(names = dir, mode = 0)!=0) || (!file.info(dir)$isdir)) {
+        stop("dir =", dir, "is not an existing directory")
+    }
     file <- file.path(dir, index)
     
     if (trace) cat("Reading 'index' file\n", file, "...\n")
     
-    if (file.access(names = file, mode = 4)!=0) {
-        if (file.access(names = file, mode = 0)!=0) stop("'index' file not found")
-        else stop("not allowed to open file")
+    if (file.access(names = file, mode = 4) != 0) {
+        if (file.access(names = file, mode = 0) != 0) {
+            stop("'index' file not found")
+        } else stop("not allowed to open file")
     }
     
     arbre   <- XML::xmlTreeParse(file)
@@ -540,9 +734,9 @@ readXML <- function(name,
     ind <- (1:length(dataset.node))[!is.na(m) & m==1]
     dataset.node <- dataset.node[[ind]]
     
-    ##=============================================
+    ##=========================================================================
     ## Information about the dataset
-    ##=============================================
+    ##=========================================================================
     
     info <- list()
     for (attr  in c("name", "shortLab", "longLab", "varName",
@@ -554,10 +748,10 @@ readXML <- function(name,
     if (length(describe.node) == 0) describe.node <- NULL
     else describe.node   <- as(describe.node[[1]], "character")
     
-    ##====================================================
-    ## "Over Threshold" data
-    ## The dataset must contain EXACTLY ONE OTdata node.
-    ##====================================================
+    ##========================================================================
+    ## "Over Threshold" data. The dataset must contain EXACTLY ONE
+    ## OTdata node.
+    ##========================================================================
     
     OTdata.nodes   <- XML::xmlElementsByTagName(dataset.node, "OTdata")
     if ( (length(OTdata.nodes) > 1) || (length(OTdata.nodes) == 0 ) )
@@ -565,7 +759,8 @@ readXML <- function(name,
     
     OTinfo <- list()
     for (attr in c("start", "end")) 
-        OTinfo[[attr]] <- as.POSIXct(XML::xmlGetAttr(OTdata.nodes[[1]], attr))
+        OTinfo[[attr]] <- as.POSIXct(XML::xmlGetAttr(OTdata.nodes[[1]], attr),
+                                     tz = TZ)
     
     for (attr in c("effDuration", "threshold"))
         OTinfo[[attr]] <- as.numeric(XML::xmlGetAttr(OTdata.nodes[[1]], attr))
@@ -576,6 +771,7 @@ readXML <- function(name,
     
     OTdata <- readOrParse.events(node = data.nodes[[1]],
                                  dir = dir, varName = info$varName,
+                                 TZ = TZ,
                                  trace = trace)
     
     ##print(OTdata)
@@ -592,15 +788,16 @@ readXML <- function(name,
         OTdata <- OTdata[OTdata$date <= OTinfo$end, ]
     }
     
-    if (any(OTdata[ , info$varName] < OTinfo$threshold))
-        warning("'OTdata' column '", info$varName, "' contains a value < info$threshold")
+    if (any(OTdata[ , info$varName] < OTinfo$threshold)) {
+        warning("'OTdata' column '", info$varName,
+                "' contains a value < info$threshold")
+    }
     
-    ##=============================================================
-    ## Missing periods for OTdata
-    ## We must find 'start' and 'end' for the successive periods,
-    ## and caution is needed for successive periods possibly
-    ## collapsing.
-    ##=============================================================
+    ##=========================================================================
+    ## Missing periods for OTdata We must find 'start' and 'end' for
+    ## the successive periods, and caution is needed for successive
+    ## periods possibly collapsing.
+    ##=========================================================================
     
     missing.nodes   <- XML::xmlElementsByTagName(OTdata.nodes[[1]], "missing")
     
@@ -611,11 +808,13 @@ readXML <- function(name,
         
         OTmissing <- readOrParse.periods(node = missing.nodes[[1]],
                                          dir = dir,
+                                         TZ = TZ,
                                          trace = trace)
         
-        OTmissing <- cleanInt(data= OTmissing,
+        OTmissing <- cleanInt(data = OTmissing,
                               start = OTinfo$start,
-                              end = OTinfo$end)
+                              end = OTinfo$end,
+                              TZ = TZ)
         
         ## warn if some OT events fall into an OTmissing period
         inGaps <- inInts(x = OTdata$date,
@@ -633,7 +832,8 @@ readXML <- function(name,
                               end = OTinfo$end)
         
         checkDuration <-
-            sum(as.numeric(difftime(noskip$end, noskip$start, units = "day") / 365.25))
+            sum(as.numeric(difftime(noskip$end, noskip$start, units = "day") /
+                               365.25))
         
         if (abs(checkDuration - OTinfo$effDuration) > 0.1)
             warning("'effDuration' attributes does not agrre with computation")
@@ -643,7 +843,8 @@ readXML <- function(name,
         
     } else {
         checkDuration <-
-            sum(as.numeric(difftime(OTinfo$end, OTinfo$start, units = "day") / 365.25))
+            sum(as.numeric(difftime(OTinfo$end, OTinfo$start, units = "day") /
+                               365.25))
         
         if (abs(checkDuration - OTinfo$effDuration) > 0.1)
             warning("'effDuration' attributes does not agree with computation")
@@ -654,9 +855,9 @@ readXML <- function(name,
         OTmissing <- NULL
     }
     
-    ##=============================================================
+    ##=========================================================================
     ## Prepare results list
-    ##=============================================================
+    ##=========================================================================
     
     MyList <- list(info = info,
                    describe = describe.node,
@@ -664,17 +865,19 @@ readXML <- function(name,
                    OTdata = OTdata,
                    OTmissing = OTmissing)
     
-    
-    ##=============================================================
+    ##=========================================================================
     ## MAX data nodes
-    ##=============================================================
+    ##=========================================================================
     
     MAXdata.nodes   <- XML::xmlElementsByTagName(dataset.node, "MAXdata")
     MAXinfo <- list()
     
     if (length(MAXdata.nodes)) {
         
-        if (trace) cat("Processing", length(MAXdata.nodes), "'MAX' (historical) data\n")
+        if (trace) {
+            cat("Processing", length(MAXdata.nodes),
+                "'MAX' (historical) data\n")
+        }
         
         MAXdata <- list()
         
@@ -687,30 +890,34 @@ readXML <- function(name,
             
             for (attr  in c("start", "end")) {
                 if (i == 1)  MAXinfo[[attr]] <- XML::xmlGetAttr(node, attr)
-                else MAXinfo[[attr]] <- c(MAXinfo[[attr]], XML::xmlGetAttr(node, attr))
+                else {
+                    MAXinfo[[attr]] <- c(MAXinfo[[attr]],
+                                         XML::xmlGetAttr(node, attr))
+                }
             }
             
-            ##--------------------------------------------------------
-            ## data (events)
-            ## Note that there can be no events in some case.
-            ## Then there is a 'data' node but with no 'events' nor
-            ## 'file' child.
-            ##--------------------------------------------------------
+            ##-----------------------------------------------------------------
+            ## data (events) Note that there can be no events in some
+            ## case.  Then there is a 'data' node but with no 'events'
+            ## nor 'file' child.
+            ## ----------------------------------------------------------------
             
             data.nodes   <- XML::xmlElementsByTagName(node, "data")
             
-            if(length(data.nodes) != 1)  
+            if(length(data.nodes) != 1L) {  
                 stop("a \"MAXdata\" node must have exactly one child \"data\"")
-            
+            }
             MAXdata.i <- readOrParse.events(data.nodes[[1]],
                                             dir = dir, varName = info$varName,
+                                            TZ = TZ,
                                             trace = trace)
             
             ri <- 0
             if (!is.null(MAXdata.i)) {
                 ri <- nrow(MAXdata.i)
                 MAXdata.i <- data.frame(block = rep(i, times = ri),
-                                        MAXdata.i)
+                                        MAXdata.i,
+                                        stringsAsFactors = FALSE)
             } 
             
             if (i == 1) MAXdata <- MAXdata.i
@@ -719,28 +926,35 @@ readXML <- function(name,
             if (i == 1)  MAXinfo[["r"]] <- ri
             else MAXinfo[["r"]] <- c(MAXinfo[["r"]], ri)
             
-            if (is.null(MAXdata.i))
+            if (is.null(MAXdata.i)) {
                 warning("'MAXdata' ", i, " contains no events!")
-            if ( !is.null(MAXdata.i) &&
-                any(MAXdata.i$date[!is.na(MAXdata.i$date)] < as.POSIXct(MAXinfo$start[i])))
-                warning("'MAXdata' ", i, " contains an event before 'start' given in 'MAXinfo'!")
-            if ( !is.null(MAXdata.i) &&
-                any(MAXdata.i$date[!is.na(MAXdata.i$date)] > as.POSIXct(MAXinfo$end[i]))) {
-                warning("'MAXdata' ", i, " contains an event after 'end' given in 'MAXinfo'!")
+            }
+            
+            dc <- MAXdata.i$date[!is.na(MAXdata.i$date)]
+            
+            if (!is.null(MAXdata.i) &&
+                any(dc < as.POSIXct(MAXinfo$start[i], tz = TZ))) {
+                warning("'MAXdata' ", i, " contains an event before",
+                        " 'start' given in 'MAXinfo'!")
+            }
+            if (!is.null(MAXdata.i) &&
+                any(dc > as.POSIXct(MAXinfo$end[i], tz = TZ))) {
+                warning("'MAXdata' ", i, " contains an event after",
+                        " 'end' given in 'MAXinfo'!")
             }
             
         }
         
         ## MAXinfo <- as.data.frame(MAXinfo)
-        MAXinfo$start <- as.POSIXct(MAXinfo$start)
-        MAXinfo$end <- as.POSIXct(MAXinfo$end)
+        MAXinfo$start <- as.POSIXct(MAXinfo$start, tz = TZ)
+        MAXinfo$end <- as.POSIXct(MAXinfo$end, tz = TZ)
         MAXinfo$r <- as.integer(MAXinfo$r)
         ## Only if missing
-        MAXinfo <-
-            data.frame(start = as.POSIXct(MAXinfo$start),
-                       end = as.POSIXct(MAXinfo$end),
-                       duration = round(as.numeric(difftime(MAXinfo$end, MAXinfo$start, units= "day") /365), 
-                           digits = 2))
+        dur <- difftime(MAXinfo$end, MAXinfo$start, units= "day") / 365
+        dur <- round(as.numeric(dur),  digits = 2)
+        MAXinfo <- data.frame(start = MAXinfo$start,
+                              end =  MAXinfo$end,
+                              duration = dur)
         
         MyList$MAXinfo <- MAXinfo
         MyList$MAXdata <- MAXdata
@@ -762,24 +976,30 @@ readXML <- function(name,
         
         OTSinfo <- list()
         
-        for (i in 1:length(OTSdata.nodes)){
+        for (i in 1L:length(OTSdata.nodes)) {
             
             node <-  OTSdata.nodes[[i]]
+
+            if (i == 1)  {
+                OTSinfo[["block"]] <- 1
+            }
             
             if (i == 1)  OTSinfo[["block"]] <- 1
             else OTSinfo[["block"]] <- c(OTSinfo[["block"]], i)
             
             for (attr  in c("start", "end", "threshold")) {
                 if (i == 1)  OTSinfo[[attr]] <- XML::xmlGetAttr(node, attr)
-                else OTSinfo[[attr]] <- c(OTSinfo[[attr]], XML::xmlGetAttr(node, attr))
+                else {
+                    OTSinfo[[attr]] <- c(OTSinfo[[attr]],
+                                         XML::xmlGetAttr(node, attr))
+                }
             }
             
-            ##------------------------------------------------------
-            ## data (events)
-            ## Note that there can be no events in some case.
-            ## Then there is a 'data' node but with no 'events'
+            ##-----------------------------------------------------------------
+            ## data (events) Note that there can be no events in some
+            ## case.  Then there is a 'data' node but with no 'events'
             ## nor 'file' child.
-            ##------------------------------------------------------
+            ## ----------------------------------------------------------------
             data.nodes   <- XML::xmlElementsByTagName(node, "data")
             
             if( length(data.nodes) != 1)  
@@ -787,12 +1007,14 @@ readXML <- function(name,
             
             OTSdata.i <- readOrParse.events(data.nodes[[1]],
                                             dir = dir, varName = info$varName,
+                                            TZ = TZ,
                                             trace = trace)
             ri <- 0
             if (!is.null(OTSdata.i)) {
                 ri <- nrow(OTSdata.i)
                 OTSdata.i <- data.frame(block = rep(i, times = ri),
-                                        OTSdata.i)
+                                        OTSdata.i,
+                                        stringsAsFactors = FALSE)
             } 
             
             if (i == 1) OTSdata <- OTSdata.i
@@ -800,27 +1022,30 @@ readXML <- function(name,
             
             if (i == 1)  OTSinfo[["r"]] <- ri
             else OTSinfo[["r"]] <- c(OTSinfo[["r"]], ri)
-            
-            if ( !is.null(OTSdata.i) &&
-                any(OTSdata.i$date < as.POSIXct(OTSinfo$start[i])))
-                warning("'OTSdata' ", i, " contains an event ",
-                        "before 'start' given in 'OTSinfo'")
-            if ( !is.null(OTSdata.i) &&
-                any(OTSdata.i$date > as.POSIXct(OTSinfo$end[i]))) {
-                warning("'OTSdata' ", i, " contains an event ",
-                        "after 'end' given in 'OTSinfo'")
+
+            if (!is.null(OTSdata.i)) {
+                dc <- OTSdata.i$date[!is.na(OTSdata.i$date)]
+
+                if (any(dc < as.POSIXct(OTSinfo$start[i]))) {
+                    warning("'OTSdata' ", i, " contains an event ",
+                            "before 'start' given in 'OTSinfo'")
+                }
+                if (any(dc > as.POSIXct(OTSinfo$end[i]))) {
+                    warning("'OTSdata' ", i, " contains an event ",
+                            "after 'end' given in 'OTSinfo'")
+                }
             }
             
         }
         
-        OTSinfo$start <- as.POSIXct(OTSinfo$start)
-        OTSinfo$end <- as.POSIXct(OTSinfo$end)
+        ## OTSinfo$start <- as.POSIXct(OTSinfo$start)
+        ## OTSinfo$end <- as.POSIXct(OTSinfo$end)
+        dur <- difftime(OTSinfo$end, OTSinfo$start, units= "day") / 365
+        dur <- round(as.numeric(dur),  digits = 2)
         
-        OTSinfo <- data.frame(start = as.POSIXct(OTSinfo$start),
-                              end = as.POSIXct(OTSinfo$end),
-                              duration = round(as.numeric(difftime(OTSinfo$end,
-                                  OTSinfo$start, units = "day") /365),
-                                  digits = 2),
+        OTSinfo <- data.frame(start = as.POSIXct(OTSinfo$start, tz = TZ),
+                              end = as.POSIXct(OTSinfo$end, tz = TZ),
+                              duration = dur,
                               threshold = as.numeric(OTSinfo$threshold),
                               r = as.integer(OTSinfo$r))
         

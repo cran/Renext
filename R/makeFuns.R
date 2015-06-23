@@ -29,6 +29,14 @@
     parUpper.y <- c(Inf, 2.0)
     names(parUpper.y) <- names(parLower.y) <- parnames.y
     scale.y <- c(scale.OT, 1)
+  } else if (distname.y == "GPD") {
+    ## At the time, evd is necessary
+    funname.y <- "GPD"
+    parnames.y <- c("scale", "shape")
+    parLower.y <- c(0, -2.0)
+    parUpper.y <- c(Inf, 2.0)
+    names(parUpper.y) <- names(parLower.y) <- parnames.y
+    scale.y <- c(scale.OT, 1)
   } else if (distname.y %in% c("log-normal", "lognormal")) {
     distname.y <- "log-normal"
     funname.y <- "lnorm"

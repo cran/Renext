@@ -6,8 +6,10 @@
 \alias{rlomax}
 \title{Lomax distribution}
 \description{
+  
   Density function, distribution function, quantile function and
   random generation for the Lomax distribution. 
+
 }
 \usage{
    dlomax(x, scale = 1.0, shape = 4.0, log = FALSE)
@@ -71,16 +73,16 @@
 \note{
 
   This distribution is sometimes called \emph{log-exponential}. It is a
-  special case of Generalised Pareto Distibution (GPD) whith positive
+  special case of Generalised Pareto Distribution (GPD) with positive
   shape \eqn{\xi > 0}, scale \eqn{\sigma} and location \eqn{\mu=0}.  The
   Lomax and GPD parameters are related according to \deqn{\alpha =
   1/\xi, \qquad \beta = \sigma/\xi.}{\alpha = 1/\xi, \beta =
   \sigma/\xi.}  The Lomax distribution can be used in POT to describe
-  exceedances following GPD with shape \eqn{\xi>0} thus with decreasing
+  excesses following GPD with shape \eqn{\xi>0} thus with decreasing
   hazard and increasing Mean Residual Life.
   
   Note that the exponential distribution with rate \eqn{\nu} is the
-  limit of a Lomax distibution having large scale \eqn{\beta} and large
+  limit of a Lomax distribution having large scale \eqn{\beta} and large
   shape \eqn{\alpha}, with the constraint on the shape/scale ratio
   \eqn{\alpha/\beta = \nu}.
   
@@ -97,7 +99,7 @@
 %%\references{  }	
 \seealso{
 
-  \code{\link{flomax}} to fit the Lomax distibution by Maximum
+  \code{\link{flomax}} to fit the Lomax distribution by Maximum
   Likelihood. 
 
 }
@@ -112,3 +114,4 @@ F <- plomax(x, scale = scale, shape = shape)
 plot(x, F, type ="l", main ="Lomax distribution function")
 }
 \keyword{distribution}
+

@@ -11,23 +11,42 @@
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{sample}
+  \item{x}{
+
+    Sample with positive values.
+    
+  }
 }
 %%\details{}
 \value{
   A list with elements
-  \item{statistic}{Statistic}
-  \item{p.value}{Critical value}
+  \item{statistic}{
+
+    Statistic.
+
+  }
+  \item{p.value}{
+
+    Critical value.
+
+  }
 }
 \references{See
-  Yagouti A., Abi-Zeid I., Ouarda, T.B.M.J. and B. \enc{Bobée}{Bobee} (2001),
-  Revue de processus ponctuels et \enc{synthèse}{synthese} de tests statistiques pour le
-  choix d'un type de processus \emph{Revue des Sciences de l'Eau}, \bold{1}, pp. 323-361.
+  
+  Yagouti A., Abi-Zeid I., Ouarda, T.B.M.J. and B. \enc{Bobée}{Bobee}
+  (2001), Revue de processus ponctuels et \enc{synthèse}{synthese} de
+  tests statistiques pour le choix d'un type de processus \emph{Revue
+  des Sciences de l'Eau}, \bold{1}, pp. 323-361.
+
 }
 \author{Yves Deville}
 %%\note{ }
-\seealso{Among other goodness-of-fit tests \code{\link{ks.test}} in the
- \code{stats} package. See \code{\link{expplot}} for a graphical diagnostic.
+\seealso{
+
+  Among other goodness-of-fit tests \code{\link{ks.test}} in the
+ \code{stats} package. See \code{\link{expplot}} for a graphical
+ diagnostic.
+
 }
 \examples{
  ## a sample of size 30

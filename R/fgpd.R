@@ -1,7 +1,87 @@
+##**********************************************************************
+## Maximum Likelihood estimation of a Generalised Pareto Distibution
+## by likelihood concentration.
+##
+## TODO : situations with one known parameter
+##**********************************************************************
+
+fGPD <- function(x,
+                 info.observed = FALSE,
+                 shapeMin = -0.8,
+                 dCV = 1e-4,
+                 cov = TRUE,
+                 trace = 0) {
+  
+  parnames <- c("shape", "scale")
+  n <- length(x)
+  M1 <- mean(x)
+  CV <- sqrt(1 - 1/n) * sd(x) / M1
+
+  if (any(x <= 0)) stop("all elements in 'x' must be > 0")
+  if (shapeMin >= 0) stop("'shapeMin' must be negative")
+  if (shapeMin < -1) warning("'shapeMin < -1': non-identifiable model")
+  if (dCV >= 1e-2) warning("'dCV' should be small < 0.01")
+  
+  if (CV > 1.0 + dCV) {
+      ## Lomax case
+      res.lomax <- flomax(x,
+                          info.observed = info.observed, cov = cov)
+      res.gpd <- lomax2gpd(parLomax = res.lomax$estimate, vcovLomax = res.lomax$cov)
+      loglik <- res.lomax$loglik
+      if (!is.null(vcov <- attr(res.gpd, "vcov"))) {
+          dloglik <- attr(res.gpd, "jacobian")[ , c("shape", "scale")] %*% res.lomax$dloglik
+          sd.gpd <- sqrt(diag(vcov))
+      } else {
+          dloglik <- NULL
+          sd.gpd <- NULL
+      }
+  } else if (CV < 1.0 - dCV) {
+      ## Maxlo case
+      res.maxlo <- fmaxlo(x, shapeMin = - 1 / shapeMin,
+                          info.observed = info.observed, cov = cov)
+      res.gpd <- maxlo2gpd(parMaxlo = res.maxlo$estimate,
+                           vcovMaxlo = res.maxlo$cov)
+      loglik <- res.maxlo$loglik
+      if (!is.null(vcov <- attr(res.gpd, "vcov"))) {
+          dloglik <- attr(res.gpd, "jacobian")[ , c("shape", "scale")] %*% res.maxlo$dloglik
+          sd.gpd <- sqrt(diag(vcov))
+      } else {
+          return(list(estimate = res.gpd[1L:2L], CV = CV, loglik = loglik, cvg = TRUE))
+      }
+  } else {
+      ## exponential case. Note that the variance of the estimated scale
+      ## is greater than that of the one parameter exponential distribution
+      if (trace) {
+         cat(sprintf("CV = %6.4f close to 1: exponential\n", CV))
+      }
+      res.gpd <- c("scale" = M1, "shape" = 0.0)
+      loglik <- -n * (1 + log(M1)) 
+      if (cov) {
+          dloglik <- c("scale" = 0.0, "shape" = 0.0)
+          vcov <- matrix(c(2 * M1^2, -M1, -M1, 1) / n, nrow = 2, ncol = 2)
+          colnames(vcov) <- rownames(vcov) <- c("shape", "scale")
+          rn <- sqrt(n)
+          sd.gpd <- c("scale" = M1 * sqrt(2) / rn,  shape = 1 / rn)
+      } else {
+          return(list(estimate = res.gpd[1L:2L], CV = CV, loglik = loglik, cvg = TRUE))
+      }
+
+  }
+  
+  list(estimate = res.gpd[1L:2L],
+       CV = CV,
+       loglik = loglik,
+       dloglik = dloglik,
+       sd = sd.gpd,
+       cov = vcov,
+       cvg = TRUE)
+    
+}
+
 ##==============================================================================
 ## Author: Yves Deville
 ##
-## Find ML estimate of a one parameter GPD (shape 'xi fixed')
+## Find ML estimate of a one parameter GPD (shape 'xi' fixed)
 ##
 ## The lilelihood is easily maximised in that case
 ##==============================================================================
@@ -35,12 +115,12 @@ fgpd1 <- function(x, shape = 0.2, plot = FALSE) {
   
   logL1 <- function (sigma) {
     xmod <- x / sigma
-    -n * log(sigma)  - (xi + 1) * sum( log(1 + xi*xmod) ) /xi
+    -n * log(sigma)  - (xi + 1) * sum( log(1 + xi * xmod) ) / xi
   }
 
   if (xi < 0 ) {
     ## when  xi < 0, mind the support
-    interv <- c(-xi*max(x), max(x))
+    interv <- c(-xi * max(x), max(x))
   } else {
     ## when  xi > 0, the logL is increasing at min(x)
     ## and decreasing at max(x)
@@ -53,7 +133,7 @@ fgpd1 <- function(x, shape = 0.2, plot = FALSE) {
   loglik <- res$objective
 
   if (xi > -0.5) {
-    info <- n/(1+2*xi)/sigma.hat/sigma.hat
+    info <- n / (1 + 2 * xi) / sigma.hat / sigma.hat
     cov0 <- 1 / info
     sdp <- sqrt(cov0)
   } else {

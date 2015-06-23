@@ -19,29 +19,28 @@ fgamma <- function(x,
   mlx <- mean(lx)
 
   CV <- sd(x)/xbar
-  alpha <- 1/CV/CV
+  alpha <- 1/ CV / CV
 
   ## This is (log Lc)/n
   logLc <- function(alpha) {
     if (alpha < eps) stop("alpha must be >0")
    
-    -log(gamma(alpha)) + alpha * log(alpha/xbar) +
-      (alpha-1)*mlx  -alpha
-  }
+    -log(gamma(alpha)) + alpha * log(alpha / xbar) +
+      (alpha - 1.0) * mlx  - alpha
+}
   
   res <- optimize(f = logLc, interval = c(eps, 100*alpha), maximum = TRUE)
   
   alpha.hat <- res$maximum
   beta.hat  <- xbar / alpha.hat
 
-  loglik <- n*(-log(gamma(alpha.hat)) - alpha.hat*log(beta.hat)
-               + (alpha.hat-1)*mlx - alpha.hat)
+  loglik <- n*(-log(gamma(alpha.hat)) - alpha.hat * log(beta.hat)
+               + (alpha.hat - 1.0) * mlx - alpha.hat)
 
   I11 <- n * trigamma(alpha.hat)
   I12 <- n / beta.hat
-  I22 <- n*alpha.hat/beta.hat/beta.hat
-  info <- matrix(c(I11, I12, I12, I22),
-                 nrow = 2, ncol = 2)
+  I22 <- n * alpha.hat / beta.hat / beta.hat
+  info <- matrix(c(I11, I12, I12, I22), nrow = 2, ncol = 2)
   covmat <- solve(info) 
   sdp <- sqrt(diag(covmat))
 

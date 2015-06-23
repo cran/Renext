@@ -1,53 +1,97 @@
 \name{fweibull}
 \alias{fweibull}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ML estimation of classical Weibull distribution}
+\title{
+
+  ML estimation of classical Weibull distribution
+
+}
 \description{
+  
   Fast Maximum Likelihood estimation of the classical two parameters
-  Weibull distribution
+  Weibull distribution.
+
 }
 \usage{
+
 fweibull(x, info.observed = FALSE, check.loglik = FALSE)
+
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{Sample vector to be fitted. Should contain only positive
-    non-NA values.}
-  \item{info.observed}{Should the observed information matrix be used or
-    the expected one be used? }
-  \item{check.loglik}{If \code{TRUE}, the log-likelihood is recomputed
-    using \code{dweibull} function with \code{log = TRUE}. The result is
-    returned as a list element.}
-  %% \item{\dots}{arguments XXX }
+
+  \item{x}{
+
+    Sample vector to be fitted. Should contain only positive
+    non-NA values.
+
+  }
+  \item{info.observed}{
+
+    Should the observed information matrix be used or the expected one
+    be used?
+
+  }
+  \item{check.loglik}{
+
+    If \code{TRUE}, the log-likelihood is recomputed using
+    \code{dweibull} function with \code{log = TRUE}. The result is
+    returned as a list element.
+
+  }
 }
 \details{
-  The ML estimates are obtained thanks to a reparametrisation with
-  \eqn{\eta = scale^{1/shape}}{eta = scale^{1/shape}}
-  in place of \code{shape}. This allows the maximisation of a one-dimensional
-  likelihood \eqn{L}{L} since the \eqn{\eta}{eta} parameter can be concentrated out
-  of \eqn{L}{L}. This also
-  allows the determination of the \emph{expected} information matrix for
-  \eqn{[shape,\,\eta]}{[\code{shape}, \code{eta}]} rather than the usual \emph{observed} information. 
+
+  The ML estimates are obtained thanks to a reparameterisation with
+  \eqn{\eta = scale^{1/shape}}{eta = scale^{1/shape}} in place of
+  \code{shape}. This allows the maximisation of a one-dimensional
+  likelihood \eqn{L}{L} since the \eqn{\eta}{eta} parameter can be
+  concentrated out of \eqn{L}{L}. This also allows the determination of
+  the \emph{expected} information matrix for
+  \eqn{[shape,\,\eta]}{[\code{shape}, \code{eta}]} rather than the usual
+  \emph{observed} information.
+
 }
 \value{
   A list
-  \item{estimate}{Parameter ML estimates.}
-  \item{sd}{The (asymptotic) standard deviation for estimate.}
-  \item{cov}{The (asymptotic) covariance matrix computed from theoretical or
-    observed Information matrix.}
-  \item{eta}{The estimated value for eta.}
+  \item{estimate}{
+
+    Parameter ML estimates.
+
+  }
+  \item{sd}{
+
+    The (asymptotic) standard deviation for estimate.
+
+  }
+  \item{cov}{
+
+    The (asymptotic) covariance matrix computed from theoretical or
+    observed Information matrix.
+
+  }
+  \item{eta}{
+
+    The estimated value for eta.
+
+  }
 }
-%%\references{ }
-\author{Yves Deville}
+\author{
+
+  Yves Deville
+
+}
 \note{
- A well-accepted verdict is that expected information is better than
- observed information for problems with no missing data as it is the case
- here. We suspect  in the present estimation context that the expected information matrix
- has often a better condition number than its observed version.
+
+  A well-accepted verdict is that expected information is better than
+  observed information for problems with no missing data as it is the
+  case here. We suspect in the present estimation context that the
+  expected information matrix has often a better condition number than
+  its observed version.
  
 }
 \seealso{
+
   \code{\link{weibplot}} for Weibull plots.
+
 }
 \examples{
 

@@ -55,7 +55,7 @@
   The 'maxlo' distribution function with shape \eqn{\alpha>0} and scale
   \eqn{\beta>0} is a special case of Generalised Pareto (GPD) with
   \emph{negative shape} \eqn{\xi < 0} and location at zero. This is the
-  finite upper endpoint case of the GPD. Its name is TEMPORARY and was
+  finite upper endpoint case of the GPD. Its name is nonstandard and was
   chosen to suggest some form of symmetry with respect to the Lomax
   distribution.
   
@@ -80,9 +80,9 @@
   GPD. Since only GPD with \eqn{\xi > -0.5} seem to be used in practice,
   this distribution should be used with \eqn{\alpha > 2}.
   
-  This distribution can be used in POT to describe bounded exceedances
+  This distribution can be used in POT to describe bounded excesses
   following GPD with shape \eqn{\xi < 0}. The scale parameter
-  \eqn{\beta} then represents the upper end-point of the exceedances,
+  \eqn{\beta} then represents the upper end-point of the excesses,
   implying the finite upper end-point \eqn{u + \beta} for the levels,
   where \eqn{u} is the threshold. It can be used in \code{\link{Renouv}}
   with a fixed scale parameter, thus allowing a control of the upper
@@ -99,7 +99,7 @@
 %%\references{  }	
 \seealso{
 
-  \code{\link{fmaxlo}} to fit such a distibution by Maximum Likelihood.
+  \code{\link{fmaxlo}} to fit such a distribution by Maximum Likelihood.
 
 }
 \examples{
@@ -122,3 +122,4 @@ lines(x = x, y = dgpd(x, shape = -1/4, scale = 250),
 
 }
 \keyword{distribution}
+

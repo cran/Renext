@@ -1,221 +1,219 @@
-##=============================================================
-## 'Prediction' and Inference on return levels using the
-## so called 'delta method'
+##=============================================================================
+## 'Prediction' and Inference on return levels using the so called 'delta
+##  method'
 ##
-## 'newdata' contain return periods.
-##
-##=============================================================
+## 'newdata' contains the return periods
+##==============================================================================
 
 predict.Renouv <- function(object,
                            newdata = c(10, 20, 50, 100, 200, 500, 1000),
-                           cov.rate = FALSE,
+                           cov.rate = TRUE,
                            level = c(0.95, 0.70),
+                           prob = FALSE,
                            trace = 1,
                            eps = 1e-6,
                            ...) {
   
-  if ( names(object$estimate)[1L] != "lambda") {
-    stop("element 1 of 'estimate' must have name \"lambda\"")
-  }
-  
-  pct.conf <- level*100
-  pred.period <- newdata
-  
-  nc <- 3L + 2L*length(pct.conf)
-  
-  ## Prepare a 'pred' matrix with dims and names
-  
-  cnames <- c("period", "prob", "quant",
-      paste(rep(c("L", "U"), length(pct.conf)),
-            rep(pct.conf, each = 2L), sep = "."))
-  
-  pred.prob <- 1.0 - 1/object$estimate[1L]/pred.period
-  ind <- (pred.prob > 0.0) & (pred.prob < 1.0)
-  pred.period <- pred.period[ind]
-  pred.prob <- pred.prob[ind]
-  
-  pred <- matrix(NA, nrow = length(pred.period), ncol = nc)
-  rownames(pred) <- pred.period
-  colnames(pred) <- cnames
-  
-  pred[ , "period"] <- pred.period
-  pred[ , "prob"]  <- pred.prob
-  pred[ , "quant"] <- object$threshold +
-    object$funs$q.y(parm = object$estimate[-1], p = pred.prob)
-
-  
-  if (object$transFlag) {
-    threshold.trans <- object$funs$transfun(object$threshold)
-    dth <- threshold.trans - object$threshold
-    pred[ , "quant"] <- object$funs$invtransfun(dth +  pred[ , "quant"])
-  }
-
-  p.y <- object$p.y
-  est.y <- object$estimate[-1]
-  fixed.y <- object$fixed.y
-  cov.y <- object$cov[-1, -1, drop = FALSE]
-
-  nb.OT <- object$nb.OT
-  if ( is.null(nb.OT) ) nb.OT <- length(object$y.OT)
-  
-  ## cat("nb.OT = ", nb.OT, "\n")
-  ## nb.OT <- object$nb.OT
-  
-  if ( (object$distname.y == "exponential") && !object$history.MAX$flag
-      && !object$history.OTS$flag ) {
-    
-    if (trace) cat("Special inference for the exponential case without history\n")
-    
-    ##--------------------------------------------------------------
-    ## Use the sampling distribution to derive confidence
-    ## limits on quantiles. If 'lambda' was known, these limits
-    ## would be exact.
-    ##--------------------------------------------------------------
-    
-    for (ipct in 1:length(pct.conf)) {
-      
-      alpha.conf <- (100 - pct.conf[ipct])/100
-      
-      theta.L <- 2*nb.OT / est.y / qchisq(1 - alpha.conf/2, df = 2 * nb.OT)
-      theta.U <- 2*nb.OT / est.y / qchisq(alpha.conf/2, df = 2 * nb.OT)
-      
-      pred[ , 2L * ipct + 2L] <-
-        object$threshold + qexp(p = pred.prob, rate = 1.0/theta.L)
-      pred[ , 2L * ipct + 3L] <-
-        object$threshold + qexp(p = pred.prob, rate = 1.0/theta.U) 
-      
+    if ( names(object$estimate)[1L] != "lambda") {
+        stop("element 1 of 'estimate' must have name \"lambda\"")
     }
+    
+    pct.conf <- level * 100
+    pred.period <- newdata
+    
+    nc <- 3L + 2L * length(pct.conf)
+    
+    ## Prepare a 'pred' matrix with dims and names
+    
+    cnames <- c("period", "prob", "quant",
+                paste(rep(c("L", "U"), length(pct.conf)),
+                      rep(pct.conf, each = 2L), sep = "."))
+    
+    pred.prob <- 1.0 - 1 / object$estimate[1L] / pred.period
+    ind <- (pred.prob > 0.0) & (pred.prob < 1.0)
+    pred.period <- pred.period[ind]
+    pred.prob <- pred.prob[ind]
+
+    p <- object$p
+    lambda <-  object$estimate[1L]
+    p.y <- object$p.y
+    est.y <- object$estimate[-1L]
+    fixed.y <- object$fixed.y
+    cov.y <- object$cov[-1, -1, drop = FALSE]
+    nb.OT <- object$nb.OT
+    if (is.null(nb.OT)) nb.OT <- length(object$y.OT)
+    
+    pred <- matrix(NA, nrow = length(pred.period), ncol = nc)
+    rownames(pred) <- pred.period
+    colnames(pred) <- cnames
+    
+    ## compute quantiles
+    y <- object$funs$q.y(parm = object$estimate[-1], p = pred.prob)
+    pred[ , "period"] <- pred.period
+    pred[ , "prob"]  <- pred.prob
+    pred[ , "quant"] <- object$threshold + y
     
     if (object$transFlag) {
-
-      ## dth was defined above
-      
-      for (ipct in 1L:length(pct.conf)) { 
-        pred[ , 2L * ipct + 2L] <-
-          object$funs$invtransfun(dth + pred[ , 2L * ipct + 2L])
-        pred[ , 2L * ipct + 3L] <-
-          object$funs$invtransfun(dth + pred[ , 2L * ipct + 3L]) 
-      }
-      
+        threshold.trans <- object$funs$transfun(object$threshold)
+        dth <- threshold.trans - object$threshold
+        pred[ , "quant"] <- object$funs$invtransfun(dth +  pred[ , "quant"])
     }
     
-    
-    ##==============================================================
-    ## perform Bartlett's gof test
-    ##==============================================================
+    ##-------------------------------------------------------------------------
+    ## Prepare if needed a matrix with rows matching the probabilities
+    ## (or return periods) and columns mathing the estimated parameters
+    ##-------------------------------------------------------------------------
+    if (p > 0L) {
+        Delta <- array(0, dim = c(length(pred.prob), p),
+                       dimnames = list(round(pred.period, digits = 2L),
+                           names(object$estimate)[!object$fixed]))
+    }
 
-    infer.method <-
-      "chi-square for exponential distribution (no historical data)"
+    ##-------------------------------------------------------------------------
+    ## Note that 'logf.y' MUST accept a vectorized 'x' formal 
+    ##-------------------------------------------------------------------------
+    if (!object$fixed[1L] && cov.rate) {
+        f.y <- exp(object$funs$logf.y(parm = est.y, x = y))
+        Delta[ , 1L] <- 1.0 / (lambda^2 * pred.period * f.y)
+    }
     
-  } else {
-     
-    ##==============================================================
-    ## DELTA METHOD
-    ## matrices for numerical derivation
-    ## The column ip of Parmat contains the parameter value with
-    ## a tiny modification of its ip component.
-    ##==============================================================
-
-    sig <- rep(0, length(pred.prob))
-
-    if (p.y > 0L) { ## ADDED 2013-09-07
-      
-      parmMat <- matrix(est.y[!fixed.y], nrow = p.y, ncol = p.y)
-      
-      rownames(parmMat) <- object$parnames.y[!fixed.y]
-      colnames(parmMat) <- object$parnames.y[!fixed.y]
-      
-      dparms <- abs(est.y[!fixed.y])*eps
-      dparms[dparms < eps] <- eps
-      
-      for (ip in 1:p.y) parmMat[ip, ip] <- parmMat[ip, ip] + dparms[ip]
-    
-      delta <- rep(NA, p.y)
-      ## sig <- rep(NA, length(pred.prob)) ## MOVED 
-    
-      ##=============================================================
-      ## Compute the delta's  and sig's
-      ## delta contains derivative w.r.t. unknown params
-      ##
-      ## CAUTION
-      ##
-      ## The quantile function 'q.y' takes a vector as first arg which
-      ## should morally be of length 'p.y', but is here of length
-      ## parnb.y. This works because 'q.y' uses the elements in named
-      ## form, irrespective of their position.
-      ##
-      ##=============================================================
-      
-      for (i in 1:length(pred.prob)) {
+    if ( (object$distname.y == "exponential") && !object$history.MAX$flag
+        && !object$history.OTS$flag ) {
         
-        for (ip in 1:p.y) {
-          
-          est.prov <- est.y
-          est.prov[!fixed.y] <-  parmMat[ , ip]
-          
-          dd <- ( object$funs$q.y(est.prov, p = pred.prob[i]) -
-                 object$funs$q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
-          delta[ip] <- dd
-          
+        if (trace) {
+            cat("Special inference for the exponential case without history\n")
+        }
+
+        if (cov.rate) {
+            warning("uncertainty on the rate not taken into account yet",
+                    "  in the exponential with no history case")
         }
         
-        sig[i] <- sqrt(t(delta)%*%cov.y[!fixed.y, !fixed.y]%*%delta)
+        ##---------------------------------------------------------------------
+        ## Use the sampling distribution to derive confidence
+        ## limits on quantiles. If 'lambda' was known, these limits
+        ## would be exact.
+        ##---------------------------------------------------------------------
         
-      }
-    }  ## ADDED 2013-09-07
-      
-    
-    ##=============================================================
-    ## Compute the delta's  and sig's
-    ## delta contains derivative w.r.t. unknown params
-    ##=============================================================
-
-    pred.sig <- rep(0, length(pred.prob))
-
-    if (p.y > 0L){
-      for (i in 1:length(pred.prob)) {
-        for (ip in 1:p.y) {
-          est.prov <- est.y
-          est.prov[!fixed.y] <-  parmMat[ , ip]
-          dd <- ( object$funs$q.y(est.prov, p = pred.prob[i]) -
-                 object$funs$q.y(est.y, p = pred.prob[i]) ) / dparms[ip]
-          delta[ip] <- dd
+        for (ipct in 1L:length(pct.conf)) {
+            alpha.conf <- (100 - pct.conf[ipct]) / 100
+           
+            theta.L <- 2 * nb.OT / est.y /
+                qchisq(1 - alpha.conf / 2, df = 2 * nb.OT)
+            theta.U <- 2 * nb.OT / est.y /
+                qchisq(alpha.conf / 2, df = 2 * nb.OT)
+            
+            pred[ , 2L * ipct + 2L] <-
+                object$threshold + qexp(p = pred.prob, rate = 1.0 / theta.L)
+            pred[ , 2L * ipct + 3L] <-
+                object$threshold + qexp(p = pred.prob, rate = 1.0 / theta.U)  
         }
-        ## modif 2010-01-25 for the fixed parms case
-        ##pred.sig[i] <- sqrt(t(delta)%*%cov.y%*%delta)
-        pred.sig[i] <- sqrt(t(delta) %*% cov.y[!fixed.y, !fixed.y]%*%delta)
-      }
+        
+        if (object$transFlag) {
+            ## dth was defined above
+            for (ipct in 1L:length(pct.conf)) { 
+                pred[ , 2L * ipct + 2L] <-
+                    object$funs$invtransfun(dth + pred[ , 2L * ipct + 2L])
+                pred[ , 2L * ipct + 3L] <-
+                    object$funs$invtransfun(dth + pred[ , 2L * ipct + 3L]) 
+            }
+        }
+        
+        infer.method <-
+            "chi-square for exponential distribution (no historical data)"
+        
+    } else {
+        
+        ##=====================================================================
+        ## DELTA METHOD
+        ## matrices for numerical derivation
+        ## The column 'ip' of 'Parmat' contains the parameter value with
+        ## a tiny modification of its ip component.
+        ##=====================================================================
+        
+        if (p.y > 0L) { 
+            
+            parmMat <- matrix(est.y[!fixed.y], nrow = p.y, ncol = p.y)
+            rownames(parmMat) <- object$parnames.y[!fixed.y]
+            colnames(parmMat) <- object$parnames.y[!fixed.y]
+            
+            dparms <- abs(est.y[!fixed.y]) * eps
+            dparms[dparms < eps] <- eps
+            
+            for (ip in 1L:p.y) parmMat[ip, ip] <- parmMat[ip, ip] + dparms[ip]
+            
+            ##=================================================================
+            ## Compute Delta's elts : derivatives w.r.t. unknown params
+            ##
+            ## CAUTION
+            ##
+            ## The quantile function 'q.y' takes a vector as first arg which
+            ## should morally be of length 'p.y', but is here of length
+            ## parnb.y. This works because 'q.y' uses the elements in named
+            ## form, irrespective of their position.
+            ##
+            ##=================================================================
+            shift <- !object$fixed[1L]
+            
+            for (i in 1L:length(pred.prob)) {
+                for (ip in 1L:p.y) {
+                    est.prov <- est.y
+                    est.prov[!fixed.y] <-  parmMat[ , ip]
+                    Delta[i, ip + shift] <- (object$funs$q.y(est.prov, p = pred.prob[i]) -
+                                                 y[i]) / dparms[ip]
+                }
+            }
+            
+        }
+
+        if (trace >= 2L) {
+            cat("Derivative of return levels w.r.t. parameters\n")
+            print(Delta)
+        }
+        
+        pred.sig <- rep(0, length(pred.prob))
+        if (p > 0L) {
+            for (i in 1L:length(pred.prob)) {
+                dd <- Delta[i, ]
+                pred.sig[i] <- sqrt(t(dd) %*% object$cov[!object$fixed, !object$fixed] %*% dd)
+            }
+        }       
+                                  
+        ##=====================================================================
+        ## Apply "delta method" for the quantiles
+        ##
+        ## Note that 'q.y' MUST accept a vectorized prob 
+        ## Use a loop on i to remove this constraint ???
+        ##=====================================================================
+        
+        for (ipct in 1L:length(pct.conf)) {
+            alpha.conf <- (100 - pct.conf[ipct]) / 100
+            z.conf <- qnorm(1 - alpha.conf / 2.0)
+            pred[ , 2L * ipct + 2L] <-
+                object$threshold + object$funs$q.y(est.y, p = pred.prob) -
+                    z.conf * pred.sig
+            pred[ , 2L * ipct + 3L] <-
+                object$threshold + object$funs$q.y(est.y, p = pred.prob) +
+                    z.conf * pred.sig
+        }
+        
+        if (object$transFlag) {
+            for (ipct in 1L:length(pct.conf)) {
+                pred[ , 2L * ipct + 2L] <-
+                    object$funs$invtransfun(dth  + pred[ , 2L * ipct + 2L])
+                pred[ , 2L * ipct + 3L] <-
+                    object$funs$invtransfun(dth  + pred[ , 2L * ipct + 3L])
+            }
+        }
+        
+        infer.method <- "Delta method"
     }
     
-    ##=============================================================
-    ## Apply "delta method" for the quantiles
-    ##
-    ## Note that q.y MUST accept a vectorized prob 
-    ## Use a loop on i to remove this constraint ???
-    ##==============================================================
-    
-    
-    for (ipct in 1:length(pct.conf)) {
-      alpha.conf <- (100 - pct.conf[ipct])/100
-      z.conf <- qnorm(1 - alpha.conf/2)
-      pred[ , 2*ipct + 2] <-
-        object$threshold + object$funs$q.y(est.y, p = pred.prob) - z.conf * pred.sig
-      pred[ , 2*ipct + 3] <-
-        object$threshold + object$funs$q.y(est.y, p = pred.prob) + z.conf * pred.sig
+    pred <- as.data.frame(pred)
+    if (!prob) {
+        pred$prob <- NULL
     }
-
-    if (object$transFlag) {
-      for (ipct in 1L:length(pct.conf)) {
-        pred[ , 2L*ipct + 2L] <- object$funs$invtransfun(dth  + pred[ , 2L*ipct + 2L])
-        pred[ , 2L*ipct + 3L] <- object$funs$invtransfun(dth  + pred[ , 2L*ipct + 3L])
-      }
-    }
+    attr(pred, "infer.method") <- infer.method
+    pred
     
-    infer.method <- "Delta method"
-  }
-
-  pred <- as.data.frame(pred)
-  attr(pred, "infer.method") <- infer.method
-  pred
-
 }

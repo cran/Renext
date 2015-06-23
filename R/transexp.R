@@ -113,4 +113,3 @@ qSLTW <- function(p, delta = 1.0,  shape = 1.0, scale = 1.0) {
   quant <- quant^(1/shape) - delta
   
 }
-

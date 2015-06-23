@@ -3,7 +3,9 @@
 \docType{data}
 \title{Surge heights at Dunkerque}
 \description{
+  
   Surge heights near high tide at Dunkerque tide gauge station (France)
+
 }
 \usage{Dunkerque}
 \format{
@@ -31,17 +33,17 @@
     \itemize{
       \item \code{$date}  : POSIXct[1:740], format: \code{"1956-11-27" "1956-12-03"} ...
       \item \code{$Surge} : num [1:740] \code{67.9 30.9 51.8 30.8 39.8} ...
-      \item \code{$comment} : Class 'AsIs'  chr [1:740] \code{"" "" "" ""} ...
+      \item \code{$comment} : chr [1:740] \code{"" "" "" ""} ...
     }
     \item  \code{$OTmissing} : 'data.frame':	83 obs. of  3 variables:
     \itemize{
       \item \code{$start}  : POSIXct[1:83], format: \code{"1956-01-01" "1956-08-08"} ...
       \item \code{$end}    : POSIXct[1:83], format: \code{"1956-06-07" "1956-11-03"} ...
-      \item \code{$comment}: Class 'AsIs'  chr [1:83] \code{"" "" "" ""} ...
+      \item \code{$comment}: chr [1:83] \code{"" "" "" ""} ...
     }
     \item \code{$MAXinfo}  : 'data.frame' : 1 obs. of  3 variables:
     \itemize{
-      \item \code{$start}  : POSIXct[1:1], format: \code{"1705-12-31 23:59:39"}
+      \item \code{$start}  : POSIXct[1:1], format: \code{"1706-01-01"}
       \item \code{$end}    : POSIXct[1:1], format: \code{"1956-01-01"}
       \item \code{$duration} : num \code{250}
     }
@@ -50,7 +52,7 @@
       \item \code{$block}  : int \code{1}
       \item \code{$date}   : POSIXct[1:1], format: \code{"1953-02-01"}
       \item \code{$Surge}  : num \code{213}
-      \item \code{$comment} : Class 'AsIs'  chr \code{"1"}}
+      \item \code{$comment} : chr \code{"1"}}
     - \code{attr(*, "class")= chr "Rendata"}
   }
 }

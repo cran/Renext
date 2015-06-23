@@ -1,4 +1,3 @@
-
 ##=======================================================================
 ## Estimation of the two parameters gamma and prob ob a Negative Binomial
 ## count process.

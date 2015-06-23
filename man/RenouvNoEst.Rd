@@ -63,7 +63,7 @@ RenouvNoEst(threshold,
   parameter estimates but with no data available.
   
   The parameters estimates should be accompanied with a covariance
-  matrix assuming an approximatively normal joint distribution
+  matrix assuming an approximately normal joint distribution
   of these. This matrix is usually obtained by computing the numerical
   derivatives of the log-likelihood at the second order at the
   estimates. This covariance is used to compute approximate

@@ -10,7 +10,8 @@ pmixexp2 <- function(q,
                      delta,
                      log = FALSE) {
   
-  res <- prob1*pexp(q, rate = rate1, log.p = FALSE) + (1-prob1)*pexp(q, rate = rate2, log.p = FALSE)
+  res <- prob1 * pexp(q, rate = rate1, log.p = FALSE) +
+      (1-prob1) * pexp(q, rate = rate2, log.p = FALSE)
 
   if (log) res <- log(res)
   res
@@ -28,8 +29,8 @@ dmixexp2 <- function(x,
                      delta,
                      log = FALSE) {
   
-  res <- prob1*dexp(x, rate = rate1, log = FALSE) +
-    (1-prob1)*dexp(x, rate = rate2, log = FALSE) 
+  res <- prob1 * dexp(x, rate = rate1, log = FALSE) +
+      (1 - prob1) * dexp(x, rate = rate2, log = FALSE) 
   
   if (log) res <- log(res)
   res
@@ -69,9 +70,11 @@ hmixexp2 <- function(x,
                      rate2 = rate1 + delta,
                      delta) {
                        
-  f <- prob1*dexp(x, rate = rate1, log = FALSE) + (1-prob1)*dexp(x, rate = rate2, log = FALSE)
-  F <- prob1*pexp(x, rate = rate1, log.p = FALSE) + (1-prob1)*pexp(x, rate = rate2, log.p = FALSE)
-  f/(1-F)
+  f <- prob1 * dexp(x, rate = rate1, log = FALSE) +
+      (1 - prob1) * dexp(x, rate = rate2, log = FALSE)
+  F <- prob1 * pexp(x, rate = rate1, log.p = FALSE) +
+      (1 - prob1) * pexp(x, rate = rate2, log.p = FALSE)
+  f / (1 - F)
   
 }
 
@@ -85,7 +88,8 @@ Hmixexp2 <- function(x,
                      rate2 = rate1 + delta,
                      delta) {
   
-  F <- prob1*pexp(x, rate = rate1, log.p = FALSE) + (1-prob1)*pexp(x, rate = rate2, log.p = FALSE)
+  F <- prob1 * pexp(x, rate = rate1, log.p = FALSE) +
+      (1 - prob1) * pexp(x, rate = rate2, log.p = FALSE)
   
   -log(1-F)
   

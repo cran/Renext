@@ -4,8 +4,10 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Negative Binomial Levy process}
 \description{
+  
    Negative Binomial Lévy process estimation from partial observations (counts)
-}
+
+ }
 \usage{
 NBlevy(N,
        gamma = NA,
@@ -61,7 +63,7 @@ NBlevy(N,
   }
   \item{plot}{
 
-    Should a plot be drawn? MAY BE REMOVED IN THE FUTURE.
+    Should a plot be drawn? \emph{May be removed in the future}.
 
   }
   \item{\dots}{Arguments passed to \code{plot}.}
@@ -74,13 +76,13 @@ NBlevy(N,
   assumptions, the observed counts (i.e. elements of
   \eqn{\mathbf{N}}{N}) are independent random variables, each following
   a negative binomial distribution.  The size parameter \eqn{r_k}{r[k]}
-  for \eqn{N_k}{N[k]} is \eqn{r_k = \gamma w_k}{r[k] = gamma * w[k]} and
+  for \eqn{N_k}{N[k]} is \eqn{r_k = \gamma w_k}{r[k] = \gamma * w[k]} and
   the probability parameter \eqn{p}{p} is \code{prob}.  The vector
-  \eqn{\boldsymbol{\mu}}{mu} of the expected counts has elements
-  \deqn{\mu_k=\mathrm{E}(N_k)=\frac{1-p}{p} \,\gamma \,w_k}{mu[k] =
-  E(N[k]) = gamma * w[k] * (1 - prob) / prob}
+  \eqn{\boldsymbol{\mu}}{\mu} of the expected counts has elements
+  \deqn{\mu_k=\mathrm{E}(N_k)=\frac{1-p}{p} \,\gamma \,w_k.}{\mu[k] =
+  E(N[k]) = \gamma * w[k] * (1 - prob) / prob}
   
-  The parameters \eqn{\gamma}{gamma} and \eqn{p \:(\code{prob})}{prob}
+  The parameters \eqn{\gamma}{\gamma} and \eqn{p \:(\code{prob})}{prob}
   are estimated by Maximum Likelihood using the likelihood concentrated
   with respect to the \code{prob} parameter.
 
@@ -115,8 +117,8 @@ NBlevy(N,
 }
 \references{
   Kozubowski T.J. and \enc{Podgórsky}{Podgorsky} K. (2009)
-  Distributional properties of the negative binomial \enc{Lévy}{Levy} process
-  \emph{Probability and Mathematical Statistics} \bold{29}, pp. 43-71
+  "Distributional properties of the negative binomial \enc{Lévy}{Levy} process".
+  \emph{Probability and Mathematical Statistics} \bold{29}, pp. 43-71.
   Lund University Publications.
 }
 \author{Yves Deville}
@@ -144,9 +146,7 @@ mu <- w * gam * (1 - prob) / prob
 Res <- NBlevy(N = N, w = w)
 
 ## Use example data 'Brest'
-
-## compute the number of event and duration
-## of the non-skipped periods
+## compute the number of event and duration of the non-skipped periods
 gof1 <- gof.date(date = Brest$OTdata$date,
                  skip = Brest$OTmissing,
                  start = Brest$OTinfo$start,
@@ -169,7 +169,5 @@ fit2 <- NBlevy(N = ns2$nevt, w = ns2$duration)
 
 c(fit1$prob, fit2$prob)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
 %%\keyword{ ~kwd1 }
 %%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

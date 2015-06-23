@@ -21,63 +21,117 @@ RLplot(data,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{data}{A data.frame object with a column named \code{quant}}
-  \item{x}{Optional vector of observed levels}
-  \item{duration}{The (effective) duration corresponding to \code{x} if
-    this argument is used. }
-  \item{lambda}{Rate (in accordance with \code{duration}.}
-  \item{conf.pct}{a vector (character or integer) giving confidence
-    levels. See \bold{Details} below.}
-  \item{mono}{If \code{TRUE} colours are replaced by black.}
-  \item{mark.rl}{Return levels to be marked on the plot.}
-  \item{mark.labels}{Labels shown at positions in \code{mark.rl}.}
-  \item{mark.col}{Colours for marked levels.}
-  \item{main}{Main title for the return level plot (defaults to empty title).}
-  \item{ylim}{Limits for the y axis (defaults to values computed from the data).}
-  \item{\dots}{Further args to be passed to \code{plot}. Should be
-    removed in future versions.}
+  \item{data}{
+    
+    A data.frame object with a column named \code{quant}.
+
+  }
+  \item{x}{
+
+    Optional vector of observed levels.
+
+  }
+  \item{duration}{
+
+    The (effective) duration corresponding to \code{x} if
+    this argument is used.
+
+  }
+  \item{lambda}{
+
+    Rate, with unit inverse of that used for \code{duration}, e.g. in
+    inverse years when \code{duration} is in years.
+
+  }
+  \item{conf.pct}{
+
+    Vector (character or integer) giving confidence levels. See
+    \bold{Details} below.
+
+  }
+  \item{mono}{
+
+    If \code{TRUE} colours are replaced by black.
+
+  }
+  \item{mark.rl}{
+
+    Return levels to be marked on the plot.
+
+  }
+  \item{mark.labels}{
+
+    Labels shown at positions in \code{mark.rl}.
+
+  }
+  \item{mark.col}{
+
+    Colours for marked levels.
+
+  }
+  \item{main}{
+
+    Main title for the return level plot (defaults to empty title).
+
+  }
+  \item{ylim}{
+
+    Limits for the y axis (defaults to values computed from the data).
+
+  }
+  \item{\dots}{
+
+    Further args to be passed to \code{plot}. Should be removed in
+    future versions.
+
+  }
 }
 \details{
-  Percents should match column names in the data.frame as follows. The upper
-  and lower limits are expected to be \code{U.95} and \code{L.95}
+
+  Percents should match column names in the data.frame as follows. The
+  upper and lower limits are expected to be \code{U.95} and \code{L.95}
   respectively. For a \code{70\%} confidence percentage, columns should
   have names \code{"U.70"} and \code{"L.70"}.
 
-  The plot is comparable  to the return level described in Coles'book
-  and related packages, but the return level is here in log-scale while
-  Coles uses a loglog-scale. A line corresponds
-  here to a one parameter exponential distribution, while Coles'plot
-  corresponds to Gumbel, however the two plots differ only for small
-  return periods.
-  This plot is identical to an \code{expplot} but with x and y scales
-  changed: only axis tick-marks differ. The convexity of the scatter plot
-  is therefore opposed in the two plots.
+  The plot is comparable to the return level described in Coles'book and
+  related packages, but the return level is here in log-scale while
+  Coles uses a loglog-scale. A line corresponds here to a one parameter
+  exponential distribution, while Coles'plot corresponds to Gumbel,
+  however the two plots differ only for small return periods.  This plot
+  is identical to an \code{expplot} but with x and y scales changed:
+  only axis tick-marks differ. The convexity of the scatter plot is
+  therefore opposed in the two plots.
   
 }
 %\value{ }
 \references{
+  
  Coles S. (2001)  \emph{Introduction to Statistical Modelling
    of Extremes Values}, Springer.
+
 }
 \author{Yves Deville}
 \note{
-  Confidence limits correspond to \emph{two-sided symmetrical intervals}. This
-  means that the (random) confidence interval may be under or above the
-  true unknown value with the same probabilities. E.g. the probability
-  that the unknown quantile falls above \code{U.95}
-  is \code{2.5\%}. The two bounds are yet generally not symmetrical with
-  respect to \code{quant}; such a behaviour follows from the use of "delta"
-  method for approximate intervals.
+
+  Confidence limits correspond to \emph{two-sided symmetrical
+  intervals}. This means that the (random) confidence interval may be
+  under or above the true unknown value with the same
+  probabilities. E.g. the probability that the unknown quantile falls
+  above \code{U.95} is \code{2.5\%}. The two bounds are yet generally
+  not symmetrical with respect to \code{quant}; such a behaviour follows
+  from the use of "delta" method for approximate intervals.
 
   It is possible to add graphical material (points, lines) to this plot
   using \code{log(returnlev)} and \code{quantile} coordinates. See
   \bold{Examples} section.
+
 }
 \seealso{
-  See \code{\link{expplot}} for a classical exponential plot.
-  See Also as \code{\link{Renouv}} to fit "Renouvellement" models. The
-  \code{return.level} function in the
-  \code{extRemes} package.
+  
+  See \code{\link{expplot}} for a classical exponential plot.  See Also
+  as \code{\link{Renouv}} to fit "Renouvellement" models. The
+  \code{return.level} function in the \code{extRemes} package.
+
 }
 \examples{
 ## Typical probability vector

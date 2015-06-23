@@ -1,7 +1,7 @@
 ##==============================================================================
 ## Author: Yves Deville
 ##
-## Find ML estimate of a two parameter Weibull distribution using a sample x.
+## Find ML estimate of a two-parameters Weibull distribution using a sample x.
 ##
 ## The parameter 'eta' = beta^alpha is used in place of beta (= scale) where
 ## alpha = shape. Then 'eta' is concentrated out of the likelihood.
@@ -24,11 +24,10 @@
   phi <- function(alpha) {
     if (alpha < 1e-8) stop("'alpha' must be > 0") 
     xa <- x^alpha
-    sum(xa*lx) / sum(xa) -mlx - 1/alpha
+    sum(xa * lx) / sum(xa) -mlx - 1.0 / alpha
   }
   
-  res <- uniroot(f = phi,
-                 interval = c(1e-8, 6*alpha))
+  res <- uniroot(f = phi, interval = c(1e-8, 6 * alpha))
   
   if (abs(res$f.root) > 0.0001) {
     cat("fweibull estimation\n")
@@ -42,31 +41,31 @@
   eta.hat <- mean(xa)
   leta <- log(eta.hat)
   
-  loglik <- n*( log(alpha.hat) - leta +(alpha.hat-1)*mlx - 1) 
+  loglik <- n * ( log(alpha.hat) - leta + (alpha.hat - 1.0) * mlx - 1.0) 
   
   if (info.observed) {
     r0 <- mean(xa)
-    r1 <- mean(xa*lx)
-    r2 <- mean(xa*lx*lx)
+    r1 <- mean(xa * lx)
+    r2 <- mean(xa * lx * lx)
 
-    I11 <- n* (1/alpha.hat/alpha.hat + r2/eta.hat)
-    I12 <- -n*r1/eta.hat
-    I22 <- n*(2*r0 / eta.hat -1) / eta.hat/eta.hat
+    I11 <- n * (1.0 / alpha.hat / alpha.hat + r2 / eta.hat)
+    I12 <- -n * r1 / eta.hat
+    I22 <- n * (2 * r0 / eta.hat -1) / eta.hat / eta.hat
     
     info <- matrix(c(I11, I12, I12, I22), nrow = 2, ncol = 2)
   } else {
     Euler <- 0.577216
-    lambda1 <- 1 - Euler
-    lambda2 <- pi*pi/6 + Euler^2 -2*Euler
-    I11 <- n* ( 1 + (leta*leta + 2*lambda1*leta + lambda2) ) / alpha.hat / alpha.hat 
-    I12 <- -n*(lambda1 + leta) /eta.hat /alpha.hat
-    I22 <- n*(1)/eta.hat/eta.hat
+    lambda1 <- 1.0 - Euler
+    lambda2 <- pi * pi / 6 + Euler^2 -2 * Euler
+    I11 <-  n* ( 1.0 + (leta * leta + 2 * lambda1 * leta + lambda2) ) / alpha.hat / alpha.hat 
+    I12 <- -n * (lambda1 + leta) / eta.hat / alpha.hat
+    I22 <- n * (1.0) / eta.hat / eta.hat
     info <- matrix(c(I11, I12, I12, I22), nrow = 2, ncol = 2)
   }
 
   ## derivatives of beta = scale with respect to 'alpha' and 'eta'
-  dalpha <- -leta *eta.hat^(1/alpha.hat) /alpha.hat/alpha.hat
-  deta <- eta.hat^(1/alpha.hat -1) /alpha.hat
+  dalpha <- -leta * eta.hat^(1.0 / alpha.hat) / alpha.hat/ alpha.hat
+  deta <- eta.hat^(1.0 / alpha.hat - 1.0) / alpha.hat
   
   mat <- solve(info)
   sdp <- sqrt(diag(mat))

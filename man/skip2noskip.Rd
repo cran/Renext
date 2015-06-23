@@ -1,9 +1,15 @@
 \name{skip2noskip}
 \alias{skip2noskip}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Fix non-skipped periods from skipped ones}
+\title{
+
+  Fix non-skipped periods from skipped ones
+
+}
 \description{
-Compute non-skipped periods form start and end of skipped periods.  
+
+  Compute non-skipped periods form start and end of skipped periods.  
+
 }
 \usage{
    skip2noskip(skip = NULL,
@@ -12,33 +18,55 @@ Compute non-skipped periods form start and end of skipped periods.
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{skip}{A data.frame object with \code{start} and \code{end}
-    columns that can be coerced to POSIXct. Other columns can be present
-    (and will be ignored). Each row describes a missing period. Rows
-    must  be sorted in chronological order and periods should not
-    overlap. Validity checks are at the time very limited.}
-  \item{start}{Beginning of the whole period, to be used in \code{as.POSIXct}.}
-  \item{end}{End of the whole period to be used in \code{as.POSIXct}.}
+  \item{skip}{
+
+    A data.frame object with \code{start} and \code{end} columns that
+    can be coerced to \code{POSIXct}. Other columns can be present (and will be
+    ignored). Each row describes a missing period. Rows must be sorted
+    in chronological order and periods should not overlap. Validity
+    checks are at the time very limited.
+
+  }
+  \item{start}{
+
+    Beginning of the whole period, to be used in \code{as.POSIXct}.
+
+  }
+  \item{end}{
+
+    End of the whole period to be used in \code{as.POSIXct}.
+
+  }
 }
 \details{
+  
   In a 'normal' use of this function \code{start} and \code{end} are
   given, and are respectively \emph{before the beginning} of the first
-  \code{skip} period and \emph{after the end} of the last \code{skip} period.
-  Thus the returned dataframe will have \code{nrow(skip)+1}
-  rows. However,  \code{start} and \code{end}
-  can be \code{NULL} in which case only the \code{nrows(skip)-1} "inner"
-  non-skipped periods will be returned. If  \code{start} and \code{end}
-  are \code{NULL} and \code{skip} has only one row, the returned result
-  is \code{NULL}.
+  \code{skip} period and \emph{after the end} of the last \code{skip}
+  period.  Thus the returned dataframe will have \code{nrow(skip)+1}
+  rows. However, \code{start} and \code{end} can be \code{NULL} in which
+  case only the \code{nrows(skip)-1} "inner" non-skipped periods will be
+  returned. If \code{start} and \code{end} are \code{NULL} and
+  \code{skip} has only one row, the returned result is \code{NULL}.
+
 }
 \value{
-  A data.frame object with two POSIXct columns named \code{start} and
+
+  A data.frame object with two \code{POSIXct} columns named \code{start} and
   \code{end}. Each row corresponds to a non-skipped period
+
 }
-%% \references{ ~put references to the literature/web site here ~ }
-\author{Yves Deville}
+\author{
+
+  Yves Deville
+
+}
 %\note{ }
-\seealso{\code{\link{readXML}} for reading data from XML and csv files.}
+\seealso{
+
+  \code{\link{readXML}} for reading data from XML and csv files.
+
+}
 \examples{
 ## Brest data embeds a description of the gaps
 
