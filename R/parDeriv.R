@@ -66,7 +66,7 @@ parDeriv <- function(par, x, distname, sum = TRUE) {
     Add <- array(Add, dim = c(n, 2L, 2L))
     der2F <- der2F - Add
     
-  } else if (distname == "gpd") {
+  } else if (distname %in% c("gpd", "GPD")) {
     
     parnames <- c("scale", "shape")
 

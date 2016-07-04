@@ -1,7 +1,7 @@
 ##==============================================================================
 ## Author: Yves Deville
 ##
-## Find ML estimates for special distributions
+## Find ML estimates for SPECIAL distributions
 ##
 ## All parameters (e.g. dist. name) must here be given in clean form.
 ##
@@ -11,16 +11,12 @@ fML <- function(y,
                 distname.y,
                 parnames.y,
                 fixed.y,
-                fixed.par.y) {
-    
-    ## cat("fixed.y\n")
-    ## print(fixed.y)
-    ## cat("fixed.par.y\n")
-    ## print(fixed.par.y)
+                fixed.par.y,
+                info.observed = TRUE) {
     
     n <- length(y)
     
-    if(distname.y == "exponential") {
+    if (distname.y == "exponential") {
         
         ##======================================================================
         ## Explicit maximum likelihood
@@ -28,51 +24,54 @@ fML <- function(y,
         
         if (fixed.y) {
             rate.hat <- fixed.par.y
-            cov0.y <- matrix(0, nrow = 1, ncol = 1)
+            cov0.y <- matrix(0, nrow = 1L, ncol = 1L)
             logLik <- n * log(rate.hat) - rate.hat * sum(y)
         } else {
-            rate.hat <- 1 / mean(y)
+            rate.hat <- 1.0 / mean(y)
             est.y <- rate.hat
-            cov0.y <- matrix(rate.hat^2 / n, nrow = 1, ncol = 1)
+            cov0.y <- matrix(rate.hat^2 / n, nrow = 1L, ncol = 1L)
             logLik <- n * (log(rate.hat) - 1.0)
         }
         
         names(est.y) <- parnames.y
         colnames(cov0.y) <- rownames(cov0.y) <- "rate"
         
-    } else if(distname.y == "weibull") {
+    } else if (distname.y == "weibull") {
         
         ##======================================================================
         ## Explicit maximum likelihood for known shape,
         ## ML with concentration with 'fweibull' for the general case
+        ## 
+        ## Note that we just fit an exponential distribution to y^shape, so
+        ## there no difference between observed and expected information.
         ##======================================================================
         
         if (fixed.y["shape"]) {
             
             shape.hat <- fixed.par.y["shape"]
-            if (shape.hat <= 0) stop("'fixed.par.y' must specify a 'shape' > 0")
+            if (shape.hat <= 0.0) stop("'fixed.par.y' must specify a 'shape' > 0")
             
             if (fixed.y["scale"]) {
                 scale.hat <- fixed.par.y["scale"]
                 ymod <- y / scale.hat
-                cov0.y <- matrix(0, nrow = 2, ncol = 2)
-                logLik <- n * ( log(shape.hat / scale.hat) +
-                               (shape.hat - 1) * mean(log(ymod)) -
-                               mean(ymod^shape.hat) )
+                cov0.y <- matrix(0, nrow = 2L, ncol = 2L)
+                logLik <- n * (log(shape.hat / scale.hat) +
+                                   (shape.hat - 1.0) * mean(log(ymod)) -
+                                       mean(ymod^shape.hat))
             } else {
-                scale.hat <- mean(y^shape.hat)^{1/shape.hat}
+                scale.hat <- mean(y^shape.hat)^(1.0 / shape.hat)
                 ymod <- y / scale.hat
-                cov0.y <- matrix(0, nrow = 2, ncol = 2)
-                cov0.y[2, 2] <- ( (scale.hat/shape.hat)^2 ) / n
-                logLik <- n * ( log(shape.hat / scale.hat) +
-                               (shape.hat - 1) * mean(log(ymod)) - 1.0)
+                cov0.y <- matrix(0, nrow = 2L, ncol = 2L)
+                cov0.y[2, 2] <- (scale.hat / shape.hat)^2 / n
+                logLik <- n * (log(shape.hat / scale.hat) +
+                                   (shape.hat - 1.0) * mean(log(ymod)) - 1.0)
             }
             
         } else if (fixed.y["scale"]) {
             stop("parameter 'scale' can not be fixed alone in Weibull")
         } else {
             ## concentrated maximum likelihood
-            fit <- fweibull(x = y, info.observed = FALSE)
+            fit <- fweibull(x = y, info.observed = info.observed)
             est <- fit$estimate
             shape.hat <- est["shape"]
             scale.hat <- est["scale"]
@@ -93,18 +92,18 @@ fML <- function(y,
         
         ly <- log(y)
         meanlog.hat <- mean(ly)
-        sdlog.hat <- sd(ly) * sqrt((n-1)/n)
+        sdlog.hat <- sd(ly) * sqrt((n - 1L) / n)
     
         est.y <- c(meanlog.hat, sdlog.hat)
         names(est.y) <- parnames.y
         
         sig2 <- sdlog.hat^2
         ## Do not forget that 
-        cov0.y <- matrix(c(sig2/n, 0, 0, sig2/2/n), nrow = 2L, ncol = 2L)
+        cov0.y <- matrix(c(sig2 / n, 0, 0, sig2 / 2 / n), nrow = 2L, ncol = 2L)
         colnames(cov0.y) <- rownames(cov0.y) <- names(est.y)
         
-        logLik <- n* (-log(sdlog.hat * sqrt((2*pi))) -
-                      meanlog.hat - sdlog.hat^2 )
+        logLik <- n * (-log(sdlog.hat * sqrt((2 * pi))) -
+                           meanlog.hat - sdlog.hat^2)
         
     } else if(distname.y == "gpd") {
         
@@ -117,7 +116,7 @@ fML <- function(y,
             stop("parameter 'scale' can not be fixed alone in \"gpd\"")
         } else if (fixed.y["shape"]) {
             shape.hat <- fixed.par.y["shape"]
-            fit <- fgpd1(x = y, shape = fixed.par.y["shape"])
+            fit <- fGPD1(x = y, shape = fixed.par.y["shape"])
             scale.hat <- fit$estimate
             est.y <- c(scale.hat, shape.hat)
             names(est.y) <- c("scale", "shape")
@@ -132,7 +131,7 @@ fML <- function(y,
             logLik <- -fit$deviance / 2
         } 
         
-    } else if(distname.y == "GPD") {
+    } else if (distname.y == "GPD") {
         
         ##=====================================================================
         ## Specific maximum likelihood for known shape (concave loglik),
@@ -143,7 +142,8 @@ fML <- function(y,
             stop("parameter 'scale' can not be fixed alone in \"GPD\"")
         } else if (fixed.y["shape"]) {
             shape.hat <- fixed.par.y["shape"]
-            fit <- fgpd1(x = y, shape = fixed.par.y["shape"])
+            fit <- fGPD1(x = y, shape = fixed.par.y["shape"],
+                         info.observed = info.observed)
             scale.hat <- fit$estimate
             est.y <- c(scale.hat, shape.hat)
             names(est.y) <- c("scale", "shape")
@@ -151,7 +151,7 @@ fML <- function(y,
             colnames(cov0.y) <- rownames(cov0.y) <- names(est.y)
             logLik <- fit$loglik
         } else {
-            fit <- fGPD(x = y)
+            fit <- fGPD(x = y, info.observed = info.observed)
             est.y <- fit$estimate
             cov0.y <-  fit$cov
             logLik <- fit$loglik
@@ -162,6 +162,9 @@ fML <- function(y,
         ##====================================================================
         ## Explicit maximum likelihood for known shape,
         ## ML with concentration with 'fgamma' for the general case
+        ##
+        ## Note that there no difference between observed and expected
+        ## information.
         ##====================================================================
         
         if (fixed.y["shape"]) {
@@ -215,7 +218,7 @@ fML <- function(y,
             z <- log(1 + y / scale.hat)
             shape.hat <- 1 / mean(z)
             cov0.y <- matrix(0, nrow = 2L, ncol = 2L)
-            cov0.y[1L, 1L] <- shape.hat*shape.hat / n
+            cov0.y[1L, 1L] <- shape.hat * shape.hat / n
             logLik <- n * (log(shape.hat) - log(scale.hat) -
                      1.0 - 1.0 / shape.hat )
         } else if (fixed.y["shape"]) {
@@ -226,7 +229,7 @@ fML <- function(y,
             cov0.y[2L, 2L] <- fit$cov
             logLik <- fit$loglik
         } else {
-            fit <- flomax(x = y, info.observed = FALSE)
+            fit <- flomax(x = y, info.observed = info.observed)
             est <- fit$estimate
             shape.hat <- est["shape"]
             scale.hat <- est["scale"]
@@ -247,10 +250,10 @@ fML <- function(y,
             if (any(y > scale.hat)) {
                 stop("values of a maxlo distibution  must be < 'shape'")
             }
-            z <- -log(1 - y/scale.hat)
-            shape.hat <- 1 / mean(z)
+            z <- -log(1.0 - y / scale.hat)
+            shape.hat <- 1.0 / mean(z)
             cov0.y <- matrix(0, nrow = 2L, ncol = 2L)
-            cov0.y[1L, 1L] <- shape.hat*shape.hat / n
+            cov0.y[1L, 1L] <- shape.hat * shape.hat / n
             logLik <- n * ( log(shape.hat) - log(scale.hat) - 1.0 + 1.0 / shape.hat )
         } else if (fixed.y["shape"]) {
             shape.hat <- fixed.par.y["shape"]
@@ -260,7 +263,7 @@ fML <- function(y,
             cov0.y[2L, 2L] <- fit$cov
             logLik <- fit$loglik
         } else {
-            fit <- fmaxlo(x = y, info.observed = FALSE)
+            fit <- fmaxlo(x = y, info.observed = info.observed)
             est <- fit$estimate
             shape.hat <- est["shape"]
             scale.hat <- est["scale"]

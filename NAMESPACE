@@ -3,7 +3,10 @@ import(stats)
 import(graphics)
 import(evd)
 import(numDeriv)
-       
+importFrom("grDevices", "col2rgb", "rgb")
+importFrom("methods", "as", "is")
+importFrom("utils", "head", "read.csv", "tail")
+
 export(barplotRenouv,
        expplot,
        EM.mixexp,

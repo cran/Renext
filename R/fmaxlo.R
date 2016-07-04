@@ -1,5 +1,5 @@
 ##=======================================================================
-## Author: Yves Deville
+## AUTHOR: Yves Deville
 ##
 ## Find ML estimate of a two-parameters 'maxlo' distribution using a
 ## sample 'x'. The likelihood is concentrated with respect to the shape
@@ -15,7 +15,7 @@
 
 `fmaxlo` <- function(x,
                      shapeMin = 1.25,
-                     info.observed = FALSE,
+                     info.observed = TRUE,
                      plot = FALSE,
                      scaleData = TRUE,
                      cov = TRUE) {
@@ -32,12 +32,12 @@
     if (scaleData) {
         ## xUnscaled <- x    ## useful ???
         x <- x / M1
-        CV <- sqrt(1 - 1/n) * sd(x)
+        CV <- sqrt(1.0 - 1.0 / n) * sd(x)
         cLogLik <- - n * log(M1)
-        trans <- diag(c(1, 1 / M1))
+        trans <- diag(c(1.0, 1.0 / M1))
         colnames(trans) <- rownames(trans) <- parnames
     } else {
-        CV <- sqrt(1 - 1/n) * sd(x) / M1
+        CV <- sqrt(1.0 - 1.0 / n) * sd(x) / M1
     }
     
     if (CV > 1.00) stop("CV > 1. Estimation impossible for \"maxlo\"")
@@ -48,16 +48,17 @@
     M3 <- mean(x^3)
     
     if (scaleData) {
-        betaRoots <- polyroot(c(-12*M3, 10*M3 - 6*M2, 3*(M2 - 2)))
+        betaRoots <- polyroot(c(-12 * M3, 10 * M3 - 6 * M2, 3 * (M2 - 2.0)))
     } else {
-        betaRoots <- polyroot(c(-12*M1*M3, 10*M3 - 6*M1*M2, 3*(M2 - 2*M1^2)))
+        betaRoots <- polyroot(c(-12 * M1 * M3, 10 * M3 - 6 * M1 * M2,
+                                3 * (M2 - 2 * M1^2)))
     }
     
     betaUpper <- max(Re(betaRoots))
     mind <- max(x)
-    if (betaUpper < 2 * mind) betaUpper <- 2 * mind
+    if (betaUpper < 2.0 * mind) betaUpper <- 2.0 * mind
     
-    interv <- c(mind * (1 + 1e-6), betaUpper)
+    interv <- c(mind * (1.0 + 1e-6), betaUpper)
 
     ##=======================================================================
     ## o 'logLc' will be maximised. THis is the logLik concentrated with the
@@ -80,11 +81,11 @@
     logLc <- function (beta) {
         xmod <- x / beta
         R <- -mean(log(1.0 - xmod))
-        rho <- 1 / R
+        rho <- 1.0 / R
         if (rho < shapeMin) {
-            res <-  n * ( log(shapeMin) - log(beta) - (shapeMin - 1) * R) 
+            res <- n * (log(shapeMin) - log(beta) - (shapeMin - 1.0) * R) 
         } else {
-            res <-  -n * ( log(R) + log(beta) - R + 1.0)
+            res <- -n * (log(R) + log(beta) - R + 1.0)
         }
         res
     }
@@ -94,27 +95,27 @@
     if (cov) {
         
         logL <- function (parm) {
-            rho <- parm[1]
-            beta <- parm[2]
+            rho <- parm[1L]
+            beta <- parm[2L]
             xmod <- x / beta
             R <- -mean(log(1.0 - xmod))
-            n*( log(rho) - log(beta) -(rho - 1.0) * R )
+            n * (log(rho) - log(beta) - (rho - 1.0) * R)
         }
         
         ## 'beta' is scaled, as is 'x"
         log2L <- function (alpha, beta) {
             xmod <- x / beta
-            xmod1 <- 1 - xmod
+            xmod1 <- 1.0 - xmod
             RL <- mean(-log(xmod1))
-            R1 <- mean(1 / xmod1)
-            R2 <- mean(1 / xmod1 / xmod1)
+            R1 <- mean(1.0 / xmod1)
+            R2 <- mean(1.0 / xmod1 / xmod1)
             
             alpha1 <- alpha - 1.0
             
             logL <- n * (log(alpha / beta)  - alpha1 * RL) 
             
             dlogL <- c(shape = n * (1 / alpha - RL),
-                       scale = n * ( -1 + alpha1 * (R1 - 1) ) / beta)
+                       scale = n * (-1 + alpha1 * (R1 - 1.0)) / beta)
             
             d2logL <- array(0, dim = c(2, 2), dimnames = list(parnames, parnames))
             d2logL["shape", "shape"] <- -n / alpha / alpha
@@ -127,6 +128,9 @@
                 logL <- logL + cLogLik
                 dlogL <- trans %*% dlogL 
                 d2logL <- trans %*% d2logL %*% trans
+                ## added on 2015-12-17 Yves
+                rownames(dlogL) <- parnames
+                dimnames(d2logL) <- list(parnames, parnames)
             } 
             
             list(logL = logL,
@@ -175,7 +179,8 @@
         if (info.observed) {
             info <- -res2$d2logL
             vcov <- solve(info)
-            if (!inherits(cov, "try-error")) {
+            ## changed 2015-12-17: the test was wrong!!!
+            if (inherits(cov, "try-error")) {
                 vcov <- NULL
                 sds <- NULL
                 warning("hessian could not be inverted")
@@ -187,7 +192,7 @@
             a2 <- alpha.hat - 2
             if (alpha.hat <= shapeMin + 1e-4) {
                 warning("'shape' is near the bound 'shapeMin'. ",
-                        "Derivatives may be missliding")
+                        "Derivatives may be missleading")
             }
             i11 <- 1 / alpha.hat / alpha.hat
             i12 <- -1 / beta.hat / a1
@@ -303,75 +308,145 @@
 
 `fmaxlo1` <- function(x,
                       shape = 1.5,
+                      info.observed = TRUE,
+                      scaleData = TRUE,
+                      cov = TRUE,
                       plot = FALSE) {
-  
-  if (any(x <= 0)) stop("all elements in 'x' must be >0")  
-  if (shape < 1) stop("'shape <= 1': non-identifiable model")
-  
-  n <- length(x)
-  parnames <- c("shape", "scale")
 
-  CV <- sqrt(1 - 1/n) * sd(x) / mean(x) 
-  if (CV > 0.99) warning("large CV value: estimation may not converge")
+    Cvg <- TRUE
+    
+    if (any(x <= 0)) stop("all elements in 'x' must be >0")  
+    if (shape < 1.0) stop("'shape <= 1': non-identifiable model")
+    
+    n <- length(x)
+    parnames <- c("shape", "scale")
+    M1 <- mean(x)
 
-  alpha <- shape
-  alpha1 <- alpha - 1
-  
-  ## could be used to find a zero
-  dlogL1 <- function (beta) {
-    xmod <- x / beta
-    R <- -mean(log(1.0 - xmod))
-    S1 <- mean( xmod / (1.0 - xmod) )
-    n * ( -1  + alpha1 * S1 ) /beta 
-  }
-  
-  logL1 <- function (beta) {
-    xmod <- x/beta
-    R <- -mean(log(1.0 - xmod))
-    n * (log(alpha / beta) - alpha1 * R)
-  }
-  
-  mind <- max(x)
-  interv <- c(mind + 1e-6, 10 * mean(x))
-  checks <- unlist(sapply(interv, dlogL1))
-  if ( (checks[1] < 0) ||  (checks[2] > 0) ) 
-    warning("no interval found to maximise loglik")
-  res <- optimize(f = logL1, interval = interv, maximum = TRUE)
-  beta.hat <- res$maximum
-  loglik <- res$objective
-  dloglik <- dlogL1(beta.hat)
-  
-  if (alpha >= 2) {
-    info <-  n * alpha / (alpha-2) / beta.hat / beta.hat
-    cov <- solve(info)
-    sds <- sqrt(diag(cov))
-  } else {
-    warning("'shape' is < 2 ML inference results not suitable")
-    info <- NULL
-    cov <- NULL
-    sds <- NULL
-  }
-  
-  if (plot) {
-    betas <- seq(from = mind + 1e-5, to = 10*mean(x), length = 200)
-    fs <- sapply(betas, logL1)
-    dfs <- c(NA, diff(fs) / diff(betas))
-    ind <- 1L:length(betas)
-    ind <- dfs < 20
-    plot(betas[ind], dfs[ind], type = "l", lty = "dotted")
-    lines(betas[ind], sapply(betas[ind], dlogL1), col = "red")
-    abline(v = mind, col = "purple")
-    abline(h = 0)
-    abline(v = beta.hat)
-  }
-  
-  list(estimate = c(scale = beta.hat),
-       sd = sds,
-       CV = CV,
-       loglik = loglik,
-       dloglik = dloglik,
-       cov = cov,
-       info = info)
-  
+    if (scaleData) {
+        x <- x / M1
+        CV <- sqrt(1.0 - 1.0 / n) * sd(x)
+        cLogLik <- - n * log(M1)
+        trans <- 1.0 / M1
+    } else {
+        CV <- sqrt(1.0 - 1.0 / n) * sd(x) / M1
+    }
+    
+    alpha <- unname(shape)
+    alpha1 <- alpha - 1.0
+    
+    ## could be used to find a zero
+    dlogL1 <- function (beta) {
+        xmod <- x / beta
+        R <- -mean(log(1.0 - xmod))
+        S1 <- mean(xmod / (1.0 - xmod))
+        n * (-1.0  + alpha1 * S1) / beta 
+    }
+    
+    logL1 <- function (beta) {
+        xmod <- x / beta
+        R <- -mean(log(1.0 - xmod))
+        n * (log(alpha / beta) - alpha1 * R)
+    }
+
+    if (plot) cov <- TRUE
+
+    if (cov) {
+        log2L1 <- function (beta) {
+            
+            xmod <- x / beta
+            R <- -mean(log(1.0 - xmod))
+            S1 <- mean(xmod / (1.0 - xmod))
+            S2 <- mean(xmod / (1.0 - xmod) / (1.0 - xmod))
+            
+            logL <- n * (log(alpha) - log(beta)  - alpha1 * R)
+            dlogL <- n * (-1.0 + alpha1 * S1) / beta
+            d2logL <- n * (1.0 - alpha1 * S1 - alpha1 * S2) / beta / beta
+            
+            if (scaleData) {
+                logL <- logL + cLogLik
+                dlogL <- trans * dlogL 
+                d2logL <- trans * d2logL * trans
+            }
+            
+            list(logL = logL,
+                 dlogL = dlogL,
+                 d2logL = d2logL)
+        }
+    }
+        
+    ## find interval
+    mind <- max(x)
+    betaL <- mind * (1.0 + alpha1 / n)
+    if (scaleData) betaU <- 2 * pmax(mind, alpha1)
+    else betaU <- 2 * pmax(mind, alpha1 * M1)
+    
+    interv <- c(betaL, betaU)
+    checks <- unlist(sapply(interv, dlogL1))
+    if ( (checks[1L] < 0) ||  (checks[2L] > 0) ) {
+        warning("no interval found to maximise loglik")
+        Cvg <- FALSE
+    }
+    
+    res <- optimize(f = logL1, interval = interv, maximum = TRUE,
+                    tol = .Machine$double.eps^0.3)
+    beta.hatS <- res$maximum
+    alpha.hat <- alpha
+    
+    if (scaleData) beta.hat <- M1 * beta.hatS
+    else beta.hat <- beta.hatS
+
+    if (!cov) {
+        loglik <- res$objective
+        if (scaleData) loglik <- loglik + cLogLik
+        return(list(estimate = c(scale = beta.hat),
+                    CV = CV,
+                    loglik = loglik,
+                    cvg = Cvg))
+    }
+
+    res2 <- log2L1(beta = beta.hatS)
+    loglik <- res2$logL
+    
+    if (alpha >= 2.0) {
+        if (info.observed) {
+            info <- -res2$d2logL
+        } else {
+            info <-  n * alpha / (alpha - 2.0) / beta.hat / beta.hat
+        }
+        cov <- solve(info)
+        sds <- sqrt(diag(cov))
+        
+    } else {
+        warning("'shape' is < 2 ML inference results not suitable")
+        info <- NA
+        cov <- NA
+        sds <- NA
+    }
+    
+    if (plot) {
+        Stext <- ifelse(scaleData, "(scaled data)", "")
+        betas <- seq(from = betaL, to = betaU, length = 200)
+        fs <- sapply(betas, logL1)
+        dfs <- c(NA, diff(fs) / diff(betas))
+        ind <- 1L:length(betas)
+        ind <- dfs < 20
+        plot(betas[ind], dfs[ind], type = "l",
+             lty = "dotted",
+             main = sprintf("'Lomax' log-lik derivative %s", Stext),
+             xlab = "beta (scale)", ylab = "dlogL")
+        lines(betas[ind], sapply(betas[ind], dlogL1), col = "orangered")
+        abline(v = mind, col = "purple")
+        abline(h = 0, v = beta.hatS, col = "SpringGreen3")
+    }
+    
+    list(estimate = c(scale = beta.hat),
+         sd = sds,
+         CV = CV,
+         loglik = loglik,
+         dloglik = res2$dlogL,
+         cov = cov,
+         info = info,
+         cvg = Cvg)
+    
 }
 

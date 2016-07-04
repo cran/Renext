@@ -12,7 +12,7 @@
 }
 \usage{
 flomax(x,
-       info.observed = FALSE,
+       info.observed = TRUE,
        plot = FALSE,
        scaleData = TRUE,
        cov = TRUE)
@@ -39,21 +39,21 @@ flomax(x,
   }
   \item{scaleData}{
 
-    Logical. If \code{TRUE} observations in \code{x}
-    (which are positive) are divided by their mean value.
-    The results are in theory not affected by this transformation, but
-    scaling the data could improve the estimation in some cases. 
-    The log-likelihood plots are shown using the scaled values so
-    the returned estimate of the scale parameter is not the
-    the abscissa of the maximum shown on the plot.
+    Logical. If \code{TRUE} observations in \code{x} (which are
+    positive) are divided by their mean value.  The results are in
+    theory not affected by this transformation, but scaling the data
+    could improve the estimation in some cases.  The log-likelihood
+    plots are shown using the scaled values so the returned estimate of
+    the scale parameter is not the the abscissa of the maximum shown on
+    the plot.
 
   }
   \item{cov}{
     
-     Logical. If \code{FALSE}, a minimal estimation is performed with
-     no covariance matrix or derivative returned. This can be useful
-     when a large number of ML estimations are required, e.g. to sample
-     from a likelihood ratio.
+     Logical. If \code{FALSE}, a minimal estimation is performed with no
+     covariance matrix or derivative returned. This can be useful when a
+     large number of ML estimations are required, e.g. to sample from a
+     likelihood ratio.
 
    }
 }
@@ -137,6 +137,10 @@ flomax(x,
   variation smaller than 1 is not allowed since it should lead to
   divergence of the estimation.
 
+  The default value of \code{info.observed} was set to \code{TRUE} from
+  version \code{3.0-1} because standard deviations obtained with this
+  choice are usually better.
+  
 }
 \seealso{
   

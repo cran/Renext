@@ -42,6 +42,7 @@ rRendata(lambda = 1,
   \item{effDuration}{
 
     The effective duration of the main Over Threshold (OT) period.
+    This must be a positive value.
 
   }
   \item{distname.y}{

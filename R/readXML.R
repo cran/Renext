@@ -774,18 +774,20 @@ readXML <- function(name,
                                  TZ = TZ,
                                  trace = trace)
     
-    ##print(OTdata)
+    indDateNM <- !is.na(OTdata$date)
     
-    if (any(OTdata$date < OTinfo$start)) {
+    if (any(OTdata[indDateNM, "date"] < OTinfo$start)) {
         warning("'OTdata' contain events with date < OTinfo$start.",
                 " They are removed.")
-        OTdata <- OTdata[OTdata$date >= OTinfo$start, ]
+        indDateNM1 <- indDateNM & (OTdata$date >= OTinfo$start)
+        OTdata <- OTdata[indDateNM1, ]
     }
     
-    if (any(OTdata[ , "date"] > OTinfo$end)) {
+    if (any(OTdata[indDateNM, "date"] > OTinfo$end)) {
         warning("'OTdata' contain events with date > OTinfo$end.",
                 " They are removed. ")
-        OTdata <- OTdata[OTdata$date <= OTinfo$end, ]
+        indDateNM1 <- indDateNM & (OTdata$date <= OTinfo$end)
+        OTdata <- OTdata[indDateNM1, ]
     }
     
     if (any(OTdata[ , info$varName] < OTinfo$threshold)) {

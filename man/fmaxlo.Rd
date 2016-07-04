@@ -13,7 +13,7 @@
 \usage{
 fmaxlo(x,
        shapeMin = 1.25,
-       info.observed = FALSE,
+       info.observed = TRUE,
        plot = FALSE,
        scaleData = TRUE,
        cov = TRUE)
@@ -81,13 +81,16 @@ fmaxlo(x,
   variation \code{CV} greater than \code{1.0} and it may fail to be
   found when \code{CV} is smaller than yet close to \code{1.0}.
   
-  The covariance matrix can be computed by using the expected
-  information matrix and by noticing that when the r.v. \eqn{Y}{Y}
-  follows the 'maxlo' distribution with shape \eqn{\alpha} and scale
-  \eqn{\beta} the r.v \eqn{V:= 1/(1-Y/\beta)} follows a Pareto
-  distribution with minimum 1 and and shape parameter
+  The expected information matrix can be obtained by noticing that when
+  the r.v. \eqn{Y}{Y} follows the 'maxlo' distribution with shape
+  \eqn{\alpha} and scale \eqn{\beta} the r.v \eqn{V:= 1/(1-Y/\beta)}
+  follows a Pareto distribution with minimum 1 and and shape parameter
   \eqn{\alpha}{\alpha}. The information matrix involves the second order
   moment of \eqn{V}{V}.
+  
+  The default value of \code{info.observed} was set to \code{TRUE} from
+  version \code{3.0-1} because standard deviations obtained with this
+  choice are usually better.
 
 }
 

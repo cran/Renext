@@ -49,7 +49,11 @@ Renouv <- function(x,
                    plot = TRUE,
                    label = "",
                    ...) {    
-  
+
+    ## This could be passed as argument, but only TRUE is possible
+    ## with historical data, and TRUE seems better.
+    info.observed <- TRUE
+    
     ## for numerical differentiation  
     ## eps <- sqrt(.Machine$double.eps) ## seems too small (for 2-nd order diff)
     eps <- 1e-6
@@ -164,9 +168,9 @@ Renouv <- function(x,
         mexpon.OT <- floor(log(quantile(y.OT, prob = 0.75), base = 10))
     } else {
         if (MAX$flag) {
-            mexpon.OT <- floor(log(mean(unlist(MAX$data)), base = 10))
+            mexpon.OT <- floor(log(mean(unlist(MAX$data) - threshold), base = 10))
         } else if (OTS$flag) {
-            mexpon.OT <- floor(log(mean(unlist(OTS$data)), base = 10))
+            mexpon.OT <- floor(log(mean(unlist(OTS$data) - threshold), base = 10))
         }
     }
     
@@ -314,7 +318,8 @@ Renouv <- function(x,
                           distname.y = distname.y,
                           parnames.y = parnames.y,
                           fixed.y = fixed.y,
-                          fixed.par.y)
+                          fixed.par.y,
+                          info.observed = TRUE)
             
             est.y <- resML$estimate
             cov0.y <- resML$cov

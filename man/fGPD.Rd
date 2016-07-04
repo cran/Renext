@@ -13,7 +13,7 @@
 \usage{
 
 fGPD(x,
-     info.observed = FALSE,
+     info.observed = TRUE,
      shapeMin = -0.8,
      dCV = 1e-04,
      cov = TRUE,
@@ -28,7 +28,8 @@ fGPD(x,
   }
   \item{info.observed}{
     
-    NOT IMPLEMENTED.
+    Logical. The observed information matrix is used when \code{TRUE}
+    and the expected information matrix is used when \code{FALSE}.
 
   }
   \item{shapeMin}{
@@ -95,7 +96,7 @@ fGPD(x,
   \item{logLik, dlogLik}{
 
     The maximised value of the log-likelihood and the vector of its
-    first order derivatives, which would be close to zero.
+    first order derivatives, which should be close to zero.
 
   }
   \item{sd, cov}{
@@ -131,16 +132,22 @@ Yves Deville
 }
 \note{
 
-  It may happen that the estimated shape parameter is \code{< -0.5}, in which
-  case the information matrix can not be computed, nor does the
-  covariance matrix and standard deviations. In this case, the
+  It may happen that the estimated shape parameter is \code{< -0.5}, in
+  which case the expected information matrix can not be computed, nor
+  does the covariance matrix and standard deviations. In this case, the
   \code{cov} and \code{sd} objects contain \code{NA} values.  This
   problem can arise also when the shape parameter is greater than but
-  close to the value \code{-0.5}.
+  close to the value \code{-0.5}. Even when \code{info.observed} is
+  \code{TRUE}, the information matrix, covariance and standard
+  deviations are set to \code{NA}.
 
-  When the true (unknown) value is is \code{< -0.5}, the regularity conditions
-  required in the ML approximated inference do not hold.  
+  When the true (unknown) value is is \code{< -0.5}, the regularity
+  conditions required in the ML approximated inference do not hold.
 
+  The default value of \code{info.observed} was set to \code{TRUE} from
+  version \code{3.0-1} because standard deviations obtained with this
+  choice are usually better.
+  
 }
 \seealso{
 

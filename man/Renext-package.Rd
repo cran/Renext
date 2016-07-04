@@ -22,67 +22,67 @@
   inference for the (scalar) parameter and for the quantiles form OT
   data (only).
    
-   The package allows the joint use of possibly three kinds of data or
-   information. The first kind is \emph{classical excesses}, or
-   \emph{"OT data"}. It can be completed with two kinds of data
-   resulting from a temporal aggregation, as is often the case for
-   \emph{historical data}. Both types are optional, and concern periods
-   or \emph{blocks} that must not overlap nor cross the OT period.
-   
-   \itemize{
-     
-     \item \emph{MAX data} correspond to the case where one knows the
-     \eqn{r}{r} largest observations over each block. The number
-     \eqn{r}{r} may vary across blocks. This kind of data is often
-     called '\eqn{r}{r}-largest', or "\eqn{r}{r}-Largest Order
-     Statistics" (\eqn{r}{r}-LOS).
-     
-     \item \emph{OTS data} (for OT Supplementary data) correspond to the
-     case where one knows for each block \eqn{b}{b} all the observations
-     that exceeded a threshold \eqn{u_b}{u[b]} which is greater (usually
-     much greater) than the main threshold \eqn{u}{u}. The number
-     \eqn{r_b}{r[b]} of such observations can be zero, in which case we
-     may say that \eqn{u_b}{u[b]} is an \emph{unobserved level}. A
-     threshold \eqn{u_b}{u[b]} is sometimes called a \emph{perception
-       threshold}.
-
-   }
-
-   Historical data are often available in hydrology (e.g. for river flood
-   discharges, for sea-levels or sea surges) and can concern large
-   periods such as past centuries. An unobserved level can typically be
-   related to a material benchmark.
-   
-   Maximum likelihood estimation is made possible in this context of
-   heterogeneous data. Inference is based on the asymptotic normality of
-   parameter vector estimate and on linearisation ("delta method") for
-   quantiles or parameter functions.
-
-   The package allows the use of "marked-process observations" data
-   (datetime of event and level) where an interevent analysis can be
-   useful. It also allows the event dates to be unknown and replaced
-   by a much broader \emph{block} indication, e.g. a year number. The
-   key point is then that the "effective duration" (total duration of
-   observation periods) is known. Event counts for blocks can be used to
-   check the assumption of Poisson-distributed events.
-   
-   The package development was initiated, directed and financed by the
-   french \emph{Institut de Radioprotection et de \enc{Sûreté}{Surete}
-   \enc{Nucléaire}{Nucleaire}} (IRSN). The package is a non-academic
-   tool designed for applied analysis on case studies and investigations
-   or comparisons on classical probabilistic models.
-   
-   %% Additional information and material related to this package can be
-   %% found at the URL \url{https://gforge.irsn.fr/gf/project/renext}.
-   
+  The package allows the joint use of possibly three kinds of data or
+  information. The first kind is \emph{classical excesses}, or
+  \emph{"OT data"}. It can be completed with two kinds of data
+  resulting from a temporal aggregation, as is often the case for
+  \emph{historical data}. Both types are optional, and concern periods
+  or \emph{blocks} that must not overlap nor cross the OT period.
+  
+  \itemize{
+    
+    \item \emph{MAX data} correspond to the case where one knows the
+    \eqn{r}{r} largest observations over each block. The number
+    \eqn{r}{r} may vary across blocks. This kind of data is often
+    called '\eqn{r}{r} largest', or "\eqn{r}{r} Largest Order
+    Statistics" (\eqn{r}{r} LOS).
+    
+    \item \emph{OTS data} (for OT Supplementary data) correspond to the
+    case where one knows for each block \eqn{b}{b} all the observations
+    that exceeded a threshold \eqn{u_b}{u[b]} which is greater (usually
+    much greater) than the main threshold \eqn{u}{u}. The number
+    \eqn{r_b}{r[b]} of such observations can be zero, in which case we
+    may say that \eqn{u_b}{u[b]} is an \emph{unobserved level}. A
+    threshold \eqn{u_b}{u[b]} is sometimes called a \emph{perception
+      threshold}.
+    
+  }
+  
+  Historical data are often available in hydrology (e.g. for river flood
+  discharges, for sea-levels or sea surges) and can concern large
+  periods such as past centuries. An unobserved level can typically be
+  related to a material benchmark.
+  
+  Maximum likelihood estimation is made possible in this context of
+  heterogeneous data. Inference is based on the asymptotic normality of
+  parameter vector estimate and on linearisation ("delta method") for
+  quantiles or parameter functions.
+  
+  The package allows the use of "marked-process observations" data
+  (datetime of event and level) where an interevent analysis can be
+  useful. It also allows the event dates to be unknown and replaced
+  by a much broader \emph{block} indication, e.g. a year number. The
+  key point is then that the "effective duration" (total duration of
+  observation periods) is known. Event counts for blocks can be used to
+  check the assumption of Poisson-distributed events.
+  
+  The package development was initiated, directed and financed by the
+  french \emph{Institut de Radioprotection et de \enc{Sûreté}{Surete}
+    \enc{Nucléaire}{Nucleaire}} (IRSN). The package is a non-academic
+  tool designed for applied analysis on case studies and investigations
+  or comparisons on classical probabilistic models.
+  
+  %% Additional information and material related to this package can be
+  %% found at the URL \url{https://gforge.irsn.fr/gf/project/renext}.
+  
 }
 \details{
   
   \tabular{ll}{
     Package: \tab Renext\cr
     Type: \tab Package\cr
-    Version: \tab 3.0-0\cr
-    Date: \tab 2015-06-23\cr
+    Version: \tab 3.1-0\cr
+    Date: \tab 2016-07-01\cr
     License: \tab GPL (>= 2)\cr
     LazyLoad: \tab yes\cr
 
@@ -93,10 +93,12 @@
 
 }
 \author{
-
-  Yves Deville <deville.yves@alpestat.com>, IRSN <renext@irsn.fr>
   
-  Maintainer: Lise Bardet <lise.bardet@irsn.fr>
+  \packageAuthor{Renext}
+  %% Yves Deville <deville.yves@alpestat.com>, IRSN <renext@irsn.fr>
+
+  Maintainer: \packageMaintainer{Renext}
+  %% Maintainer: Lise Bardet <lise.bardet@irsn.fr>
 
 }
 \references{
@@ -104,7 +106,7 @@
   \itemize{
 
     \item Miquel J. (1984) \emph{Guide pratique d'estimation des
-    \enc{probabilités}{probabilites} de crues}, Eyrolles (coll. EDF DER)
+    \enc{probabilités}{probabilites} de crues}, Eyrolles (coll. EDF DER).
 
     \item Coles S. (2001) \emph{Introduction to Statistical Modelling of
       Extremes Values}, Springer.
@@ -117,11 +119,9 @@
 }
 \keyword{datagen}
 \seealso{
-  The packages \code{evd},
-  \code{ismev},
-  \code{extRemes},
-  \code{bayesevd},
-  \code{POT}.
+  The CRAN packages \CRANpkg{evd}, \CRANpkg{ismev},
+  \CRANpkg{extRemes}, \CRANpkg{evdbayes},
+  \CRANpkg{POT}.
 }
 \examples{
 ## 'Garonne' data set

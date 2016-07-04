@@ -11,7 +11,8 @@
 \arguments{
   \item{x}{
 
-    Numeric vector of sample values.
+    Numeric vector of positive sample values. For the POT context this
+    should be the vector of excesses over the threshold.
 
   }
   \item{alternative}{

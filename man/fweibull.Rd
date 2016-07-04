@@ -13,7 +13,8 @@
 }
 \usage{
 
-fweibull(x, info.observed = FALSE, check.loglik = FALSE)
+fweibull(x, info.observed = TRUE, scaleData = TRUE, cov = TRUE,
+         check.loglik = FALSE)
 
 }
 \arguments{
@@ -30,6 +31,20 @@ fweibull(x, info.observed = FALSE, check.loglik = FALSE)
     be used?
 
   }
+  \item{scaleData}{
+
+    Should the data be scaled before estimation? If \code{TRUE},
+    the observations in \code{x} (which are positive) are divided by their
+    mean value.  The results are in theory not affected by this
+    transformation, but scaling the data could improve the estimation in
+    some cases. 
+    
+  }
+  \item{cov}{
+    
+    Should the covariance of estimates be computed?
+    
+  }  
   \item{check.loglik}{
 
     If \code{TRUE}, the log-likelihood is recomputed using
@@ -81,11 +96,15 @@ fweibull(x, info.observed = FALSE, check.loglik = FALSE)
 }
 \note{
 
-  A well-accepted verdict is that expected information is better than
-  observed information for problems with no missing data as it is the
-  case here. We suspect in the present estimation context that the
-  expected information matrix has often a better condition number than
-  its observed version.
+  The default value of \code{info.observed} was set to \code{TRUE} from
+  version \code{3.0-1} because standard deviations obtained with this
+  choice are usually better.
+  
+  %% A well-accepted verdict is that expected information is better than
+  %% observed information for problems with no missing data as it is the
+  %% case here. We suspect in the present estimation context that the
+  %% expected information matrix has often a better condition number than
+  %% its observed version.
  
 }
 \seealso{
@@ -96,6 +115,7 @@ fweibull(x, info.observed = FALSE, check.loglik = FALSE)
 \examples{
 
 n <- 1000
+set.seed(1234)
 shape <- 2 * runif(1)
 x <- 100 * rweibull(n, shape = 0.8, scale = 1)
 res <- fweibull(x)
