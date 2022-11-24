@@ -501,7 +501,7 @@ fit <- Renouv(x = Garonne, distname = "weibull", trace = 1,
 summary(fit)
 
 ## generates a warning because of the ties
-fit2 <- Renouv(x = Garonne, distname = "gpd",
+fit2 <- Renouv(x = Garonne, distname = "GPD",
                jitter.KS = FALSE,
                threshold = 2800, trace = 1,
                main = "'Garonne' data with threshold = 2800 and GPD fit")
@@ -511,7 +511,7 @@ fit3 <-
     Renouv(x = Garonne$OTdata$Flow,
            threshold = 2500,
            effDuration = 100,
-           distname = "gpd",
+           distname = "GPD",
            OTS.data = list(numeric(0), c(6800, 7200)),
            OTS.effDuration = c(100, 150),
            OTS.threshold = c(7000, 6000), 
@@ -544,7 +544,7 @@ u <- 66
 fit.gpd <- Renouv(x = NULL,
                   MAX.data = MAX.data,
                   MAX.effDuration = MAX.effDuration,
-                  distname.y = "gpd",
+                  distname.y = "GPD",
                   threshold = u,
                   numDeriv = FALSE,
                   trace = 0,

@@ -70,7 +70,7 @@
   \emph{Service \enc{Hydrogéographique}{Hydrogeographique} et
   \enc{Océanographique}{Oceanographique} de la Marine} (SHOM).  Observed
   sea levels are available as \emph{REFMAR} data at the url
-  \url{http://data.shom.fr}.  Data were processed (declustered) by IRSN
+  \url{https://data.shom.fr/}.  Data were processed (declustered) by IRSN
   in order to provide a series of independent surge heights at high
   tide. Surge height at high tide is defined as the difference between
   the observed and the predicted maximal sea levels near high tide.  A
@@ -83,7 +83,7 @@
 }
 \source{
   
-  \url{http://data.shom.fr}
+  \url{https://data.shom.fr/}
 
 }
 %%\references{~~ possibly secondary sources and usages ~~}

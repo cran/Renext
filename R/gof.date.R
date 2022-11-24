@@ -335,3 +335,4 @@ gof.date <- function(date,
              effduration = effduration,
              noskip = noskip.new)
 }
+

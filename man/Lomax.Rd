@@ -92,7 +92,7 @@
   Johnson N. Kotz S. and N. Balakrishnan 
   \emph{Continuous Univariate Distributions} vol. 1, Wiley 1994.
 
-  \href{http://en.wikipedia.org/wiki/Lomax_distribution}{Lomax distribution in Wikipedia}
+  \href{https://en.wikipedia.org/wiki/Lomax_distribution}{Lomax distribution in Wikipedia}
   
 }
 

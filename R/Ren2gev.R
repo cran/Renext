@@ -17,6 +17,8 @@ Ren2gev <- function(object,
                     distname.y = c("gpd", "GPD", "lomax", "maxlo"),
                     jacobian = (length(w) == 1L),
                     vcovRen = NULL) {
+
+    eps <- 1e-9
     
     if (inherits(object, "Renouv")) {
         threshold <- object$threshold
@@ -58,9 +60,14 @@ Ren2gev <- function(object,
     ## now convert to GEV
     parGev <- array(NA, dim = c(length(w), 3L),
                     dimnames = list(NULL, c("loc", "scale", "shape")))
-    
-    prov <- (parRen["lambda"] * w) ^ parRen["shape"]
-    parGev[ , "loc"] <- threshold  + (prov - 1) * parRen["scale"] / parRen["shape"] 
+
+    if (abs(parRen["shape"]) > eps) {
+        prov <- (parRen["lambda"] * w) ^ parRen["shape"]
+        parGev[ , "loc"] <- threshold  + (prov - 1) * parRen["scale"] / parRen["shape"]
+    } else {
+        prov <- 1.0
+        parGev[ , "loc"] <- threshold + parRen["scale"]  * log(parRen["lambda"] * w)
+    }
     parGev[ , "scale"] <- parRen["scale"] * prov 
     parGev[ , "shape"] <- parRen["shape"]
     
@@ -68,10 +75,16 @@ Ren2gev <- function(object,
         
         if (length(w) > 1L)
             stop("jacobian computation is only possible when length(w) is 1")
-        
+
         L <- parRen["lambda"] * w
-        Le <- (parRen["lambda"] * w)^parRen["shape"]
-        LBoxCox <- (Le - 1) / parRen["shape"]
+        
+        if (abs(parRen["shape"]) > eps) {
+            Le <- (parRen["lambda"] * w)^parRen["shape"]
+            LBoxCox <- (Le - 1) / parRen["shape"]
+        } else {
+            Le <- 1.0
+            LBoxCox <- log(parRen["lambda"] * w)
+        }
         
         ## The jacobian id for GPD parameters
         derParGev <- matrix(0, nrow = 3L, ncol = 3L)
@@ -80,8 +93,12 @@ Ren2gev <- function(object,
         ## row 1
         derParGev["loc", "lambda"] <- Le * parRen["scale"] / parRen["lambda"]
         derParGev["loc", "scale"] <- LBoxCox
-        derParGev["loc", "shape"] <-
-            (Le *log(L) - LBoxCox) * parRen["scale"] / parRen["shape"] 
+        if (abs(parRen["shape"]) > eps) {
+            derParGev["loc", "shape"] <-
+                (Le *log(L) - LBoxCox) * parRen["scale"] / parRen["shape"]
+        } else {
+            derParGev["loc", "shape"] <- parRen["scale"] * LBoxCox * LBoxCox / 2
+        }
         ## row 2
         derParGev["scale", "lambda"] <- Le * parRen["shape"] * parRen["scale"] / parRen["lambda"]
         derParGev["scale", "scale"] <- Le
@@ -186,7 +203,7 @@ gev2Ren <- function(parGev,
         L <- lambda * w
         Le <- L ^(-parGev["shape"])
         threshold <-  parGev["loc"] +
-            parGev["scale"] *( L^(-parGev["shape"]) -1 ) / parGev["shape"]
+            parGev["scale"] * (L^(-parGev["shape"]) - 1) / parGev["shape"]
     }
     
     parRen["lambda"] <- lambda

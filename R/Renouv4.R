@@ -99,16 +99,16 @@ Renouv <- function(x,
     if (!missing(MAX.data)) {
         MAX <- makeMAXdata(x = x, data = MAX.data, effDuration = MAX.effDuration)
     } else {
-        MAX <-makeMAXdata(x = x, effDuration = MAX.effDuration)
+        MAX <- makeMAXdata(x = x, effDuration = MAX.effDuration)
     }
     
     ## check and make OTSdata info
     if (!missing(OTS.data)) {
-        OTS <-  makeOTSdata(x = x, data = OTS.data, threshold = OTS.threshold,
-                            effDuration = OTS.effDuration)
+        OTS <- makeOTSdata(x = x, data = OTS.data, threshold = OTS.threshold,
+                           effDuration = OTS.effDuration)
     } else {
-        OTS <-  makeOTSdata(x = x, threshold = OTS.threshold,
-                            effDuration = OTS.effDuration)
+        OTS <- makeOTSdata(x = x, threshold = OTS.threshold,
+                           effDuration = OTS.effDuration)
     }
     
     if ( OTS$flag && (any(OTS$threshold < threshold)) )
@@ -742,7 +742,8 @@ Renouv <- function(x,
             print(opt) 
             stop("convergence not reached in optimisation")
         }
-        
+
+        logLikFun <- loglik
         logLik <- opt$value
         
         ## prepare Hessian evaluation
@@ -833,7 +834,8 @@ Renouv <- function(x,
                     opt0 = opt0,
                     opt = opt,
                     logLik0 = logLik0, 
-                    logLik = logLik,          ## constants for the historical parts. 
+                    logLik = logLik,          ## constants for the historical parts.
+                    logLikFun = logLikFun,
                     sigma = sqrt(diag(cov.all)),
                     cov = cov.all,
                     corr =  cov2corr(cov.all),
@@ -864,6 +866,10 @@ Renouv <- function(x,
         ind <- (1L):parnb.y    
         cov.all[1+ind, 1+ind] <- cov0.y[ind, ind, drop = FALSE]    
         cov.y <- cov0.y
+          
+        logLikFun <- function(parms) {
+            logL <- sum(funs$logf.y(parm = parms, x = y.OT))     
+        }
         
         res <- list(call = mc,
                     x.OT = x.OT,
@@ -888,6 +894,7 @@ Renouv <- function(x,
                     p = p.y + 1L,
                     opt = opt0,
                     logLik = logLik0,
+                    logLikFun = logLikFun,
                     sigma = sqrt(diag(cov.all)),
                     cov = cov.all,
                     corr =  cov2corr(cov.all),
@@ -1005,7 +1012,7 @@ Renouv <- function(x,
     
     if (plot) {
         p <- try(plot(res, label = label, ...)) 
-        if ( class(p) == "try-error" ) {
+        if (inherits(p, "try-error")) {
             warning("an error occured in calling 'plot' frow 'Renouv'.",
                     " Try using 'plot' on the result")
         }

@@ -131,8 +131,11 @@ rRendata <- function(lambda = 1,
     if (simDate) Ts <- start + Ts * 365 * 86400
 
     ## build MAXdata
-    MAXdata <- data.frame(block = blocks, date = Ts,
-                          y = ys, comment = rep ("", length(blocks)))
+    ## BUG FIXED on 2018-09-19 "+ threshold"
+    MAXdata <- data.frame(block = blocks,
+                          date = Ts,
+                          y = ys + threshold,
+                          comment = rep ("", length(blocks)))
     colnames(MAXdata) <- c("block", "date", varName, "comment")
 
     ## build MAXinfo
@@ -176,7 +179,8 @@ rRendata <- function(lambda = 1,
       ni <- rpois(n = 1, lambda = lambda * OTS.effDuration[i])
       args <- c(n = ni,  as.list(par.y))
       yi <- do.call(nm, args)
-      indi <- (yi >= OTS.threshold[i])
+      ## BUG FIXED on 2018-09-19 "- threshold"
+      indi <- (yi > (OTS.threshold[i] - threshold))
       yi <- yi[indi]
       OTS.r[i] <- sum(indi)
 
@@ -196,8 +200,11 @@ rRendata <- function(lambda = 1,
     if (simDate) Ts <- start + Ts * 365 * 86400
 
     ## build OTSdata
-    OTSdata <- data.frame(block = blocks, date = Ts,
-                          y = ys, comment = rep("", length(blocks)))
+    ## BUG FIXED on 2018-09-19 "+ threshold"
+    OTSdata <- data.frame(block = blocks,
+                          date = Ts,
+                          y = ys + threshold,
+                          comment = rep("", length(blocks)))
     colnames(OTSdata) <- c("block", "date", varName, "comment")
 
     ## build OTSinfo

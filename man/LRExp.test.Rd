@@ -142,6 +142,6 @@ LRExp.test(x, method = "num")$p.value
 LRExp.test(x, method = "asymp")$p.value
 \dontrun{
 ## requires much time
-LRExp.test(x, method = "asymp")$p.value
+LRExp.test(x, method = "sim")$p.value
 }
 }

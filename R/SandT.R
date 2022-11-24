@@ -92,7 +92,7 @@ SandT <- function(object,
     
     points <- match.arg(points)
     
-    if (class(object) == "Rendata") {
+    if (inherits(object, "Rendata")) {
         vn  <- object$info$varName
         if (!is.null(object$OTdata)){
             newObj <- list(effDuration = object$OTinfo$effDuration,
@@ -104,7 +104,7 @@ SandT <- function(object,
         MAX <- makeMAXdata(object)
         newObj$history.MAX <- MAX
         object <- newObj
-    } else if (class(object) == "Renouv") {
+    } else if (inherits(object, "Renouv")) {
         ## clean and change object
         x.OT <- object$threshold + object$y.OT
         object <- list(effDuration = object$effDuration,

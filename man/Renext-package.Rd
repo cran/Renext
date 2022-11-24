@@ -78,15 +78,18 @@
 }
 \details{
   
-  \tabular{ll}{
-    Package: \tab Renext\cr
-    Type: \tab Package\cr
-    Version: \tab 3.1-0\cr
-    Date: \tab 2016-07-01\cr
-    License: \tab GPL (>= 2)\cr
-    LazyLoad: \tab yes\cr
+  %% \tabular{ll}{
+  %%   Package: \tab Renext\cr
+  %%   Type: \tab Package\cr
+  %%   Version: \tab 3.1-0\cr
+  %%   Date: \tab 2016-07-01\cr
+  %%   License: \tab GPL (>= 2)\cr
+  %%   LazyLoad: \tab yes\cr
 
-  }
+  %% }
+  The DESCRIPTION file:
+  \packageDESCRIPTION{Renext}
+  \packageIndices{Renext}
 
   This package contains a function \code{\link{Renouv}} to fit
   "renouvellement" models.
@@ -120,8 +123,7 @@
 \keyword{datagen}
 \seealso{
   The CRAN packages \CRANpkg{evd}, \CRANpkg{ismev},
-  \CRANpkg{extRemes}, \CRANpkg{evdbayes},
-  \CRANpkg{POT}.
+  \CRANpkg{extRemes}, \CRANpkg{POT}.
 }
 \examples{
 ## 'Garonne' data set

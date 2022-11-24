@@ -40,7 +40,7 @@ fGEV.MAX(MAX.data, MAX.effDuration,
     
     A compact representation of the needed data as a list. This is
     typically created by using the (non exported)
-    \code{Renext:::maxkeMAXdata} function.
+    \code{Renext:::makeMAXdata} function.
 
   }
   \item{control}{
@@ -98,7 +98,7 @@ fGEV.MAX(MAX.data, MAX.effDuration,
   standard deviations are computed as well using the jacobian matrix of
   the transformation.
 
-  The maximisation if for the log-likelihood with the rate \code{lambda}
+  The maximisation is for the log-likelihood with the rate \code{lambda}
   concentrated out, so it is a two-parameter optimisation.
 
 }
@@ -155,13 +155,13 @@ fGEV.MAX(MAX.data, MAX.effDuration,
 \section{Caution}{
 
   Whatever be the data, the log-likelihood is infinite (hence maximal)
-  for any vector of GEV parameters with shape \eqn{\leq -1}{<= -1} and
+  for any vector of GEV parameters with shape \eqn{< -1}{< -1} and
   postive scale. Hence the log-likelihood should be maximised with a
-  constraint on the shape, while unconstrained optimisation is used
-  here. In practice, for numerical reasons, the estimate usually remains
-  inside the \code{shape > -1} region. \emph{An estimation leading to shape
-  \eqn{< -1} must be considered as meaningless}. An estimation with shape
-  \eqn{< -0.5} should be considered with care.
+  constraint on the shape, while an \emph{unconstrained} optimisation is
+  used here. In practice, for numerical reasons, the estimate usually
+  remains inside the \code{shape > -1} region. \emph{An estimation
+  leading to shape \eqn{< -1} must be considered as meaningless}. An
+  estimation with shape \eqn{< -0.5} should be considered with care.
 
 }
 \note{
