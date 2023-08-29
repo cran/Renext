@@ -81,7 +81,7 @@
   %% \tabular{ll}{
   %%   Package: \tab Renext\cr
   %%   Type: \tab Package\cr
-  %%   Version: \tab 3.1-0\cr
+  %%   Version: \tab 3.1-3\cr
   %%   Date: \tab 2016-07-01\cr
   %%   License: \tab GPL (>= 2)\cr
   %%   LazyLoad: \tab yes\cr

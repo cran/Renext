@@ -1,10 +1,11 @@
 Package: Renext
 Type: Package
 Title: Renewal Method for Extreme Values Extrapolation
-Version: 3.1-3
-Date: 2022-11-24
-Author: Yves Deville <deville.yves@alpestat.com>, IRSN <renext@irsn.fr>
-Maintainer: Lucie Pheulpin <lucie.pheulpin@irsn.fr>
+Version: 3.1-4
+Date: 2023-08-29
+Author: Yves Deville <deville.yves@alpestat.com>, Lise Bardet <lise.bardet@irsn.fr>
+Maintainer: Yann Richet <yann.richet@irsn.fr>
+URL: https://github.com/IRSN/Renext
 Depends: R (>= 2.8.0), stats, graphics, evd
 Imports: numDeriv, splines, methods
 Suggests: MASS, ismev, XML
@@ -15,6 +16,6 @@ Description: Peaks Over Threshold (POT) or 'methode du renouvellement'. The
 License: GPL (>= 2)
 LazyData: yes
 NeedsCompilation: no
-Packaged: 2022-11-24 13:13:41 UTC; yves
+Packaged: 2023-08-29 15:27:46 UTC; richet
 Repository: CRAN
-Date/Publication: 2022-11-24 15:20:02 UTC
+Date/Publication: 2023-08-29 18:10:14 UTC

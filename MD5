@@ -1,5 +1,5 @@
 c5928f2b19e45612457d833e1af977c4 *ChangeLog
-1884c2dd313559f07ce7131dadf7cd64 *DESCRIPTION
+7260fc48b07384f84b02dbc34992e81a *DESCRIPTION
 9f2d4e94c9e7dcefc760073d0167cf3e *NAMESPACE
 50f0d5108a781efeec9b185e38adcea6 *R/CV2.R
 5931280db7eb90b2e9715acf7b24b131 *R/GPD.R
@@ -51,7 +51,7 @@ e1c82d782dddf4658264a7158d577b3f *R/readXML.R
 9e2f604a54291310c4ef8d0f784c5140 *R/transexp.R
 22f2027562818130d6c0459faf34bd52 *R/weibplot.R
 016f9e745012d80a89ca7d3009856720 *R/zzz.R
-e225aeb022f1eac8a76fa6282880c8fc *build/partial.rdb
+7fdff3d02a21a2eff52bbf64f24132a4 *build/partial.rdb
 372c42293c9374fee0a98af5468d63ab *data/Brest.rda
 800bf74f0d81f4666df3f507326eb4ab *data/Brest.years.missing.rda
 3024f5842f72c257c38b2a49d22b4f21 *data/Brest.years.rda
@@ -67,7 +67,7 @@ cb877c518b31f8c6d22571bf7701163a *inst/Rendata/Dunkerque.csv
 4f407cd5296dd7085ccb532fcc6721ce *inst/Rendata/index.xml
 06302267955ca9f6073e959ab84c9a5e *inst/Rendata/index.xsd
 d38be3a702119208ac033a4f192bec13 *inst/Rendata/indexHtml.xsl
-77d8a2bfb73801c59f7158012c0d46ce *inst/doc/RenextGuide.pdf
+bb735c83b28d1f6799b6600c23ca023f *inst/doc/RenextGuide.pdf
 7fad9139cb6a0787ab0b46208a6ba4b9 *inst/doc/index.html
 809b2efbccd384802216183ba7f2967b *man/Brest.Rd
 44d6b8605d5762477bc08668892d0324 *man/Brest.years.Rd
@@ -97,7 +97,7 @@ fa4a3c605b11c4bf453c706619fba8c7 *man/RLpar.Rd
 e69c1b520df94a4539c989af47fff728 *man/RLplot.Rd
 3081f8117542e5d54cbc42916b56c632 *man/Ren2gev.Rd
 f8bc46e194f43897a6a4abc85a19380e *man/Ren2gumbel.Rd
-4a72177d6621ae5a9c34a3aae855cee2 *man/Renext-package.Rd
+6d4dbf5721d07c7fd8dcf15cf64508db *man/Renext-package.Rd
 c4ba8848ea7168173a406f2d70233134 *man/Renouv.Rd
 19e6ddc618218ecc6475ff7a41df2a00 *man/RenouvNoEst.Rd
 776f3ad0bdb5e9fbf8d9578f569a026d *man/SLTW.Rd
